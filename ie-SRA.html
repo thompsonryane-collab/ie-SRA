@@ -6157,6 +6157,81 @@ function toggleAiPanel() {
 </html>"></iframe>
 </div>
 
+<!-- ── HUB TOAST ── -->
+<style>
+#hub-toast-wrap {
+  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+  z-index: 99999; display: flex; flex-direction: column; gap: 8px;
+  align-items: center; pointer-events: none;
+}
+.hub-toast {
+  font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 1.2px;
+  color: #cce0f2; background: #0e1824; border: 1px solid rgba(24,212,248,.35);
+  border-radius: 4px; padding: 9px 18px;
+  box-shadow: 0 4px 22px rgba(0,0,0,.55), 0 0 12px rgba(24,212,248,.08);
+  opacity: 0; transform: translateY(8px);
+  transition: opacity .22s ease, transform .22s ease;
+  pointer-events: none; white-space: nowrap;
+}
+.hub-toast.show { opacity: 1; transform: translateY(0); }
+.hub-toast.warn { border-color: rgba(212,160,90,.5); color: #d4a05a; }
+.hub-toast.ok   { border-color: rgba(77,184,138,.45); color: #4db88a; }
+
+/* ── ARIA KEY MODAL ── */
+#aria-key-modal {
+  display: none; position: absolute; inset: 0; z-index: 200;
+  background: rgba(14,24,36,.93); backdrop-filter: blur(4px);
+  flex-direction: column; align-items: center; justify-content: center; gap: 0;
+}
+#aria-key-modal.open { display: flex; }
+#aria-key-box {
+  background: #0e1824; border: 1px solid rgba(24,212,248,.28);
+  border-radius: 6px; padding: 28px 28px 22px; width: 340px; max-width: 90vw;
+  box-shadow: 0 8px 40px rgba(0,0,0,.6), 0 0 20px rgba(24,212,248,.06);
+}
+#aria-key-box h3 {
+  font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 2px;
+  color: #4db88a; margin: 0 0 6px; text-transform: uppercase;
+}
+#aria-key-box p {
+  font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: .8px;
+  color: #6e90b0; margin: 0 0 18px; line-height: 1.6;
+}
+#aria-key-input {
+  width: 100%; box-sizing: border-box;
+  font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: 1px;
+  background: #141c27; color: #cce0f2;
+  border: 1px solid rgba(24,212,248,.22); border-radius: 4px;
+  padding: 9px 12px; margin-bottom: 10px; outline: none;
+}
+#aria-key-input:focus { border-color: rgba(24,212,248,.5); }
+#aria-key-input::placeholder { color: #3a5570; }
+#aria-key-row { display: flex; gap: 8px; }
+#aria-key-submit {
+  flex: 1; font-family: 'Share Tech Mono', monospace; font-size: 11px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  background: rgba(77,184,138,.14); color: #4db88a;
+  border: 1px solid rgba(77,184,138,.4); border-radius: 4px;
+  padding: 9px 0; cursor: pointer; transition: background .15s;
+}
+#aria-key-submit:hover { background: rgba(77,184,138,.26); }
+#aria-key-cancel {
+  font-family: 'Share Tech Mono', monospace; font-size: 11px;
+  letter-spacing: 1.2px; color: #6e90b0;
+  background: transparent; border: 1px solid rgba(110,144,176,.25);
+  border-radius: 4px; padding: 9px 16px; cursor: pointer; transition: color .15s;
+}
+#aria-key-cancel:hover { color: #cce0f2; }
+#aria-key-err {
+  font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: .8px;
+  color: #e05555; margin-top: 8px; min-height: 14px;
+}
+</style>
+<div id="hub-toast-wrap"></div>
+
+<!-- ── ARIA KEY ENTRY MODAL (rendered inside overlay-aria) ── -->
+<!-- injected by JS into aria-split-body on first open -->
+
 <!-- ═══════════════════════════════════════
      OVERLAY: ARIA AI CHAT (AI-01)
      ═══════════════════════════════════════ -->
@@ -6172,7 +6247,24 @@ function toggleAiPanel() {
   </div>
 
   <!-- ── SPLIT BODY: CHAT (3/4) + REPORT (1/4) ── -->
-  <div id="aria-split-body">
+  <div id="aria-split-body" style="position:relative;">
+  <!-- ARIA KEY MODAL -->
+  <div id="aria-key-modal">
+    <div id="aria-key-box">
+      <h3>⬡ API Key Required</h3>
+      <p>ARIA requires an Anthropic API key.<br>
+         Enter it here to activate AI features.<br>
+         Key is held in memory only — never stored.</p>
+      <input id="aria-key-input" type="password"
+             placeholder="sk-ant-…"
+             onkeydown="if(event.key==='Enter')ariaKeySubmit();if(event.key==='Escape')ariaKeyDismiss();" />
+      <div id="aria-key-row">
+        <button id="aria-key-submit" onclick="ariaKeySubmit()">⬡ Activate ARIA</button>
+        <button id="aria-key-cancel" onclick="ariaKeyDismiss()">Cancel</button>
+      </div>
+      <div id="aria-key-err"></div>
+    </div>
+  </div>
 
     <!-- CHAT PANEL (75%) -->
     <div id="aria-chat-view">
@@ -11808,6 +11900,61 @@ window.addEventListener(&#x27;message&#x27;, function(e) {
 // ── AUTH STATE — top-level so showSplash() can reset it ──
 var authEnabled = false;
 
+// ── HUB TOAST ──
+function hubToast(msg, type, dur) {
+  var wrap = document.getElementById('hub-toast-wrap');
+  if (!wrap) return;
+  var t = document.createElement('div');
+  t.className = 'hub-toast' + (type ? ' ' + type : '');
+  t.textContent = msg;
+  wrap.appendChild(t);
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() { t.classList.add('show'); });
+  });
+  setTimeout(function() {
+    t.classList.remove('show');
+    setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 250);
+  }, dur || 3200);
+}
+
+// ── ARIA KEY MODAL ──
+function showAriaKeyModal() {
+  var modal = document.getElementById('aria-key-modal');
+  var inp   = document.getElementById('aria-key-input');
+  var err   = document.getElementById('aria-key-err');
+  if (!modal) return;
+  if (err) err.textContent = '';
+  if (inp) { inp.value = ''; }
+  modal.classList.add('open');
+  setTimeout(function() { if (inp) inp.focus(); }, 80);
+}
+
+window.ariaKeySubmit = function() {
+  var inp   = document.getElementById('aria-key-input');
+  var err   = document.getElementById('aria-key-err');
+  var key   = inp ? inp.value.trim() : '';
+  if (!key) {
+    if (err) err.textContent = '⚠ Paste your API key above.';
+    return;
+  }
+  if (key.length < 20) {
+    if (err) err.textContent = '⚠ Key looks too short — check and retry.';
+    return;
+  }
+  window._inedApiKey = key;
+  if (!window._selectedModel) window._selectedModel = 'aria';
+  if (inp) inp.value = '';
+  var modal = document.getElementById('aria-key-modal');
+  if (modal) modal.classList.remove('open');
+  updateAiStatus();
+  hubToast('⬡ ARIA activated — API key accepted', 'ok', 3000);
+};
+
+window.ariaKeyDismiss = function() {
+  var modal = document.getElementById('aria-key-modal');
+  if (modal) modal.classList.remove('open');
+};
+
 // ── WALL CLOCK ──
 function startClock() {
   function tick() {
@@ -12077,7 +12224,9 @@ window.addEventListener('message', function(e) {
       var source = e.source;
       if (!source || !reqId || !d.messages) return;
       if (!window._inedApiKey) {
-        try { source.postMessage({ type: 'AI_RESPONSE', id: reqId, error: 'API AUTH required — return to the splash screen, enable API AUTH, and enter your credentials.' }, '*'); } catch(ex) {}
+        try { source.postMessage({ type: 'AI_RESPONSE', id: reqId, error: 'API key required — enter your key in the ARIA panel.' }, '*'); } catch(ex) {}
+        hubToast('⚠ API key required — open ARIA to connect', 'warn', 4000);
+        showAriaKeyModal();
         return;
       }
 
@@ -12280,6 +12429,9 @@ function showSplash() {
   // Show splash
   splash.style.display = 'flex';
   splash.classList.remove('exiting');
+
+  // Sync status dot with current key state
+  updateAiStatus();
 
   // Restart globe animation
   if (window._splashRestart) window._splashRestart();
@@ -12670,6 +12822,7 @@ function launchSim() {
     window._selectedModel  = modelSel ? modelSel.value : 'aria';
     window._inedApiKey   = apiKey;
     window._inedApiEmail = email;
+    setTimeout(function() { hubToast('⬡ ARIA activated — API key accepted', 'ok', 3000); }, 700);
 
     var fAnalytics = document.getElementById('frame-analytics');
     if (fAnalytics && fAnalytics.contentWindow) {
@@ -13357,8 +13510,8 @@ document.addEventListener('keydown', function(e) {
 
   function callApi() {
     if (!window._inedApiKey) {
-      appendMsg('ai', '⚠ API AUTH required — return to the splash screen, enable API AUTH, and enter your credentials to use AI features.');
       ariaHistory.pop();
+      showAriaKeyModal();
       return;
     }
 
@@ -13376,6 +13529,13 @@ document.addEventListener('keydown', function(e) {
     function onError(msg) {
       if (thinking) thinking.remove();
       appendMsg('ai', '⚠ ' + msg);
+      hubToast('⚠ ' + (msg.length > 60 ? msg.slice(0, 57) + '…' : msg), 'warn', 4500);
+      // If 401 / auth error, clear the key and offer re-entry
+      if (msg && (msg.indexOf('401') !== -1 || msg.toLowerCase().indexOf('auth') !== -1 || msg.toLowerCase().indexOf('api_key') !== -1 || msg.toLowerCase().indexOf('invalid x-api-key') !== -1)) {
+        window._inedApiKey = null;
+        updateAiStatus();
+        setTimeout(showAriaKeyModal, 600);
+      }
     }
     function onDone() {
       ariaBusy = false;
