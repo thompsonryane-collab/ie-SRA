@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>ie-SRA // Simulation | Reconnaissance · Analytics</title>
-<link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
 <style>
@@ -6742,6 +6741,16 @@ html::after{content:&#x27;&#x27;;position:fixed;inset:0;background:repeating-lin
 .inst-btn{display:block;width:100%;background:none;border:none;border-bottom:1px solid var(--border);color:var(--tx);padding:8px 11px;cursor:pointer;text-align:left;font-size:11px;font-family:var(--mono);transition:background .1s;}
 .inst-btn:hover{background:rgba(24,212,248,.05);}
 .inst-btn.active{background:rgba(24,212,248,.09);color:var(--cyan);}
+/* Clear-selection control: only present while something is selected */
+.inst-clear-btn{display:none;background:rgba(224,85,85,.08);border:1px solid rgba(224,85,85,.4);
+  border-radius:3px;color:#e05555;font-family:var(--mono);font-size:7px;letter-spacing:.08em;
+  padding:2px 5px;cursor:pointer;line-height:1.4;flex-shrink:0;transition:background .12s,border-color .12s;}
+.inst-clear-btn.on{display:inline-block;}
+.inst-clear-btn:hover{background:rgba(224,85,85,.18);border-color:#e05555;}
+/* the header value wraps by default; with the CLEAR control beside it that
+   costs a third line, so keep the site name to one line and ellipsize */
+#dd-installations .sec-dropdown-val{white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;word-break:normal;max-width:104px;}
 .inst-rgn{font-size:9px;color:var(--txd);letter-spacing:.1em;margin-top:2px;}
 
 /* ══ MAP ══ */
@@ -7516,7 +7525,9 @@ if (window.parent !== window) {
     &lt;div class=&quot;sec-dropdown&quot; id=&quot;dd-installations&quot;&gt;
       &lt;div class=&quot;sec-dropdown-hdr&quot; onclick=&quot;toggleDD(&#x27;dd-installations&#x27;)&quot;&gt;
         &lt;span class=&quot;sec-dropdown-title&quot;&gt;Installations&lt;/span&gt;
-        &lt;span class=&quot;sec-dropdown-val&quot; id=&quot;dd-inst-val&quot;&gt;15 sites&lt;/span&gt;
+        &lt;span class=&quot;sec-dropdown-val&quot; id=&quot;dd-inst-val&quot;&gt;16 sites&lt;/span&gt;
+        &lt;button class=&quot;inst-clear-btn&quot; id=&quot;inst-clear&quot; title=&quot;Clear installation selection&quot;
+          onclick=&quot;event.stopPropagation();clearInstall();&quot;&gt;✕ CLEAR&lt;/button&gt;
         &lt;span class=&quot;sec-dropdown-arrow&quot;&gt;▼&lt;/span&gt;
       &lt;/div&gt;
       &lt;div class=&quot;sec-dropdown-body&quot; style=&quot;padding:0 0 4px;&quot;&gt;
@@ -8704,8 +8715,73 @@ function selInstall(inst){
   isoPlaced=[];
   isoScore=inst.resScore;
   // Reset ISO view state for new installation
-  _iso.pan={x:0,y:0}; _iso.zoom=1; _iso.angle=0; _iso.satCanvas=null;
+  _iso.pan={x:0,y:0}; _iso.zoom=1; _iso.angle=0; _iso.satCanvas=null; _iso._lastInst=null;
+  document.getElementById(&#x27;inst-clear&#x27;)?.classList.add(&#x27;on&#x27;);
 }
+
+/* ── UNSELECT ──
+   Clicking the active installation again, or the CLEAR control in the
+   Installations header, drops the selection and returns the workspace to the
+   unselected state it starts in: no highlight, no detail panel, no inset, and
+   the map back at the global fit. Placed CFE assets belong to the selected
+   site, so they go with it. */
+function clearInstall() {
+  if (!selInst) return;
+  selInst = null;
+
+  document.querySelectorAll(&#x27;.inst-btn&#x27;).forEach(function(b){ b.classList.remove(&#x27;active&#x27;); });
+  var val = document.getElementById(&#x27;dd-inst-val&#x27;);
+  if (val) val.textContent = INSTALLATIONS.length + &#x27; sites&#x27;;
+  var clr = document.getElementById(&#x27;inst-clear&#x27;);
+  if (clr) clr.classList.remove(&#x27;on&#x27;);
+
+  // detail panel back to its placeholder
+  var noSel = document.getElementById(&#x27;no-sel&#x27;);
+  var detail = document.getElementById(&#x27;site-detail&#x27;);
+  if (noSel) noSel.style.display = &#x27;block&#x27;;
+  if (detail) detail.style.display = &#x27;none&#x27;;
+  var ddStatus = document.getElementById(&#x27;dd-status&#x27;);
+  if (ddStatus) { ddStatus.style.display = &#x27;none&#x27;; ddStatus.classList.remove(&#x27;open&#x27;); }
+  // the energy-assets panel is per-installation, so it stows with the selection
+  var ddEA = document.getElementById(&#x27;dd-energy-assets&#x27;);
+  if (ddEA) { ddEA.style.display = &#x27;none&#x27;; ddEA.classList.remove(&#x27;open&#x27;); }
+  if (typeof _eaInst !== &#x27;undefined&#x27;) _eaInst = null;
+
+  // inset down, indicator off the map
+  closePip();
+  clearPipAssets();
+  document.getElementById(&#x27;pip-reopen&#x27;)?.classList.remove(&#x27;visible&#x27;);
+  var pipNo = document.getElementById(&#x27;pip-no-sel&#x27;);
+  if (pipNo) pipNo.style.display = &#x27;flex&#x27;;
+
+  // placed assets belong to the site that was selected
+  isoPlaced = [];
+  isoScore = 0;
+  selectedAsset = null;
+  [&#x27;smr&#x27;,&#x27;bess&#x27;,&#x27;mg&#x27;].forEach(function(k){
+    document.getElementById(&#x27;ac-&#x27;+k)?.classList.remove(&#x27;selected&#x27;);
+  });
+  renderPlaced();
+  renderPlacedCatalog();
+  if (typeof renderAssetCatalog === &#x27;function&#x27; &amp;&amp; assetCatalogInit) renderAssetCatalog();
+
+  // iso view state
+  _iso.inst = null; _iso._lastInst = null; _iso.satCanvas = null;
+  _iso.pan = {x:0, y:0}; _iso.zoom = 1; _iso.angle = 0; _iso.hitBoxes = [];
+  var tip = document.getElementById(&#x27;iso-fac-tip&#x27;);
+  if (tip) tip.classList.remove(&#x27;visible&#x27;);
+
+  // map back to the global view
+  renderFacilityLayer(null);
+  [&#x27;regional&#x27;,&#x27;installation&#x27;,&#x27;facility&#x27;].forEach(function(x){
+    document.getElementById(&#x27;btn-&#x27;+x)?.classList.remove(&#x27;active&#x27;);
+    document.getElementById(&#x27;ss-&#x27;+x)?.classList.remove(&#x27;active&#x27;);
+  });
+  var sb = document.getElementById(&#x27;sb-scale&#x27;);
+  if (sb) sb.textContent = &#x27;SCALE: GLOBAL&#x27;;
+  fitAll();
+}
+
 
 function loadStatusPanel(inst){
   document.getElementById(&#x27;no-sel&#x27;).style.display=&#x27;none&#x27;;
@@ -9092,7 +9168,7 @@ rgOrder.forEach(rg =&gt; {
         &amp;nbsp;·&amp;nbsp;
         &lt;span style=&quot;color:${scoreColor}&quot;&gt;${inst.resScore}/100&lt;/span&gt;
       &lt;/div&gt;`;
-    btn.onclick = () =&gt; selInstall(inst);
+    btn.onclick = () =&gt; (selInst &amp;&amp; selInst.id === inst.id) ? clearInstall() : selInstall(inst);
     body.appendChild(btn);
   });
 
@@ -9503,7 +9579,8 @@ function initPipDragDrop() {
     // Switch to sat tab so drop is visible
     pipTab(&#x27;sat&#x27;);
     // Also register in main iso
-    isoPlaced.push({type:pipDragType, c:3, r:3, zi:isoPlaced.length, zone:&#x27;DROP ZONE&#x27;});
+    var _z = isoZoneCell(selInst ? selInst.id : null, isoPlaced.length);
+    isoPlaced.push({type:pipDragType, c:_z.c, r:_z.r, zi:isoPlaced.length, zone:_z.zone});
     isoScore = Math.min(100, isoScore + ASSET_PTS[pipDragType]);
     const _el=document.getElementById(&#x27;iso-score&#x27;);if(_el)_el.textContent=isoScore;
     document.getElementById(&#x27;rs-score&#x27;).textContent = isoScore;
@@ -9659,13 +9736,16 @@ function pipTab(tab) {
   document.getElementById(&#x27;pt-iso&#x27;).classList.toggle(&#x27;active&#x27;, tab === &#x27;iso&#x27;);
   const pipMapEl = document.getElementById(&#x27;pip-map&#x27;);
   const pipIsoEl = document.getElementById(&#x27;pip-iso-canvas&#x27;);
+  var hint = document.getElementById(&#x27;pip-hint&#x27;);
   if (tab === &#x27;sat&#x27;) {
     if(pipMapEl) pipMapEl.style.display = &#x27;block&#x27;;
     if(pipIsoEl) pipIsoEl.style.display = &#x27;none&#x27;;
     if (pipMap) setTimeout(() =&gt; pipMap.invalidateSize(), 30);
+    if (hint) hint.textContent = &#x27;DRAG ASSET CARDS HERE TO PLACE · SCROLL TO ZOOM · DRAG TO PAN&#x27;;
   } else {
     if(pipMapEl) pipMapEl.style.display = &#x27;none&#x27;;
     if(pipIsoEl) pipIsoEl.style.display = &#x27;block&#x27;;
+    if (hint) hint.textContent = &#x27;DRAG PAN · SCROLL ZOOM · RIGHT-DRAG ORBIT · DBL-CLICK RESET&#x27;;
     renderPipIso(selInst);
   }
 }
@@ -9675,65 +9755,311 @@ function pipTab(tab) {
 // ══════════════════════════════════════════════
 
 // Per-installation recon data: real coords, zoom, and building layout
+/* ══════════════════════════════════════════════════════════════
+   SYS-03 JOIN — SHARED ISO SITE MAPS
+
+   SYS-01B and SYS-03 BLACKSTART describe the same 16 installations
+   under the same ids, and their facility names agree exactly, so the
+   two catalogues join 1:1 on id and the hand-laid SYS-03 site maps
+   can drive the SYS-01B isometric recon view directly.
+
+   Ported from SYS-03: ground extents, terrain plates, building
+   footprints, scenery and zone envelopes.
+   NOT ported: AMI smart-metering and FRCS control-system layers —
+   those stay in SYS-03, which owns that mission data.
+
+   fac / scenery entry:  [col, row, width, depth, height]
+   terrain entry:        [kind, col, row, width, depth]
+   ══════════════════════════════════════════════════════════════ */
+const ISO_SITE_MAPS={
+
+/* Desert range complex — dispersed, dry lakebed, long runway, remote magazines */
+&#x27;naws-cl&#x27;:{cols:14,rows:9,mg:[6.2,7.4],
+ terrain:[[&#x27;scrub&#x27;,0,0,14,9],[&#x27;playa&#x27;,8.4,0.4,5.2,3.4],[&#x27;runway&#x27;,1,1.2,7.4,0.9],
+          [&#x27;taxi&#x27;,1.6,2.3,6.2,0.34],[&#x27;apron&#x27;,2.2,2.8,3.0,1.2],[&#x27;road&#x27;,0.6,4.6,12.6,0.26],
+          [&#x27;road&#x27;,6.9,1.2,0.26,6.4]],
+ fac:{&#x27;Main Airfield&#x27;:[2.4,2.9,2.6,1.0,13],&#x27;Harvey Field&#x27;:[9.6,4.2,2.0,1.1,11],
+      &#x27;Weapons Test Range&#x27;:[10.4,0.9,2.6,2.0,16],&#x27;Power Substation&#x27;:[5.4,5.4,1.0,0.9,9],
+      &#x27;Fuel Depot&#x27;:[0.6,5.6,1.6,1.4,12],&#x27;Admin Complex&#x27;:[2.8,6.4,2.4,1.2,15]},
+ scenery:[[1.0,3.1,0.9,0.7,17,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],[6.0,3.0,1.1,0.8,10,&#x27;Hangar 3&#x27;,&#x27;\u{1F3D7}&#x27;],
+          [11.2,6.2,1.3,1.0,7,&#x27;Magazine A&#x27;,null],[12.4,7.4,1.1,0.9,7,&#x27;Magazine B&#x27;,null],
+          [8.6,6.0,1.4,1.0,12,&#x27;Shops&#x27;,null],[0.5,7.2,1.8,1.1,9,&#x27;Motor Pool&#x27;,null],
+          [5.0,7.6,1.5,0.9,13,&#x27;BEQ&#x27;,null]],
+ zones:[[0.4,0.6,8.4,3.6,&#x27;HARVEY FIELD&#x27;],[9.2,0.5,4.4,3.8,&#x27;RANDSBURG WASH&#x27;],
+        [0.3,4.9,5.6,3.8,&#x27;MAIN BASE&#x27;],[8.2,4.9,5.4,3.8,&#x27;LAUREL MTN&#x27;]]},
+
+/* Fleet concentration pier complex — carrier row projecting into the harbour */
+&#x27;ns-norf&#x27;:{cols:13,rows:8,mg:[10.4,6.6],
+ terrain:[[&#x27;water&#x27;,0,0,13,3.1],[&#x27;pier&#x27;,1.4,0.2,0.7,2.9],[&#x27;pier&#x27;,3.2,0.2,0.7,2.9],
+          [&#x27;pier&#x27;,5.0,0.2,0.7,2.9],[&#x27;pier&#x27;,6.8,0.2,0.7,2.9],[&#x27;quay&#x27;,0.4,3.0,10.4,0.7],
+          [&#x27;road&#x27;,0.4,4.6,12.2,0.28],[&#x27;apron&#x27;,8.6,0.6,3.4,2.2]],
+ fac:{&#x27;Carrier Pier Row&#x27;:[1.3,0.9,1.0,1.5,9,4,&#x27;x&#x27;,1.5],&#x27;Command HQ&#x27;:[1.0,3.9,2.0,1.3,21],
+      &#x27;NMCP Medical&#x27;:[4.4,3.9,2.4,1.6,19],&#x27;Fuel Farm&#x27;:[9.6,3.4,1.6,1.4,12],
+      &#x27;Admin District&#x27;:[2.0,5.6,1.4,1.3,14,2,&#x27;x&#x27;,1.9]},
+ scenery:[[7.6,3.9,1.6,1.2,9,&#x27;Warehouse&#x27;,null],[9.4,5.4,1.8,1.2,8,&#x27;Supply&#x27;,null],
+          [6.4,5.8,1.0,0.9,11,&#x27;Gate 2&#x27;,null],[11.6,1.2,1.1,1.6,10,&#x27;Crane&#x27;,null],
+          [0.4,6.6,2.2,1.1,9,&#x27;Parking&#x27;,null],[7.2,6.8,2.0,1.0,12,&#x27;BEQ&#x27;,null]],
+ zones:[[0.3,0.2,7.6,3.4,&#x27;CARRIER ROW&#x27;],[8.4,0.3,4.4,3.4,&#x27;PIER 1-6&#x27;],
+        [0.3,3.7,5.2,4.0,&#x27;HQ COMPLEX&#x27;],[6.2,3.7,6.4,4.0,&#x27;NMCP&#x27;]]},
+
+/* Coastal peninsula air station — runway parallel to the shore, hangar row behind */
+&#x27;nas-nc&#x27;:{cols:12,rows:8,mg:[9.6,6.4],
+ terrain:[[&#x27;water&#x27;,0,6.4,12,1.6],[&#x27;water&#x27;,10.4,0,1.6,6.6],[&#x27;runway&#x27;,0.6,1.0,9.0,0.95],
+          [&#x27;taxi&#x27;,0.9,2.1,8.4,0.34],[&#x27;apron&#x27;,1.4,2.6,6.4,1.5],[&#x27;road&#x27;,0.5,4.6,9.6,0.26],
+          [&#x27;quay&#x27;,0,6.1,10.2,0.4]],
+ fac:{&#x27;Flight Ops / Runway&#x27;:[1.0,2.8,1.8,1.1,14],&#x27;Hangar Complex&#x27;:[3.6,2.7,1.1,1.3,16,3,&#x27;x&#x27;,1.4],
+      &#x27;Fuel Depot&#x27;:[8.4,3.0,1.4,1.3,11],&#x27;Comms Node&#x27;:[0.6,5.0,1.2,1.0,20],
+      &#x27;Admin Zone&#x27;:[3.0,5.1,2.8,1.3,13]},
+ scenery:[[6.6,5.0,1.6,1.1,10,&#x27;Ops Support&#x27;,null],[8.6,5.2,1.4,1.0,9,&#x27;Supply&#x27;,null],
+          [2.2,0.4,0.8,0.6,15,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],[1.0,6.6,2.4,0.9,7,&#x27;Pier Shed&#x27;,null],
+          [4.4,6.7,2.0,0.9,8,&#x27;Boat House&#x27;,null],[0.4,3.1,0.9,0.8,11,&#x27;Fire Sta&#x27;,null]],
+ zones:[[0.3,0.6,9.6,1.8,&#x27;FLIGHT OPS&#x27;],[1.0,2.5,7.2,2.0,&#x27;HANGAR ROW&#x27;],
+        [7.8,2.6,2.6,2.0,&#x27;DEPOT&#x27;],[0.3,4.8,7.4,2.6,&#x27;COMMAND&#x27;]]},
+
+/* Shipyard on an inlet — graving docks cut into the shoreline, magazines held well back */
+&#x27;nbk&#x27;:{cols:12,rows:8,mg:[9.0,6.8],
+ terrain:[[&#x27;water&#x27;,0,0,4.2,8],[&#x27;drydock&#x27;,3.0,0.8,1.5,1.7],[&#x27;drydock&#x27;,3.0,2.9,1.5,1.7],
+          [&#x27;drydock&#x27;,3.0,5.0,1.5,1.7],[&#x27;quay&#x27;,4.4,0.5,0.5,7.0],[&#x27;road&#x27;,5.0,0.6,0.28,6.8],
+          [&#x27;pier&#x27;,1.0,1.4,1.9,0.55],[&#x27;pier&#x27;,1.0,5.6,1.9,0.55],[&#x27;forest&#x27;,9.4,0,2.6,4.0]],
+ fac:{&#x27;Drydock Complex&#x27;:[4.9,1.2,1.7,0.9,14,3,&#x27;y&#x27;,1.15],&#x27;Shipyard HQ&#x27;:[7.2,1.0,1.6,1.4,22],
+      &#x27;Medical Center&#x27;:[7.0,3.2,1.9,1.5,17],&#x27;Ammo Storage&#x27;:[10.2,5.6,1.2,1.0,7],
+      &#x27;Pier Complex&#x27;:[5.2,5.0,2.2,1.4,10]},
+ scenery:[[9.2,1.2,1.0,0.9,13,&#x27;Shop 12&#x27;,null],[7.8,5.2,1.4,1.1,9,&#x27;Warehouse&#x27;,null],
+          [5.4,6.8,1.8,0.9,8,&#x27;Fab Shop&#x27;,null],[10.6,7.0,1.1,0.9,7,&#x27;Magazine&#x27;,null],
+          [6.6,0.4,0.7,0.5,19,&#x27;Crane 4&#x27;,null],[8.8,6.6,1.2,0.9,10,&#x27;Gate 1&#x27;,null]],
+ zones:[[4.6,0.4,4.6,4.4,&#x27;DRYDOCK 1&#x27;],[6.8,0.3,2.4,2.6,&#x27;SHIPYARD HQ&#x27;],
+        [9.6,4.9,2.4,2.8,&#x27;AMMO STORAGE&#x27;],[4.8,4.6,4.2,3.0,&#x27;PIER COMPLEX&#x27;]]},
+
+/* Compact riverside campus — dense, little separation, one small apron */
+&#x27;jbab&#x27;:{cols:10,rows:7,mg:[7.8,5.6],
+ terrain:[[&#x27;water&#x27;,0,0,10,1.5],[&#x27;quay&#x27;,0,1.4,8.0,0.4],[&#x27;apron&#x27;,5.6,2.0,3.6,2.0],
+          [&#x27;road&#x27;,0.4,3.4,8.8,0.26],[&#x27;road&#x27;,3.2,1.9,0.26,4.6],[&#x27;grass&#x27;,0.3,5.0,3.0,1.7]],
+ fac:{&#x27;Intel Complex&#x27;:[0.6,2.0,2.2,1.2,24],&#x27;Command Center&#x27;:[1.2,4.0,2.0,1.2,20],
+      &#x27;Comms Node&#x27;:[0.5,5.4,1.2,1.0,26],&#x27;Flight Apron&#x27;:[6.4,2.4,1.6,1.1,9],
+      &#x27;Admin / Support&#x27;:[3.8,4.2,2.4,1.3,15]},
+ scenery:[[3.8,2.1,1.6,1.1,17,&#x27;Bldg 20&#x27;,null],[5.8,4.4,1.4,1.1,13,&#x27;Bldg 41&#x27;,null],
+          [8.4,4.6,1.2,1.0,11,&#x27;Gate&#x27;,null],[7.6,0.3,1.4,1.0,9,&#x27;Boathouse&#x27;,null],
+          [2.0,5.6,1.4,0.9,10,&#x27;BEQ&#x27;,null],[8.2,2.2,0.8,0.7,14,&#x27;Hangar 2&#x27;,null]],
+ zones:[[0.3,1.8,3.2,2.6,&#x27;INTEL COMPLEX&#x27;],[5.2,1.8,4.2,2.6,&#x27;APRON&#x27;],
+        [0.3,4.6,4.6,2.2,&#x27;HQ BLDG&#x27;],[5.4,4.2,4.2,2.4,&#x27;COMMS NODE&#x27;]]},
+
+/* Two-site Mediterranean air station — runway on one side, NATO comms compound apart */
+&#x27;nas-sig&#x27;:{cols:12,rows:8,mg:[8.6,6.4],
+ terrain:[[&#x27;scrub&#x27;,0,0,12,8],[&#x27;runway&#x27;,0.5,0.9,8.6,0.9],[&#x27;taxi&#x27;,1.0,2.0,7.4,0.34],
+          [&#x27;apron&#x27;,1.6,2.5,4.4,1.4],[&#x27;road&#x27;,0.4,4.4,10.8,0.26],[&#x27;road&#x27;,9.0,0.8,0.26,6.2]],
+ fac:{&#x27;Main Runway&#x27;:[1.0,2.6,1.6,1.1,12],&#x27;Aircraft Ramp&#x27;:[3.2,2.6,1.0,1.2,14,2,&#x27;x&#x27;,1.5],
+      &#x27;NATO Comms Hub&#x27;:[9.6,1.0,1.8,1.5,23],&#x27;Fuel Storage&#x27;:[6.6,2.8,1.4,1.2,11],
+      &#x27;Admin / BEQ&#x27;:[2.0,5.2,2.8,1.4,13]},
+ scenery:[[9.8,3.2,1.4,1.1,12,&#x27;Annex&#x27;,null],[5.4,5.4,1.6,1.1,10,&#x27;Chapel&#x27;,null],
+          [7.4,5.6,1.8,1.1,9,&#x27;Exchange&#x27;,null],[0.5,5.4,1.2,1.0,11,&#x27;Fire Sta&#x27;,null],
+          [1.4,0.3,0.8,0.6,16,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],[10.2,6.2,1.2,1.0,8,&#x27;Gate 3&#x27;,null]],
+ zones:[[0.3,0.6,8.8,1.8,&#x27;MAIN RUNWAY&#x27;],[1.2,2.4,6.6,1.8,&#x27;FUEL&#x27;],
+        [9.2,0.7,2.6,3.4,&#x27;NATO COMMS&#x27;],[0.3,5.0,8.4,2.6,&#x27;BEQ&#x27;]]},
+
+/* Purpose-built missile-defence site — tight square perimeter, everything inside the fence */
+&#x27;nsf-deveselu&#x27;:{cols:9,rows:7,mg:[6.6,5.2],
+ terrain:[[&#x27;grass&#x27;,0,0,9,7],[&#x27;perimeter&#x27;,0.6,0.6,7.8,5.8],[&#x27;apron&#x27;,1.4,1.4,3.0,2.2],
+          [&#x27;road&#x27;,1.0,4.0,6.8,0.26],[&#x27;road&#x27;,4.8,1.2,0.26,3.2]],
+ fac:{&#x27;Aegis Ashore Site&#x27;:[1.6,1.6,2.4,1.8,20],&#x27;Power Generation&#x27;:[5.4,1.5,1.4,1.2,12],
+      &#x27;Comms / Data Ctr&#x27;:[5.2,3.0,1.6,1.3,16],&#x27;Admin Complex&#x27;:[1.8,4.6,2.2,1.2,12]},
+ scenery:[[4.4,4.8,1.4,1.0,10,&#x27;Support&#x27;,null],[6.6,4.4,1.2,1.0,9,&#x27;Guard&#x27;,null],
+          [1.0,3.2,0.9,0.8,14,&#x27;Water Twr&#x27;,null],[6.8,1.0,0.8,0.7,11,&#x27;Fuel&#x27;,null]],
+ zones:[[1.2,1.2,3.4,2.8,&#x27;AEGIS ASHORE&#x27;],[5.0,1.1,2.6,2.0,&#x27;POWER PLANT&#x27;],
+        [4.8,2.8,2.8,2.0,&#x27;DATA CTR&#x27;],[1.2,4.3,3.4,2.0,&#x27;ADMIN&#x27;]]},
+
+/* Dense Gulf port — pier complex against the water, ammunition area pushed inland */
+&#x27;nsa-bahrain&#x27;:{cols:12,rows:8,mg:[3.0,6.8],
+ terrain:[[&#x27;water&#x27;,9.0,0,3,8],[&#x27;quay&#x27;,8.4,0.4,0.6,7.2],[&#x27;pier&#x27;,9.2,1.0,1.7,0.6],
+          [&#x27;pier&#x27;,9.2,3.0,1.7,0.6],[&#x27;pier&#x27;,9.2,5.0,1.7,0.6],[&#x27;road&#x27;,0.5,3.6,7.8,0.28],
+          [&#x27;road&#x27;,4.4,0.6,0.28,6.6],[&#x27;apron&#x27;,5.2,0.8,2.8,2.4]],
+ fac:{&#x27;5th Fleet HQ&#x27;:[1.0,0.8,2.4,1.6,22],&#x27;Naval Pier Complex&#x27;:[6.0,1.2,0.9,1.5,11,2,&#x27;x&#x27;,1.3],
+      &#x27;Comms / Intel Hub&#x27;:[1.2,4.2,2.0,1.4,19],&#x27;Ammunition Storage&#x27;:[0.5,6.4,1.4,1.1,7],
+      &#x27;Fuel Farm&#x27;:[6.2,4.0,1.6,1.3,11],&#x27;Admin / BEQ&#x27;:[3.6,4.4,2.0,1.3,15]},
+ scenery:[[5.8,6.2,1.8,1.1,12,&#x27;Exchange&#x27;,null],[3.4,6.6,1.6,1.0,10,&#x27;Gym&#x27;,null],
+          [2.2,2.6,1.4,0.8,13,&#x27;Bldg 8&#x27;,null],[7.4,6.4,1.4,1.0,9,&#x27;Gate 1&#x27;,null],
+          [0.5,2.2,1.0,0.9,11,&#x27;Chiller&#x27;,null],[6.4,3.0,1.2,0.7,8,&#x27;Shed&#x27;,null]],
+ zones:[[0.3,0.5,3.9,3.0,&#x27;5TH FLEET HQ&#x27;],[5.0,0.5,3.8,3.0,&#x27;PIER COMPLEX&#x27;],
+        [0.3,3.9,3.6,3.6,&#x27;BEQ&#x27;],[5.4,3.7,3.4,3.4,&#x27;AMMO&#x27;]]},
+
+/* Japanese naval air facility — runway, hangar line, seismic-braced support blocks */
+&#x27;naf-atsugi&#x27;:{cols:12,rows:8,mg:[9.4,6.2],
+ terrain:[[&#x27;grass&#x27;,0,0,12,8],[&#x27;runway&#x27;,0.6,1.0,9.2,0.9],[&#x27;taxi&#x27;,1.0,2.1,8.2,0.34],
+          [&#x27;apron&#x27;,1.6,2.6,5.6,1.5],[&#x27;road&#x27;,0.4,4.6,10.6,0.26],[&#x27;road&#x27;,8.4,1.0,0.26,5.8]],
+ fac:{&#x27;Flight Ops Runway&#x27;:[1.0,2.7,1.8,1.2,13],&#x27;Hangar Complex&#x27;:[3.4,2.7,1.0,1.3,16,3,&#x27;x&#x27;,1.3],
+      &#x27;JP-8 Fuel Farm&#x27;:[9.0,2.4,1.5,1.3,11],&#x27;Comms Node&#x27;:[0.6,5.2,1.3,1.1,21],
+      &#x27;Admin / Support&#x27;:[2.6,5.2,2.6,1.3,14]},
+ scenery:[[7.6,2.8,1.2,1.1,12,&#x27;Maint&#x27;,null],[5.8,5.4,1.6,1.1,10,&#x27;Exchange&#x27;,null],
+          [7.8,5.4,1.6,1.1,9,&#x27;Housing&#x27;,null],[1.6,0.3,0.8,0.6,16,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],
+          [9.8,5.0,1.2,1.0,8,&#x27;Gate 2&#x27;,null],[0.5,3.0,1.0,0.9,12,&#x27;Fire Sta&#x27;,null]],
+ zones:[[0.3,0.6,9.4,1.8,&#x27;FLIGHT OPS&#x27;],[1.2,2.5,6.4,1.9,&#x27;HANGAR ROW&#x27;],
+        [8.6,2.2,3.0,2.2,&#x27;JP-8 FARM&#x27;],[0.3,5.0,7.0,2.6,&#x27;SUPPORT&#x27;]]},
+
+/* Island harbour — deep-water piers, sub base on its own peninsula, tank field inland */
+&#x27;ns-guam&#x27;:{cols:13,rows:9,mg:[6.0,7.6],
+ terrain:[[&#x27;water&#x27;,0,0,13,3.4],[&#x27;water&#x27;,0,3.2,3.0,2.4],[&#x27;quay&#x27;,3.0,3.2,8.4,0.6],
+          [&#x27;pier&#x27;,4.0,0.8,0.7,2.5],[&#x27;pier&#x27;,5.8,0.8,0.7,2.5],[&#x27;pier&#x27;,7.6,0.8,0.7,2.5],
+          [&#x27;pier&#x27;,0.6,3.0,2.2,0.6],[&#x27;road&#x27;,3.2,5.0,9.2,0.28],[&#x27;forest&#x27;,10.6,5.6,2.4,3.2],
+          [&#x27;tanks&#x27;,9.4,3.9,3.0,1.6]],
+ fac:{&#x27;Apra Harbor Piers&#x27;:[3.9,1.4,0.9,1.6,10,3,&#x27;x&#x27;,1.8],&#x27;Sub Base&#x27;:[0.6,4.0,2.4,1.6,14],
+      &#x27;Fuel Tank Farm&#x27;:[9.7,4.1,0.8,1.2,9,3,&#x27;x&#x27;,0.95],&#x27;Comms / C2 Node&#x27;:[3.4,5.6,2.0,1.4,22],
+      &#x27;Ordnance Annex&#x27;:[11.0,7.4,1.4,1.1,7],&#x27;Admin Zone&#x27;:[6.0,5.6,2.6,1.4,14]},
+ scenery:[[9.0,0.6,1.6,1.4,13,&#x27;Wharf Shed&#x27;,null],[3.4,4.0,1.6,0.8,9,&#x27;Supply&#x27;,null],
+          [5.6,4.0,1.4,0.8,10,&#x27;Shops&#x27;,null],[0.5,6.4,2.0,1.2,11,&#x27;BEQ&#x27;,null],
+          [8.8,6.0,1.6,1.1,9,&#x27;Gate 3&#x27;,null],[3.0,7.4,2.2,1.1,12,&#x27;Housing&#x27;,null],
+          [7.4,4.0,1.2,0.8,8,&#x27;Pump Sta&#x27;,null]],
+ zones:[[3.2,0.4,6.2,3.4,&#x27;APRA HARBOR&#x27;],[0.3,3.6,3.0,2.6,&#x27;SUB BASE&#x27;],
+        [9.2,3.6,3.4,2.4,&#x27;TANK FARM&#x27;],[9.8,6.6,3.0,2.2,&#x27;ORDNANCE&#x27;]]},
+
+/* Expeditionary forward base — container and tent rows, prime power, shared airfield edge */
+&#x27;camp-lemonnier&#x27;:{cols:11,rows:8,mg:[8.4,6.4],
+ terrain:[[&#x27;sand&#x27;,0,0,11,8],[&#x27;runway&#x27;,0.4,0.8,9.6,0.85],[&#x27;taxi&#x27;,1.2,1.8,7.0,0.3],
+          [&#x27;apron&#x27;,1.8,2.2,4.0,1.4],[&#x27;road&#x27;,0.5,4.0,9.6,0.26],[&#x27;road&#x27;,6.0,2.0,0.26,5.2],
+          [&#x27;perimeter&#x27;,0.3,3.6,10.2,4.0]],
+ fac:{&#x27;Flight Ops / Runway&#x27;:[1.2,2.3,1.6,1.1,12],&#x27;Drone Ops Center&#x27;:[3.4,2.3,2.0,1.2,14],
+      &#x27;AFRICOM Fwd HQ&#x27;:[1.0,4.6,2.2,1.4,17],&#x27;JP-8 Fuel Farm&#x27;:[8.4,2.2,1.6,1.3,10],
+      &#x27;Admin / EOC&#x27;:[3.8,4.8,2.0,1.2,13]},
+ scenery:[[6.4,4.6,1.4,0.7,7,&#x27;Billet Row&#x27;,null],[6.4,5.5,1.4,0.7,7,&#x27;Billet Row&#x27;,null],
+          [6.4,6.4,1.4,0.7,7,&#x27;Billet Row&#x27;,null],[8.4,4.6,1.6,1.0,9,&#x27;DFAC&#x27;,null],
+          [1.2,6.4,2.0,0.9,8,&#x27;Container Yd&#x27;,null],[5.8,2.4,0.9,0.7,15,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],
+          [3.6,6.4,1.8,0.9,8,&#x27;Motor Pool&#x27;,null]],
+ zones:[[0.3,0.6,9.8,1.6,&#x27;FLIGHT OPS&#x27;],[1.2,2.1,5.0,1.7,&#x27;DRONE OPS&#x27;],
+        [0.5,4.4,4.8,3.0,&#x27;AFRICOM HQ&#x27;],[6.0,4.2,4.4,3.2,&#x27;EOC&#x27;]]},
+
+/* Runway and pier in one footprint — the only site in the set carrying both */
+&#x27;nas-rota&#x27;:{cols:13,rows:8,mg:[6.4,6.6],
+ terrain:[[&#x27;scrub&#x27;,0,0,13,8],[&#x27;water&#x27;,9.4,4.6,3.6,3.4],[&#x27;runway&#x27;,0.5,0.8,9.0,0.9],
+          [&#x27;taxi&#x27;,1.0,1.9,8.0,0.32],[&#x27;apron&#x27;,1.6,2.4,4.6,1.4],[&#x27;quay&#x27;,9.0,4.4,0.5,3.4],
+          [&#x27;pier&#x27;,9.6,5.0,1.5,0.55],[&#x27;pier&#x27;,9.6,6.4,1.5,0.55],[&#x27;road&#x27;,0.4,4.2,9.0,0.26]],
+ fac:{&#x27;Main Runway&#x27;:[1.0,2.5,1.8,1.1,13],&#x27;Destroyer Pier Row&#x27;:[6.9,5.0,1.7,0.8,10,2,&#x27;y&#x27;,1.2],
+      &#x27;JP-8 / AVGAS Farm&#x27;:[7.0,2.4,1.6,1.3,10],&#x27;Comms Node&#x27;:[0.6,5.0,1.3,1.1,20],
+      &#x27;Admin Complex&#x27;:[2.6,5.0,2.6,1.3,14]},
+ scenery:[[3.6,2.5,2.4,1.2,15,&#x27;Hangar Row&#x27;,null],[9.4,2.4,1.4,1.1,9,&#x27;Supply&#x27;,null],
+          [5.4,6.6,1.4,1.0,10,&#x27;Exchange&#x27;,null],[1.4,0.3,0.8,0.6,15,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],
+          [0.5,6.6,1.6,0.9,8,&#x27;Housing&#x27;,null],[10.4,2.6,1.2,1.0,8,&#x27;Gate 2&#x27;,null]],
+ zones:[[0.3,0.5,9.4,1.7,&#x27;MAIN RUNWAY&#x27;],[1.2,2.2,7.4,1.8,&#x27;FUEL FARM&#x27;],
+        [0.3,4.7,5.6,2.8,&#x27;ADMIN&#x27;],[6.4,4.5,6.2,3.2,&#x27;DDG PIERS&#x27;]]},
+
+/* Harbour with an island in the middle — the shape that makes Pearl legible */
+&#x27;ns-pearl&#x27;:{cols:13,rows:9,mg:[10.2,7.2],
+ terrain:[[&#x27;water&#x27;,0,0,13,9],[&#x27;island&#x27;,3.4,2.6,4.6,3.4],[&#x27;island&#x27;,0.4,0.4,2.8,2.6],
+          [&#x27;island&#x27;,8.6,0.5,4.0,3.0],[&#x27;island&#x27;,8.2,4.4,4.4,4.2],[&#x27;island&#x27;,0.3,5.4,3.0,3.2],
+          [&#x27;quay&#x27;,3.4,2.6,4.6,0.4],[&#x27;pier&#x27;,8.9,3.4,1.6,0.55],[&#x27;pier&#x27;,8.9,5.0,0,0],
+          [&#x27;drydock&#x27;,9.2,5.2,1.4,1.6],[&#x27;road&#x27;,3.6,4.4,4.2,0.24]],
+ fac:{&#x27;Ford Island C2&#x27;:[4.0,3.0,2.4,1.5,19],&#x27;Sub Base Piers&#x27;:[9.1,1.0,1.1,1.5,11,2,&#x27;x&#x27;,1.4],
+      &#x27;Dry Dock Complex&#x27;:[10.8,5.0,1.5,2.2,14],&#x27;Comms / JICPAC&#x27;:[0.6,5.9,2.0,1.4,21],
+      &#x27;Fuel Storage&#x27;:[9.0,7.0,1.8,1.2,9],&#x27;Admin / BEQ&#x27;:[0.7,0.8,2.0,1.4,13]},
+ scenery:[[5.0,4.8,1.8,1.0,10,&#x27;Hangar 6&#x27;,null],[4.0,4.8,0.8,0.7,16,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],
+          [11.8,1.2,0.7,1.2,11,&#x27;Crane&#x27;,null],[1.0,7.6,1.8,0.9,9,&#x27;Support&#x27;,null],
+          [8.8,4.6,1.2,0.8,8,&#x27;Pump Sta&#x27;,null],[6.4,3.1,1.2,1.0,12,&#x27;Ops Bldg&#x27;,null]],
+ zones:[[3.2,2.4,5.0,3.8,&#x27;FORD ISLAND&#x27;],[8.4,0.3,4.4,3.4,&#x27;SUB BASE&#x27;],
+        [9.6,4.6,3.2,3.6,&#x27;DRY DOCK&#x27;],[0.2,5.2,3.2,3.6,&#x27;JICPAC&#x27;]]},
+
+/* River-side patrol air station — long primary runway, very large ramp */
+&#x27;nas-jax&#x27;:{cols:13,rows:8,mg:[10.4,6.4],
+ terrain:[[&#x27;grass&#x27;,0,0,13,8],[&#x27;water&#x27;,0,6.6,13,1.4],[&#x27;runway&#x27;,0.5,0.8,10.4,0.95],
+          [&#x27;taxi&#x27;,1.0,1.95,9.4,0.34],[&#x27;apron&#x27;,1.4,2.5,7.6,1.9],[&#x27;quay&#x27;,0,6.3,11.0,0.4],
+          [&#x27;road&#x27;,0.4,4.9,11.6,0.26]],
+ fac:{&#x27;Primary Runway&#x27;:[1.0,2.7,1.8,1.2,13],&#x27;P-8 Patrol Ramp&#x27;:[3.4,2.7,0.9,1.4,10,3,&#x27;x&#x27;,1.25],
+      &#x27;Hangar Complex&#x27;:[7.4,2.6,1.1,1.5,17,2,&#x27;x&#x27;,1.4],&#x27;Fuel Farm&#x27;:[10.6,2.8,1.6,1.4,11],
+      &#x27;Admin / HQ&#x27;:[2.4,5.4,2.8,1.4,15]},
+ scenery:[[5.8,5.4,1.8,1.1,10,&#x27;Depot Shop&#x27;,null],[8.2,5.5,1.8,1.1,9,&#x27;Warehouse&#x27;,null],
+          [1.6,0.3,0.8,0.6,16,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],[0.5,5.5,1.4,1.0,11,&#x27;Fire Sta&#x27;,null],
+          [3.2,7.0,2.0,0.8,7,&#x27;Boat Ramp&#x27;,null],[11.0,5.6,1.4,1.0,8,&#x27;Gate 1&#x27;,null]],
+ zones:[[0.3,0.5,10.8,1.8,&#x27;PRIMARY RWY&#x27;],[1.2,2.4,5.8,2.2,&#x27;P-8 RAMP&#x27;],
+        [7.0,2.3,5.4,2.2,&#x27;HANGARS&#x27;],[0.3,5.2,8.0,2.4,&#x27;HQ&#x27;]]},
+
+/* Island air station fed by a submarine cable — magazines held far from the flight line */
+&#x27;nas-whidbey&#x27;:{cols:12,rows:8,mg:[8.8,6.2],
+ terrain:[[&#x27;water&#x27;,0,0,12,1.2],[&#x27;water&#x27;,0,6.8,12,1.2],[&#x27;grass&#x27;,0,1.2,12,5.6],
+          [&#x27;runway&#x27;,0.5,1.8,9.4,0.9],[&#x27;taxi&#x27;,1.0,2.9,8.4,0.32],[&#x27;apron&#x27;,1.6,3.4,5.4,1.4],
+          [&#x27;road&#x27;,0.4,5.2,10.4,0.26],[&#x27;cable&#x27;,10.6,0.6,0.22,4.6]],
+ fac:{&#x27;Primary Airfield&#x27;:[1.0,3.5,1.8,1.2,13],&#x27;EA-18G Hangar Row&#x27;:[3.4,3.5,1.0,1.3,16,3,&#x27;x&#x27;,1.3],
+      &#x27;Ordnance Storage&#x27;:[10.2,6.0,1.3,1.0,7],&#x27;Admin / Support&#x27;:[2.4,5.7,2.8,1.3,13]},
+ scenery:[[7.4,3.6,1.4,1.2,11,&#x27;Maint&#x27;,null],[5.8,5.8,1.6,1.1,10,&#x27;Exchange&#x27;,null],
+          [1.6,1.0,0.8,0.6,16,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],[0.5,5.8,1.4,1.0,11,&#x27;Fire Sta&#x27;,null],
+          [10.4,4.2,1.2,1.0,9,&#x27;Cable Hut&#x27;,null],[7.8,6.2,1.4,1.0,8,&#x27;Gate 2&#x27;,null]],
+ zones:[[0.3,1.5,9.8,1.8,&#x27;PRIMARY AIRFIELD&#x27;],[1.2,3.3,6.4,1.8,&#x27;EA-18G ROW&#x27;],
+        [0.3,5.5,7.0,2.2,&#x27;SUPPORT&#x27;],[9.6,5.4,2.2,2.4,&#x27;ORDNANCE&#x27;]]},
+
+/* Dredged basin cut inland — a single feed into a carrier-capable harbour */
+&#x27;ns-mayport&#x27;:{cols:12,rows:8,mg:[2.4,6.6],
+ terrain:[[&#x27;grass&#x27;,0,0,12,8],[&#x27;water&#x27;,4.4,0.6,7.4,4.6],[&#x27;water&#x27;,11.0,0,1.0,8],
+          [&#x27;quay&#x27;,4.2,0.5,0.5,4.8],[&#x27;quay&#x27;,4.2,5.1,7.0,0.5],[&#x27;pier&#x27;,5.0,1.0,0.65,2.6],
+          [&#x27;pier&#x27;,7.0,1.0,0.65,2.6],[&#x27;pier&#x27;,9.0,1.0,0.65,2.6],
+          [&#x27;road&#x27;,0.5,5.9,10.6,0.26],[&#x27;road&#x27;,3.6,0.6,0.26,5.0]],
+ fac:{&#x27;Carrier Pier&#x27;:[4.9,1.4,1.1,1.4,11,2,&#x27;x&#x27;,1.5],&#x27;Destroyer Piers&#x27;:[8.3,1.4,1.0,1.4,10,2,&#x27;x&#x27;,1.4],
+      &#x27;Fuel Farm&#x27;:[0.6,1.4,1.6,1.4,11],&#x27;Admin Complex&#x27;:[1.0,3.6,2.4,1.3,14]},
+ scenery:[[4.6,6.4,2.0,1.1,10,&#x27;Exchange&#x27;,null],[7.0,6.4,1.8,1.1,9,&#x27;Warehouse&#x27;,null],
+          [0.6,6.6,1.4,1.0,11,&#x27;Gate 1&#x27;,null],[2.0,2.0,1.2,1.0,13,&#x27;Ops Bldg&#x27;,null],
+          [9.2,6.2,1.4,1.0,8,&#x27;Housing&#x27;,null],[1.0,5.0,1.6,0.7,8,&#x27;Motor Pool&#x27;,null]],
+ zones:[[4.2,0.4,7.2,2.6,&#x27;CARRIER PIER&#x27;],[4.2,3.0,7.2,2.2,&#x27;DDG PIERS&#x27;],
+        [0.3,1.1,3.4,3.2,&#x27;FUEL FARM&#x27;],[0.3,5.6,10.8,2.2,&#x27;ADMIN&#x27;]]}
+};
+
+/* ══════════════════════════════════════════
+   ISOMETRIC RENDERER
+   ══════════════════════════════════════════ */
+const ICON_MAP=[[/runway|airfield|flight ops/i,&#x27;\u2708&#x27;],[/carrier|pier row|berth|wharf|piers|pier/i,&#x27;\u2693&#x27;],
+ [/ramp|apron/i,&#x27;\u{1F6E9}&#x27;],[/hangar/i,&#x27;\u{1F3D7}&#x27;],[/drydock|dry dock|shipyard/i,&#x27;\u{1F6A2}&#x27;],
+ [/substation|power gen|power sub/i,&#x27;\u26A1&#x27;],[/command|hq|5th fleet|c2|africom|eoc/i,&#x27;\u2318&#x27;],
+ [/intel|isr|scif|jicpac/i,&#x27;\u{1F441}&#x27;],[/comms|nato|radar/i,&#x27;\u{1F4E1}&#x27;],[/fuel|jp-8|avgas|tank farm/i,&#x27;\u26FD&#x27;],
+ [/medical|hospital|nmcp/i,&#x27;\u271A&#x27;],[/ammo|ordnance|weapons|magazine/i,&#x27;\u{1F6E1}&#x27;],[/aegis|missile/i,&#x27;\u{1F3AF}&#x27;],
+ [/drone|uav/i,&#x27;\u{1F6F8}&#x27;],[/sub base|submarine/i,&#x27;\u{1F41F}&#x27;],[/range|test/i,&#x27;\u{1F3AF}&#x27;],[/admin|support|beq/i,&#x27;\u{1F3E2}&#x27;]];
+function iconFor(n){for(const p of ICON_MAP) if(p[0].test(n)) return p[1]; return &#x27;\u25A0&#x27;;}
+
+/* Terrain palette. Each entry: [fill, stroke, alpha] */
+const ISO_TERRAIN={
+  water    :{f:&#x27;#0b2a44&#x27;,s:&#x27;rgba(60,150,200,.30)&#x27;,wave:1},
+  scrub    :{f:&#x27;#1c1e14&#x27;,s:&#x27;rgba(120,120,70,.12)&#x27;},
+  sand     :{f:&#x27;#241d12&#x27;,s:&#x27;rgba(170,140,80,.14)&#x27;},
+  grass    :{f:&#x27;#12200f&#x27;,s:&#x27;rgba(90,150,80,.13)&#x27;},
+  forest   :{f:&#x27;#0d1a10&#x27;,s:&#x27;rgba(70,140,90,.20)&#x27;},
+  playa    :{f:&#x27;#232016&#x27;,s:&#x27;rgba(180,170,120,.18)&#x27;},
+  runway   :{f:&#x27;#15171c&#x27;,s:&#x27;rgba(200,210,225,.34)&#x27;,center:1},
+  taxi     :{f:&#x27;#171a20&#x27;,s:&#x27;rgba(200,210,225,.22)&#x27;},
+  apron    :{f:&#x27;#14181f&#x27;,s:&#x27;rgba(150,165,185,.20)&#x27;},
+  quay     :{f:&#x27;#1a1d23&#x27;,s:&#x27;rgba(150,165,185,.28)&#x27;},
+  pier     :{f:&#x27;#20242c&#x27;,s:&#x27;rgba(170,185,205,.40)&#x27;,deck:1},
+  drydock  :{f:&#x27;#0a1a26&#x27;,s:&#x27;rgba(90,170,210,.45)&#x27;,deck:1},
+  road     :{f:&#x27;#171a1f&#x27;,s:&#x27;rgba(140,150,165,.18)&#x27;},
+  island   :{f:&#x27;#131c14&#x27;,s:&#x27;rgba(90,150,90,.22)&#x27;},
+  tanks    :{f:&#x27;#1b1a16&#x27;,s:&#x27;rgba(180,150,90,.24)&#x27;},
+  perimeter:{f:&#x27;rgba(0,0,0,0)&#x27;,s:&#x27;rgba(212,160,90,.42)&#x27;,dash:1},
+  cable    :{f:&#x27;#101c22&#x27;,s:&#x27;rgba(24,212,248,.35)&#x27;,dash:1}
+};
+const ISO_BC={standard:{t:&#x27;#8a7a5a&#x27;,R:&#x27;#5a5038&#x27;,L:&#x27;#3a3428&#x27;,F:&#x27;#4a4230&#x27;},
+          critical:{t:&#x27;#c0404a&#x27;,R:&#x27;#802838&#x27;,L:&#x27;#601828&#x27;,F:&#x27;#702030&#x27;},
+          vulnerable:{t:&#x27;#c07828&#x27;,R:&#x27;#804818&#x27;,L:&#x27;#602808&#x27;,F:&#x27;#703818&#x27;},
+          support:{t:&#x27;#5c6470&#x27;,R:&#x27;#3c424c&#x27;,L:&#x27;#282c34&#x27;,F:&#x27;#333941&#x27;}};
+const ISO_DARK={t:&#x27;#2a3038&#x27;,R:&#x27;#1c2028&#x27;,L:&#x27;#141820&#x27;,F:&#x27;#181c24&#x27;};
+
+/* iconFor / ICON_MAP arrive with the port above — SYS-03 owns that mapping,
+   and keeping its copy rather than a second one means the recon view and
+   BLACKSTART label the same facility with the same glyph. It is declared at
+   module scope here, which is also what the hover tooltip needs. */
+
+/* ── SYS-01B ↔ SYS-03 JOIN TABLE ──
+   Every SYS-01B installation that also exists in SYS-03 gets the SYS-03
+   site map. Anything unjoined still renders, on a plain default plate,
+   so adding an installation to SYS-01B never breaks the recon view. */
+var SYS03_LINK = (function() {
+  var t = {};
+  INSTALLATIONS.forEach(function(inst) {
+    if (ISO_SITE_MAPS[inst.id]) t[inst.id] = inst.id;
+  });
+  return t;
+})();
+
 var ISO_RECON = (function() {
-  // ── Icon map: facility name keywords → emoji ──
-  var ICON_MAP = [
-    [/runway|airfield|flight ops/i,    &#x27;✈&#x27;],
-    [/carrier|pier row|berth|wharf/i,  &#x27;⚓&#x27;],
-    [/ramp|apron/i,                    &#x27;🛩&#x27;],
-    [/hangar/i,                        &#x27;🏗&#x27;],
-    [/drydock|dry.?dock|shipyard/i,    &#x27;🚢&#x27;],
-    [/substation|power sub/i,          &#x27;⚡&#x27;],
-    [/command|hq|5th fleet|c2/i,       &#x27;⌘&#x27;],
-    [/intel|isr|scif|jicpac/i,         &#x27;👁&#x27;],
-    [/comms|comm|radar|nato/i,         &#x27;📡&#x27;],
-    [/fuel|jp-?8|avgas|tank farm/i,    &#x27;⛽&#x27;],
-    [/medical|hospital|clinic/i,       &#x27;✚&#x27;],
-    [/ammo|ordnance|weapons/i,         &#x27;🛡&#x27;],
-    [/aegis|missile|silo/i,            &#x27;🎯&#x27;],
-    [/drone|uav|uas/i,                 &#x27;🛸&#x27;],
-    [/sub base|submarine/i,            &#x27;🐟&#x27;],
-    [/pier|berth/i,                    &#x27;⚓&#x27;],
-  ];
-  function iconFor(name) {
-    for (var i=0; i&lt;ICON_MAP.length; i++) {
-      if (ICON_MAP[i][0].test(name)) return ICON_MAP[i][1];
-    }
-    return null;
+
+  /* Facilities the site map does not name are auto-placed along the
+     bottom of the plate rather than dropped. */
+  function fallbackBox(k, rows) {
+    return { c: 0.6 + (k % 3) * 2.2, r: rows - 2.2 - Math.floor(k / 3) * 1.4,
+             w: 1.6, d: 1.1, h: 12 };
   }
 
-  // ── Grid positions: back rows first, spread across 9×6 ──
-  var POSITIONS = [
-    [1,0],[4,0],[7,0],          // back row
-    [0,1],[2,1],[5,1],[8,1],    // row 1
-    [1,2],[3,2],[6,2],[8,2],    // row 2
-    [0,3],[2,3],[5,3],[7,3],    // row 3
-    [1,4],[3,4],[6,4],[8,4],    // front row
-  ];
-
-  // ── Height by facility type, with per-index jitter ──
-  var JITTER = [0,4,-2,6,-4,2,-6,4,0,-2,6,-4];
-  function heightFor(type, idx) {
-    var j = JITTER[idx % JITTER.length];
-    if (type === &#x27;critical&#x27;)   return Math.max(24, 30 + j);
-    if (type === &#x27;vulnerable&#x27;) return Math.max(18, 22 + j);
-    return Math.max(10, 12 + Math.abs(j));
-  }
-
-  // ── Zone labels from inst.zones[] ──
-  function zonesFor(inst) {
-    var z = inst.zones &amp;&amp; inst.zones.length &gt;= 4 ? inst.zones : [
-      &#x27;ZONE A&#x27;,&#x27;ZONE B&#x27;,&#x27;ZONE C&#x27;,&#x27;ZONE D&#x27;
-    ];
-    return [
-      [0,0,3,3, z[0]],
-      [5,0,3,3, z[1]],
-      [0,3,3,3, z[2]],
-      [5,3,3,3, z[3]],
-    ];
-  }
-
-  // ── META: preserve original lat/lon/tileZoom for original 5 sites ──
+  // ── META: preserve original lat/lon/tileZoom for the original 5 sites ──
   var META = {
     &#x27;naws-cl&#x27;: {lat:35.6855, lon:-117.6884, tileZoom:15},
     &#x27;ns-norf&#x27;: {lat:36.9520, lon:-76.3280,  tileZoom:15},
@@ -9746,41 +10072,90 @@ var ISO_RECON = (function() {
 
   INSTALLATIONS.forEach(function(inst) {
     var meta = META[inst.id] || {lat:inst.lat, lon:inst.lon, tileZoom:15};
+    var M = ISO_SITE_MAPS[SYS03_LINK[inst.id]] ||
+            {cols:10, rows:7, terrain:[], fac:{}, scenery:[], zones:[]};
     var facilities = inst.facilities || [];
+    var buildings = [], unmapped = [];
 
-    // Sort: critical first → vulnerable → standard (fills back rows with key assets)
-    var sorted = facilities.slice().sort(function(a,b) {
-      var ord = {critical:0, vulnerable:1, standard:2};
-      return (ord[a.type]||2) - (ord[b.type]||2);
+    facilities.forEach(function(fac, i) {
+      var box = M.fac &amp;&amp; M.fac[fac.name];
+      if (!box) { unmapped.push(i); return; }
+      // [c, r, w, d, h, copies, axis, gap] — a footprint may repeat, which is
+      // how pier rows and hangar lines are drawn as separate structures
+      var n = box[5] || 1;
+      var axis = box[6] || &#x27;x&#x27;;
+      var gap = box[7] != null ? box[7] : (axis === &#x27;x&#x27; ? box[2] * 1.35 : box[3] * 1.35);
+      for (var k = 0; k &lt; n; k++) {
+        buildings.push({
+          c: box[0] + (axis === &#x27;x&#x27; ? k * gap : 0),
+          r: box[1] + (axis === &#x27;y&#x27; ? k * gap : 0),
+          w: box[2], d: box[3], h: box[4], part: k, parts: n,
+          type: fac.type, icon: iconFor(fac.name), name: fac.name, fi: i
+        });
+      }
     });
 
-    // Map each facility to a grid position
-    var buildings = sorted.map(function(fac, i) {
-      var pos = POSITIONS[i] || [(i*2) % 9, Math.floor(i/4.5) % 6];
-      return [pos[0], pos[1], heightFor(fac.type, i), fac.type, iconFor(fac.name), fac.name];
+    unmapped.forEach(function(i, k) {
+      var fac = facilities[i], fb = fallbackBox(k, M.rows);
+      buildings.push({c:fb.c, r:fb.r, w:fb.w, d:fb.d, h:fb.h, part:0, parts:1,
+                      type:fac.type, icon:iconFor(fac.name), name:fac.name, fi:i});
     });
 
-    // Pad with filler std buildings to fill the grid (min 10 buildings for visual density)
-    var usedPos = {};
-    buildings.forEach(function(b){ usedPos[b[0]+&#x27;,&#x27;+b[1]] = true; });
-    var fillers = POSITIONS.filter(function(p){ return !usedPos[p[0]+&#x27;,&#x27;+p[1]]; });
-    var needed = Math.max(0, 10 - buildings.length);
-    for (var f = 0; f &lt; needed &amp;&amp; f &lt; fillers.length; f++) {
-      var fp = fillers[f];
-      buildings.push([fp[0], fp[1], 10 + (f%3)*2, &#x27;std&#x27;, null, null]);
-    }
+    // scenery reads as base fabric — support colour, no facility record behind it
+    (M.scenery || []).forEach(function(x) {
+      buildings.push({c:x[0], r:x[1], w:x[2], d:x[3], h:x[4], part:0, parts:1,
+                      type:&#x27;support&#x27;, icon:x[6] || null, name:x[5], fi:-1});
+    });
 
     out[inst.id] = {
-      lat:       meta.lat,
-      lon:       meta.lon,
-      tileZoom:  meta.tileZoom,
+      lat: meta.lat, lon: meta.lon, tileZoom: meta.tileZoom,
+      cols: M.cols, rows: M.rows,
       buildings: buildings,
-      zones:     zonesFor(inst)
+      terrain: (M.terrain || []).map(function(t){ return t.slice(); }),
+      zones: (M.zones || []).map(function(z){ return z.slice(); }),
+      linked: !!SYS03_LINK[inst.id]
     };
+  });
+
+  /* ── FACILITY SPREAD ──
+     The templates are laid out tight, which packs neighbouring facilities
+     against each other. Scale centre-to-centre spacing outward from the plate
+     centre while leaving each footprint at its original size, so neighbours
+     pull apart instead of sharing an edge. Terrain and zones scale with it so
+     facilities stay on their ground, and the plate grows too — the renderer
+     fits the plate to the canvas, so this lands as clear space rather than as
+     a larger, more heavily cropped site. */
+  var SPREAD = 1.2;
+  Object.keys(out).forEach(function(id) {
+    var L = out[id];
+    var ocx = L.cols / 2, ocy = L.rows / 2;
+    var cols2 = Math.round(L.cols * SPREAD), rows2 = Math.round(L.rows * SPREAD);
+    var ncx = cols2 / 2, ncy = rows2 / 2;
+    var sx = function(v){ return ncx + (v - ocx) * SPREAD; };
+    var sy = function(v){ return ncy + (v - ocy) * SPREAD; };
+
+    L.buildings.forEach(function(b){ b.c = sx(b.c); b.r = sy(b.r); });
+    L.terrain = L.terrain.map(function(t) {
+      var q = t.slice(); q[1] = sx(t[1]); q[2] = sy(t[2]);
+      q[3] = t[3] * SPREAD; q[4] = t[4] * SPREAD; return q;
+    });
+    L.zones = L.zones.map(function(z) {
+      var q = z.slice(); q[0] = sx(z[0]); q[1] = sy(z[1]);
+      q[2] = z[2] * SPREAD; q[3] = z[3] * SPREAD; return q;
+    });
+    L.cols = cols2; L.rows = rows2;
   });
 
   return out;
 })();
+
+/* Centre of a drop zone, used when an asset is dropped without a grid cell */
+function isoZoneCell(instId, idx) {
+  var rd = ISO_RECON[instId];
+  if (!rd || !rd.zones.length) return {c:3, r:3, zone:&#x27;DROP ZONE&#x27;};
+  var z = rd.zones[idx % rd.zones.length];
+  return {c: z[0] + z[2]/2 - 0.6, r: z[1] + z[3]/2 - 0.6, zone: z[4]};
+}
 
 // Tile math helpers
 function latLonToTile(lat, lon, z) {
@@ -9818,11 +10193,15 @@ var _iso = {
   hitBoxes:[]       // [{x1,y1,x2,y2,facName,type}] built each frame
 };
 
+/* Turntable projection. Yaw is applied to the grid coordinates first and the
+   isometric squash second, so the ground plane stays level and building
+   extrusion stays vertical however far the camera swings round. Rotating the
+   projected image instead — which is what this used to do — tips the horizon
+   and shears the boxes. */
 function isoProject(c, r, tw, th, angle) {
-  var bx = (c - r) * tw / 2;
-  var by = (c + r) * th / 2;
-  var cos = Math.cos(angle), sin = Math.sin(angle);
-  return { x: bx * cos - by * sin, y: bx * sin + by * cos };
+  var co = Math.cos(angle), si = Math.sin(angle);
+  var cr = c * co - r * si, rr = c * si + r * co;
+  return { x: (cr - rr) * tw / 2, y: (cr + rr) * th / 2 };
 }
 
 // Load 3x3 satellite tiles for the installation into an offscreen canvas
@@ -9867,16 +10246,14 @@ function renderPipIso(inst) {
   function draw(satOc) {
     var ctx = canvas.getContext(&#x27;2d&#x27;);
     ctx.clearRect(0, 0, W, H);
-    _iso.hitBoxes = [];  // reset hit targets each frame
+    _iso.hitBoxes = [];
 
     // ── SATELLITE BACKGROUND ──
     if (satOc) {
-      // Scale/center the sat image to fill the canvas with slight pan offset
       var scale = Math.max(W / satOc.width, H / satOc.height) * _iso.zoom * 0.9;
       var sx = W/2 - satOc.width*scale/2 + _iso.pan.x * 0.3;
       var sy = H/2 - satOc.height*scale/2 + _iso.pan.y * 0.3;
       ctx.drawImage(satOc, sx, sy, satOc.width*scale, satOc.height*scale);
-      // Dark tactical overlay on top of sat
       ctx.fillStyle = &#x27;rgba(4,10,22,0.62)&#x27;;
       ctx.fillRect(0, 0, W, H);
     } else {
@@ -9884,202 +10261,228 @@ function renderPipIso(inst) {
       ctx.fillRect(0, 0, W, H);
     }
 
-    // ── ISO 3D OVERLAY ──
     var rd = ISO_RECON[inst.id];
-    // BASE sized so 9×6 grid fills ~85% of canvas width
-    var BASE = Math.max(44, W / 8.5);
-    var TW = BASE * _iso.zoom;
+    if (!rd) { hud(ctx); return; }
+
+    // ── PLATE FRAMING ──
+    // Tile size comes from the site&#x27;s own extent, so a 17-column air station
+    // and a 10-column campus both land inside the inset at rest. The projected
+    // plate spans (COLS+ROWS)*TW/2 across and half that down, so these two
+    // coefficients fit the whole site in the inset at zoom 1 with margin left
+    // for extrusion — SYS-03 deliberately overflows its much larger stage, but
+    // in a 420px inset that just crops the site.
+    var COLS = rd.cols, ROWS = rd.rows, span = COLS + ROWS;
+    var TW = Math.min(1.90 * W / span, 3.10 * H / span) * _iso.zoom;
     var TH = TW * 0.5;
-    var angle = _iso.angle;
-    var COLS = 9, ROWS = 6;
-    // Center the asymmetric iso grid:
-    // x-span: -ROWS*TW/2 to COLS*TW/2 → x-center offset = (COLS-ROWS)*TW/4 = 0.75*TW
-    // y-span: 0 to (COLS+ROWS)*TH/2 = 7.5*TH → y-center = 3.75*TH = 1.875*TW
-    var OX = W / 2 - 0.75 * TW + _iso.pan.x;
-    var OY = H * 0.48 - 1.875 * TW + _iso.pan.y;
+    var ang = _iso.angle;
+    var ctr = isoProject(COLS/2, ROWS/2, TW, TH, ang);
+    var OX = W/2 - ctr.x + _iso.pan.x;
+    var OY = H*0.53 - ctr.y + _iso.pan.y;
 
     function ts(c, r) {
-      var p = isoProject(c, r, TW, TH, angle);
+      var p = isoProject(c, r, TW, TH, ang);
       return { x: OX + p.x, y: OY + p.y };
     }
+    function quad(c, r, w, d) {
+      return [ts(c,r), ts(c+w,r), ts(c+w,r+d), ts(c,r+d)];
+    }
+    function fillQ(q, fill, stroke, lw) {
+      ctx.beginPath(); ctx.moveTo(q[0].x, q[0].y);
+      for (var i = 1; i &lt; 4; i++) ctx.lineTo(q[i].x, q[i].y);
+      ctx.closePath();
+      if (fill)   { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1; ctx.stroke(); }
+    }
 
-    // Ground grid (semi-transparent over sat)
+    // ── GROUND PLATE ──
+    fillQ(quad(0, 0, COLS, ROWS), &#x27;rgba(9,20,38,0.42)&#x27;, null);
     for (var gr = 0; gr &lt; ROWS; gr++) {
       for (var gc = 0; gc &lt; COLS; gc++) {
-        var p0=ts(gc,gr), p1=ts(gc+1,gr), p2=ts(gc+1,gr+1), p3=ts(gc,gr+1);
-        ctx.beginPath();
-        ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y);
-        ctx.lineTo(p2.x,p2.y); ctx.lineTo(p3.x,p3.y); ctx.closePath();
-        ctx.fillStyle = (gc+gr)%2===0 ? &#x27;rgba(10,24,50,0.32)&#x27; : &#x27;rgba(6,16,36,0.28)&#x27;;
-        ctx.fill();
-        ctx.strokeStyle = &#x27;rgba(24,212,248,0.18)&#x27;; ctx.lineWidth = 0.5; ctx.stroke();
+        fillQ(quad(gc, gr, 1, 1),
+          (gc+gr) % 2 === 0 ? &#x27;rgba(10,24,50,0.26)&#x27; : &#x27;rgba(6,16,36,0.22)&#x27;,
+          &#x27;rgba(24,212,248,0.11)&#x27;, 0.5);
       }
     }
 
-    // Road lines
-    ctx.strokeStyle = &#x27;rgba(220,240,255,0.22)&#x27;; ctx.lineWidth = 1.5;
-    [2,5].forEach(function(row){
-      ctx.beginPath(); var a=ts(0,row),b=ts(COLS,row);
-      ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
-    });
-    [3,6].forEach(function(col){
-      ctx.beginPath(); var a=ts(col,0),b=ts(col,ROWS);
-      ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
-    });
-
-    // Drop zones
-    if (rd) {
-      ctx.setLineDash([4,3]); ctx.strokeStyle=&#x27;rgba(77,184,138,0.8)&#x27;; ctx.lineWidth=1.2;
-      rd.zones.forEach(function(z){
-        var zc=z[0],zr=z[1],zw=z[2],zh=z[3],zlbl=z[4];
-        var c0=ts(zc,zr),c1=ts(zc+zw,zr),c2=ts(zc+zw,zr+zh),c3=ts(zc,zr+zh);
-        ctx.beginPath(); ctx.moveTo(c0.x,c0.y); ctx.lineTo(c1.x,c1.y);
-        ctx.lineTo(c2.x,c2.y); ctx.lineTo(c3.x,c3.y); ctx.closePath();
-        ctx.fillStyle=&#x27;rgba(77,184,138,0.06)&#x27;; ctx.fill(); ctx.stroke();
-        var mx=(c0.x+c1.x+c2.x+c3.x)/4, my=(c0.y+c1.y+c2.y+c3.y)/4;
-        ctx.setLineDash([]);
-        var zfs = Math.max(7, Math.min(TW * 0.17, 11));
-        ctx.font = &#x27;bold &#x27;+zfs+&#x27;px &quot;Share Tech Mono&quot;&#x27;;
-        ctx.textAlign=&#x27;center&#x27;; ctx.textBaseline=&#x27;middle&#x27;;
-        var zlblW = ctx.measureText(zlbl).width;
-        ctx.fillStyle = &#x27;rgba(4,10,22,0.6)&#x27;;
-        ctx.fillRect(mx - zlblW/2 - 3, my - zfs/2 - 2, zlblW+6, zfs+4);
-        ctx.fillStyle = &#x27;rgba(77,184,138,0.75)&#x27;;
-        ctx.fillText(zlbl, mx, my);
-        ctx.setLineDash([4,3]);
-      });
-      ctx.setLineDash([]);
-    }
-
-    // Draw a 3D building box
-    function drawBox(c, r, h, topC, sideR, sideL, frontC, label, labelColor) {
-      var p0=ts(c,r), p1=ts(c+1,r), p2=ts(c+1,r+1), p3=ts(c,r+1);
-      var hv = {x:0, y:-h*_iso.zoom*0.85};
-      // top
-      ctx.beginPath();
-      ctx.moveTo(p0.x+hv.x,p0.y+hv.y); ctx.lineTo(p1.x+hv.x,p1.y+hv.y);
-      ctx.lineTo(p2.x+hv.x,p2.y+hv.y); ctx.lineTo(p3.x+hv.x,p3.y+hv.y);
-      ctx.closePath(); ctx.fillStyle=topC; ctx.fill();
-      ctx.strokeStyle=&#x27;rgba(255,255,255,0.15)&#x27;; ctx.lineWidth=0.5; ctx.stroke();
-      // right face
-      ctx.beginPath();
-      ctx.moveTo(p1.x+hv.x,p1.y+hv.y); ctx.lineTo(p2.x+hv.x,p2.y+hv.y);
-      ctx.lineTo(p2.x,p2.y); ctx.lineTo(p1.x,p1.y);
-      ctx.closePath(); ctx.fillStyle=sideR; ctx.fill();
-      // left face
-      ctx.beginPath();
-      ctx.moveTo(p2.x+hv.x,p2.y+hv.y); ctx.lineTo(p3.x+hv.x,p3.y+hv.y);
-      ctx.lineTo(p3.x,p3.y); ctx.lineTo(p2.x,p2.y);
-      ctx.closePath(); ctx.fillStyle=sideL; ctx.fill();
-      // front face
-      ctx.beginPath();
-      ctx.moveTo(p0.x+hv.x,p0.y+hv.y); ctx.lineTo(p1.x+hv.x,p1.y+hv.y);
-      ctx.lineTo(p1.x,p1.y); ctx.lineTo(p0.x,p0.y);
-      ctx.closePath(); ctx.fillStyle=frontC; ctx.fill();
-      if (label) {
-        var cx=(p0.x+p1.x+p2.x+p3.x)/4+hv.x;
-        var cy=(p0.y+p1.y+p2.y+p3.y)/4+hv.y;
-        var iconSz = Math.max(11, TW*0.30);
-        ctx.save(); ctx.shadowBlur=0;
-        ctx.font=&#x27;bold &#x27;+iconSz+&#x27;px sans-serif&#x27;;
-        ctx.textAlign=&#x27;center&#x27;; ctx.textBaseline=&#x27;middle&#x27;;
-        ctx.fillStyle=labelColor||&#x27;#fff&#x27;;
-        ctx.fillText(label, cx, cy);
+    // ── TERRAIN ──
+    rd.terrain.forEach(function(t) {
+      var k = ISO_TERRAIN[t[0]];
+      if (!k || t[3] &lt;= 0 || t[4] &lt;= 0) return;
+      var q = quad(t[1], t[2], t[3], t[4]);
+      if (k.dash) { ctx.save(); ctx.setLineDash([5,4]); fillQ(q, k.f, k.s, 1.2); ctx.restore(); }
+      else fillQ(q, k.f, k.s, k.deck ? 1.3 : 0.8);
+      if (k.wave) {                       // a few slack lines so water reads as water
+        ctx.save(); ctx.strokeStyle = &#x27;rgba(80,170,215,.13)&#x27;; ctx.lineWidth = 0.8;
+        for (var i = 1; i &lt; 4; i++) {
+          var rr = t[2] + t[4] * i / 4;
+          var w1 = ts(t[1] + t[3]*0.06, rr), w2 = ts(t[1] + t[3]*0.94, rr);
+          ctx.beginPath(); ctx.moveTo(w1.x, w1.y); ctx.lineTo(w2.x, w2.y); ctx.stroke();
+        }
         ctx.restore();
       }
-    }
-
-    // Paint buildings (painter&#x27;s order: back rows first)
-    var BCOLORS = {
-      std:   {top:&#x27;#8a7a5a&#x27;,sR:&#x27;#5a5038&#x27;,sL:&#x27;#3a3428&#x27;,fr:&#x27;#4a4230&#x27;},
-      critical:{top:&#x27;#c0404a&#x27;,sR:&#x27;#802838&#x27;,sL:&#x27;#601828&#x27;,fr:&#x27;#702030&#x27;},
-      vulnerable:{top:&#x27;#c07828&#x27;,sR:&#x27;#804818&#x27;,sL:&#x27;#602808&#x27;,fr:&#x27;#703818&#x27;}
-    };
-
-    if (rd) {
-      // Sort buildings back-to-front (painter&#x27;s algorithm)
-      var sorted = rd.buildings.slice().sort(function(a,b){ return (a[0]+a[1])-(b[0]+b[1]); });
-      sorted.forEach(function(b){
-        var c=b[0],r=b[1],h=b[2],type=b[3],icon=b[4],facName=b[5];
-        var bc = BCOLORS[type] || BCOLORS.std;
-        var labelColor = type===&#x27;critical&#x27;?&#x27;#ffaaaa&#x27;:type===&#x27;vulnerable&#x27;?&#x27;#ffcc88&#x27;:&#x27;#ccddee&#x27;;
-        // Draw 3D box with icon on top face
-        // Glow for critical/vulnerable
-        if (type === &#x27;critical&#x27; || type === &#x27;vulnerable&#x27;) {
-          ctx.save();
-          ctx.shadowColor = type===&#x27;critical&#x27; ? &#x27;rgba(224,85,85,0.7)&#x27; : &#x27;rgba(212,160,90,0.6)&#x27;;
-          ctx.shadowBlur = 10 * _iso.zoom;
-        }
-        drawBox(c,r,h, bc.top,bc.sR,bc.sL,bc.fr, icon, labelColor);
-        if (type === &#x27;critical&#x27; || type === &#x27;vulnerable&#x27;) { ctx.restore(); }
-        // Store screen bounding box for hover hit-test
-        (function(bc_,rc_,hc_,fc_,nc_) {
-          var pa=ts(bc_,rc_), pb=ts(bc_+1,rc_), pc_=ts(bc_+1,rc_+1), pd=ts(bc_,rc_+1);
-          var hv_y = -hc_*_iso.zoom*0.85;
-          var xs = [pa.x,pb.x,pc_.x,pd.x];
-          var ys = [pa.y+hv_y, pb.y+hv_y, pc_.y+hv_y, pd.y+hv_y, pa.y, pb.y, pc_.y, pd.y];
-          _iso.hitBoxes.push({
-            x1: Math.min.apply(null,xs)-2, x2: Math.max.apply(null,xs)+2,
-            y1: Math.min.apply(null,ys)-2, y2: Math.max.apply(null,ys)+2,
-            facName: nc_, type: fc_
-          });
-        })(c,r,h,type,facName);
-        // Draw facility name tag below building (when zoom allows)
-        if (facName &amp;&amp; _iso.zoom &gt;= 0.45) {
-          var bCtr = ts(c+0.5, r+0.5);
-          // Tag sits just below the ground tile
-          var tagY = bCtr.y + TH * 0.6;
-          var fs2 = Math.max(7, Math.min(TW * 0.13, 10));
-          ctx.font = fs2+&#x27;px &quot;Share Tech Mono&quot;&#x27;;
-          ctx.textAlign = &#x27;center&#x27;;
-          ctx.textBaseline = &#x27;top&#x27;;
-          var shortName = facName.length &gt; 16 ? facName.slice(0,15)+&#x27;…&#x27; : facName;
-          var tw2 = ctx.measureText(shortName).width;
-          // dark pill background
-          ctx.fillStyle = &#x27;rgba(4,10,22,0.72)&#x27;;
-          ctx.beginPath();
-          ctx.roundRect ? ctx.roundRect(bCtr.x-tw2/2-2, tagY-1, tw2+4, fs2+4, 2)
-                        : ctx.rect(bCtr.x-tw2/2-2, tagY-1, tw2+4, fs2+4);
-          ctx.fill();
-          ctx.fillStyle = labelColor;
-          ctx.fillText(shortName, bCtr.x, tagY+1);
-        }
-      });
-    }
-
-    // Placed assets
-    isoPlaced.forEach(function(pa){
-      var ac = ASSET_COLORS[pa.type];
-      var h = pa.type===&#x27;SMR&#x27;?28:pa.type===&#x27;BESS&#x27;?18:14;
-      ctx.save(); ctx.shadowColor=ac.border; ctx.shadowBlur=14;
-      drawBox(pa.c,pa.r,h, ac.fill,darken(ac.fill,.6),darken(ac.fill,.4),darken(ac.fill,.5));
-      ctx.restore();
-      var ctr=ts(pa.c+0.5,pa.r+0.5);
-      ctx.font=&#x27;bold &#x27;+Math.max(7,TW*0.2)+&#x27;px &quot;Share Tech Mono&quot;&#x27;;
-      ctx.textAlign=&#x27;center&#x27;; ctx.textBaseline=&#x27;middle&#x27;;
-      ctx.fillStyle=ac.border;
-      ctx.fillText(pa.type.slice(0,4), ctr.x, ctr.y - h*_iso.zoom*0.8);
+      if (k.center) {                     // runway centreline
+        ctx.save(); ctx.setLineDash([TW*0.16, TW*0.13]);
+        ctx.strokeStyle = &#x27;rgba(230,238,250,.32)&#x27;; ctx.lineWidth = 1.1;
+        var horiz = t[3] &gt;= t[4];
+        var r1 = horiz ? ts(t[1]+0.15, t[2]+t[4]/2) : ts(t[1]+t[3]/2, t[2]+0.15);
+        var r2 = horiz ? ts(t[1]+t[3]-0.15, t[2]+t[4]/2) : ts(t[1]+t[3]/2, t[2]+t[4]-0.15);
+        ctx.beginPath(); ctx.moveTo(r1.x, r1.y); ctx.lineTo(r2.x, r2.y); ctx.stroke();
+        ctx.restore();
+      }
     });
 
-    // ── HUD ──
-    ctx.shadowBlur=0;
-    var fs = Math.max(9, W*0.024);
-    ctx.font=&#x27;bold &#x27;+fs+&#x27;px &quot;Orbitron&quot;&#x27;;
-    ctx.textAlign=&#x27;left&#x27;; ctx.textBaseline=&#x27;top&#x27;;
-    ctx.fillStyle=&#x27;rgba(240,192,64,0.92)&#x27;;
-    ctx.fillText(&#x27;SCORE: &#x27;+isoScore+&#x27;/100&#x27;, 6, 6);
-    ctx.textAlign=&#x27;right&#x27;;
-    ctx.font=&#x27;bold &#x27;+Math.max(8,W*0.019)+&#x27;px &quot;Orbitron&quot;&#x27;;
-    ctx.fillStyle=threatCol(inst.threat);
-    ctx.fillText(&#x27;THREAT: &#x27;+inst.threat, W-6, 6);
-    ctx.font=Math.max(7,W*0.015)+&#x27;px &quot;Share Tech Mono&quot;&#x27;;
-    ctx.textAlign=&#x27;center&#x27;; ctx.fillStyle=&#x27;rgba(110,144,176,0.45)&#x27;;
-    ctx.fillText(&#x27;DRAG PAN · SCROLL ZOOM · RIGHT-DRAG ORBIT · DBL-CLICK RESET&#x27;, W/2, H-12);
+    // ── ZONE ENVELOPES ──
+    // Labels are collected and drawn last so buildings never bury them.
+    var labels = [];
+    ctx.save(); ctx.setLineDash([4,3]);
+    rd.zones.forEach(function(z) {
+      fillQ(quad(z[0], z[1], z[2], z[3]), &#x27;rgba(77,184,138,0.055)&#x27;, &#x27;rgba(77,184,138,0.48)&#x27;, 1.1);
+    });
+    ctx.setLineDash([]); ctx.restore();
+    rd.zones.forEach(function(z) {
+      var m = ts(z[0] + z[2]/2, z[1] + z[3]/2);
+      labels.push({x:m.x, y:m.y, text:z[4], zone:true, pri:3, col:&#x27;rgba(77,184,138,0.72)&#x27;});
+    });
 
-    // Installation name watermark
-    ctx.font=&#x27;bold &#x27;+Math.max(10,W*0.028)+&#x27;px &quot;Orbitron&quot;&#x27;;
-    ctx.textAlign=&#x27;left&#x27;; ctx.textBaseline=&#x27;bottom&#x27;;
-    ctx.fillStyle=&#x27;rgba(24,212,248,0.3)&#x27;;
+    // ── EXTRUDED BOX ──
+    // Which two walls face the camera changes as it orbits, so the walls are
+    // picked from the projected footprint rather than hard-coded. A wall whose
+    // midpoint sits behind the footprint centre is hidden by the box itself and
+    // is skipped; the near pair draws back-to-front, roof last.
+    function box(c, r, w, d, h, col) {
+      var q = quad(c, r, w, d);
+      var hv = -h * _iso.zoom * 0.85 * (TW / 48);
+      var fcx = (q[0].x+q[1].x+q[2].x+q[3].x)/4;
+      var fcy = (q[0].y+q[1].y+q[2].y+q[3].y)/4;
+      var walls = [];
+      for (var wi = 0; wi &lt; 4; wi++) {
+        var wa = q[wi], wb = q[(wi+1)%4];
+        walls.push({a:wa, b:wb, mx:(wa.x+wb.x)/2, my:(wa.y+wb.y)/2});
+      }
+      walls.sort(function(u,v){ return u.my - v.my; });
+      walls.forEach(function(wl) {
+        if (wl.my &lt;= fcy) return;
+        ctx.beginPath();
+        ctx.moveTo(wl.a.x, wl.a.y + hv); ctx.lineTo(wl.b.x, wl.b.y + hv);
+        ctx.lineTo(wl.b.x, wl.b.y);      ctx.lineTo(wl.a.x, wl.a.y);
+        ctx.closePath();
+        ctx.fillStyle = wl.mx &gt;= fcx ? col.R : col.L; ctx.fill();
+      });
+      ctx.beginPath();
+      ctx.moveTo(q[0].x, q[0].y+hv); ctx.lineTo(q[1].x, q[1].y+hv);
+      ctx.lineTo(q[2].x, q[2].y+hv); ctx.lineTo(q[3].x, q[3].y+hv);
+      ctx.closePath();
+      ctx.fillStyle = col.t; ctx.fill();
+      ctx.strokeStyle = &#x27;rgba(255,255,255,0.13)&#x27;; ctx.lineWidth = 0.5; ctx.stroke();
+      return {q:q, hv:hv, cx:fcx, cy:fcy + hv};
+    }
+
+    // ── BUILDINGS, painter&#x27;s order by projected depth of the footprint centre ──
+    // Sorting on raw c+r only holds while the camera never moves.
+    var order = rd.buildings.slice().sort(function(x, y) {
+      return ts(x.c + x.w/2, x.r + x.d/2).y - ts(y.c + y.w/2, y.r + y.d/2).y;
+    });
+
+    order.forEach(function(b) {
+      var support = b.type === &#x27;support&#x27;;
+      var col = ISO_BC[b.type] || ISO_BC.standard;
+      var glow = !support &amp;&amp; (b.type === &#x27;critical&#x27; || b.type === &#x27;vulnerable&#x27;);
+      if (glow) {
+        ctx.save();
+        ctx.shadowColor = b.type === &#x27;critical&#x27; ? &#x27;rgba(224,85,85,0.6)&#x27; : &#x27;rgba(212,160,90,0.5)&#x27;;
+        ctx.shadowBlur = 10 * _iso.zoom;
+      }
+      var g = box(b.c, b.r, b.w, b.d, b.h, col);
+      if (glow) ctx.restore();
+
+      if (b.icon) {
+        var isz = Math.max(10, Math.min(TW * 0.30 * Math.min(b.w, b.d) + 6, 30));
+        ctx.save(); ctx.shadowBlur = 0;
+        ctx.font = &#x27;bold &#x27; + isz + &#x27;px sans-serif&#x27;;
+        ctx.textAlign = &#x27;center&#x27;; ctx.textBaseline = &#x27;middle&#x27;;
+        ctx.globalAlpha = support ? 0.55 : 1;
+        ctx.fillStyle = b.type === &#x27;critical&#x27; ? &#x27;#ffaaaa&#x27; :
+                        b.type === &#x27;vulnerable&#x27; ? &#x27;#ffcc88&#x27; :
+                        support ? &#x27;#93a3b4&#x27; : &#x27;#ccddee&#x27;;
+        ctx.fillText(b.icon, g.cx, g.cy);
+        ctx.restore();
+      }
+
+      if (b.name &amp;&amp; (b.part || 0) === 0) {
+        var lc = ts(b.c + b.w/2, b.r + b.d/2);
+        labels.push({
+          x: lc.x, y: lc.y + TH * 0.40 * Math.max(b.w, b.d), text: b.name, support: support,
+          pri: b.type === &#x27;critical&#x27; ? 0 : b.type === &#x27;vulnerable&#x27; ? 1 : support ? 4 : 2,
+          col: b.type === &#x27;critical&#x27; ? &#x27;#ffaaaa&#x27; : b.type === &#x27;vulnerable&#x27; ? &#x27;#ffcc88&#x27; :
+               support ? &#x27;#7b8896&#x27; : &#x27;#ccddee&#x27;
+        });
+      }
+
+      // hover hit target — scenery carries no facility record, so no tooltip
+      var xs = [g.q[0].x, g.q[1].x, g.q[2].x, g.q[3].x];
+      var ys = [g.q[0].y+g.hv, g.q[1].y+g.hv, g.q[2].y+g.hv, g.q[3].y+g.hv,
+                g.q[0].y, g.q[1].y, g.q[2].y, g.q[3].y];
+      _iso.hitBoxes.push({
+        x1: Math.min.apply(null, xs) - 2, x2: Math.max.apply(null, xs) + 2,
+        y1: Math.min.apply(null, ys) - 2, y2: Math.max.apply(null, ys) + 2,
+        facName: b.fi &gt;= 0 ? b.name : null, type: b.type
+      });
+    });
+
+    // ── PLACED CFE ASSETS ──
+    isoPlaced.forEach(function(pa) {
+      var ac = ASSET_COLORS[pa.type];
+      var h = pa.type === &#x27;SMR&#x27; ? 30 : pa.type === &#x27;BESS&#x27; ? 20 : 16;
+      ctx.save(); ctx.shadowColor = ac.border; ctx.shadowBlur = 14;
+      var g = box(pa.c, pa.r, 1.2, 1.2, h,
+        {t:ac.fill, R:darken(ac.fill,.6), L:darken(ac.fill,.4)});
+      ctx.restore();
+      ctx.strokeStyle = ac.border; ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(g.q[0].x, g.q[0].y+g.hv); ctx.lineTo(g.q[1].x, g.q[1].y+g.hv);
+      ctx.lineTo(g.q[2].x, g.q[2].y+g.hv); ctx.lineTo(g.q[3].x, g.q[3].y+g.hv);
+      ctx.closePath(); ctx.stroke();
+      labels.push({x:g.cx, y:g.cy + TH*0.5, text:pa.type, pri:-1, col:ac.border});
+    });
+
+    // ── LABEL PASS — highest priority first, skip anything that would collide ──
+    var placed = [];
+    labels.sort(function(a,b){ return a.pri - b.pri; }).forEach(function(l) {
+      if (l.support &amp;&amp; _iso.zoom &lt; 0.8) return;
+      var fs = l.zone ? Math.max(7, Math.min(TW*0.16, 11))
+                      : Math.max(6.5, Math.min(TW*0.125, 10)) * (l.support ? 0.88 : 1);
+      ctx.font = (l.zone ? &#x27;bold &#x27; : &#x27;&#x27;) + fs + &#x27;px &quot;Share Tech Mono&quot;&#x27;;
+      var txt = l.text.length &gt; 18 ? l.text.slice(0,17) + &#x27;\u2026&#x27; : l.text;
+      var tw2 = ctx.measureText(txt).width;
+      var bx = {x1:l.x - tw2/2 - 3, x2:l.x + tw2/2 + 3, y1:l.y - 2, y2:l.y + fs + 3};
+      for (var i = 0; i &lt; placed.length; i++) {
+        var p = placed[i];
+        if (bx.x1 &lt; p.x2 &amp;&amp; bx.x2 &gt; p.x1 &amp;&amp; bx.y1 &lt; p.y2 &amp;&amp; bx.y2 &gt; p.y1) return;
+      }
+      placed.push(bx);
+      ctx.textAlign = &#x27;center&#x27;; ctx.textBaseline = &#x27;top&#x27;;
+      ctx.fillStyle = l.zone ? &#x27;rgba(4,10,22,0.55)&#x27; : &#x27;rgba(4,10,22,0.80)&#x27;;
+      ctx.fillRect(bx.x1, bx.y1, bx.x2-bx.x1, bx.y2-bx.y1);
+      ctx.fillStyle = l.col; ctx.fillText(txt, l.x, l.y);
+    });
+
+    hud(ctx);
+  }
+
+  function hud(ctx) {
+    ctx.shadowBlur = 0;
+    var fs = Math.max(9, W*0.024);
+    ctx.font = &#x27;bold &#x27; + fs + &#x27;px &quot;Orbitron&quot;&#x27;;
+    ctx.textAlign = &#x27;left&#x27;; ctx.textBaseline = &#x27;top&#x27;;
+    ctx.fillStyle = &#x27;rgba(240,192,64,0.92)&#x27;;
+    ctx.fillText(&#x27;SCORE: &#x27; + isoScore + &#x27;/100&#x27;, 6, 6);
+    ctx.textAlign = &#x27;right&#x27;;
+    ctx.font = &#x27;bold &#x27; + Math.max(8, W*0.019) + &#x27;px &quot;Orbitron&quot;&#x27;;
+    ctx.fillStyle = threatCol(inst.threat);
+    ctx.fillText(&#x27;THREAT: &#x27; + inst.threat, W-6, 6);
+    ctx.font = &#x27;bold &#x27; + Math.max(10, W*0.028) + &#x27;px &quot;Orbitron&quot;&#x27;;
+    ctx.textAlign = &#x27;left&#x27;; ctx.textBaseline = &#x27;bottom&#x27;;
+    ctx.fillStyle = &#x27;rgba(24,212,248,0.3)&#x27;;
     ctx.fillText(inst.name.toUpperCase(), 6, H-18);
   }
 
@@ -12018,6 +12421,8 @@ body.resizing .sidebar,body.resizing .rail{transition:none;}
 .m-foot{padding:11px 14px;border-top:1px solid var(--border);display:flex;gap:7px;flex-wrap:wrap;align-items:center;flex-shrink:0;}
 .m-btn{background:none;border:1px solid var(--border2);color:var(--tx);font-size:9.5px;letter-spacing:1px;padding:7px 14px;border-radius:3px;cursor:pointer;transition:all .14s;}
 .m-btn:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-d);}
+.m-btn.pdf{border-color:rgba(212,160,90,.55);color:#d4a05a;}
+.m-btn.pdf:hover{background:rgba(212,160,90,.12);border-color:#d4a05a;}
 .m-btn.prime{border-color:var(--sage);color:var(--sage);background:var(--sage-d);}
 .m-btn.prime:hover{background:rgba(77,184,138,.2);}
 
@@ -12305,7 +12710,8 @@ body.resizing .sidebar,body.resizing .rail{transition:none;}
       &lt;button class=&quot;m-btn prime&quot; onclick=&quot;mailReport()&quot;&gt;Open in mail client&lt;/button&gt;
       &lt;button class=&quot;m-btn&quot; onclick=&quot;copyReport()&quot;&gt;Copy as text&lt;/button&gt;
       &lt;button class=&quot;m-btn&quot; onclick=&quot;downloadReport()&quot;&gt;Download .html&lt;/button&gt;
-      &lt;span style=&quot;font-size:8.5px;color:var(--txf);margin-left:auto;max-width:330px;line-height:1.5;&quot;&gt;A draft opens in your mail client — nothing is transmitted from this page. On a real deployment this routes through the installation relay.&lt;/span&gt;
+      &lt;button class=&quot;m-btn pdf&quot; onclick=&quot;createPdf()&quot;&gt;Create PDF&lt;/button&gt;
+      &lt;span style=&quot;font-size:8.5px;color:var(--txf);margin-left:auto;max-width:330px;line-height:1.5;&quot;&gt;A draft opens in your mail client — nothing is transmitted from this page. The PDF is the full record for the selected scope and ignores the Include chips, which only trim the mail body.&lt;/span&gt;
     &lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
@@ -12685,13 +13091,19 @@ function esc(x){return String(x).replace(/[&amp;&lt;&gt;&quot;]/g,c=&gt;({&#x27;
    fac keys must match the facility names in BASE exactly — anything
    unmatched falls back to auto-placement so the map still draws.
 
+   mg is the microgrid node cell. The node is a flat hexagon roughly a tile
+   across, drawn before the buildings, so anything whose silhouette covers that
+   cell paints straight over it. Every mg cell here is held clear of all
+   footprints and their extrusions at the default view, and kept off water and
+   drydock plates — move one and re-check the clearance.
+
    fac / scenery entry:  [col, row, width, depth, height]
    terrain entry:        [kind, col, row, width, depth]
    ══════════════════════════════════════════════════════════════ */
 const SITE_MAPS={
 
 /* Desert range complex — dispersed, dry lakebed, long runway, remote magazines */
-&#x27;naws-cl&#x27;:{cols:14,rows:9,mg:[6.2,7.4],
+&#x27;naws-cl&#x27;:{cols:14,rows:9,mg:[6.5,7.1],
  terrain:[[&#x27;scrub&#x27;,0,0,14,9],[&#x27;playa&#x27;,8.4,0.4,5.2,3.4],[&#x27;runway&#x27;,1,1.2,7.4,0.9],
           [&#x27;taxi&#x27;,1.6,2.3,6.2,0.34],[&#x27;apron&#x27;,2.2,2.8,3.0,1.2],[&#x27;road&#x27;,0.6,4.6,12.6,0.26],
           [&#x27;road&#x27;,6.9,1.2,0.26,6.4]],
@@ -12706,7 +13118,7 @@ const SITE_MAPS={
         [0.3,4.9,5.6,3.8,&#x27;MAIN BASE&#x27;],[8.2,4.9,5.4,3.8,&#x27;LAUREL MTN&#x27;]]},
 
 /* Fleet concentration pier complex — carrier row projecting into the harbour */
-&#x27;ns-norf&#x27;:{cols:13,rows:8,mg:[10.4,6.6],
+&#x27;ns-norf&#x27;:{cols:13,rows:8,mg:[10.4,7.1],
  terrain:[[&#x27;water&#x27;,0,0,13,3.1],[&#x27;pier&#x27;,1.4,0.2,0.7,2.9],[&#x27;pier&#x27;,3.2,0.2,0.7,2.9],
           [&#x27;pier&#x27;,5.0,0.2,0.7,2.9],[&#x27;pier&#x27;,6.8,0.2,0.7,2.9],[&#x27;quay&#x27;,0.4,3.0,10.4,0.7],
           [&#x27;road&#x27;,0.4,4.6,12.2,0.28],[&#x27;apron&#x27;,8.6,0.6,3.4,2.2]],
@@ -12720,7 +13132,7 @@ const SITE_MAPS={
         [0.3,3.7,5.2,4.0,&#x27;HQ COMPLEX&#x27;],[6.2,3.7,6.4,4.0,&#x27;NMCP&#x27;]]},
 
 /* Coastal peninsula air station — runway parallel to the shore, hangar row behind */
-&#x27;nas-nc&#x27;:{cols:12,rows:8,mg:[9.6,6.4],
+&#x27;nas-nc&#x27;:{cols:12,rows:8,mg:[10,4.7],
  terrain:[[&#x27;water&#x27;,0,6.4,12,1.6],[&#x27;water&#x27;,10.4,0,1.6,6.6],[&#x27;runway&#x27;,0.6,1.0,9.0,0.95],
           [&#x27;taxi&#x27;,0.9,2.1,8.4,0.34],[&#x27;apron&#x27;,1.4,2.6,6.4,1.5],[&#x27;road&#x27;,0.5,4.6,9.6,0.26],
           [&#x27;quay&#x27;,0,6.1,10.2,0.4]],
@@ -12734,7 +13146,7 @@ const SITE_MAPS={
         [7.8,2.6,2.6,2.0,&#x27;DEPOT&#x27;],[0.3,4.8,7.4,2.6,&#x27;COMMAND&#x27;]]},
 
 /* Shipyard on an inlet — graving docks cut into the shoreline, magazines held well back */
-&#x27;nbk&#x27;:{cols:12,rows:8,mg:[9.0,6.8],
+&#x27;nbk&#x27;:{cols:12,rows:8,mg:[8.3,7.6],
  terrain:[[&#x27;water&#x27;,0,0,4.2,8],[&#x27;drydock&#x27;,3.0,0.8,1.5,1.7],[&#x27;drydock&#x27;,3.0,2.9,1.5,1.7],
           [&#x27;drydock&#x27;,3.0,5.0,1.5,1.7],[&#x27;quay&#x27;,4.4,0.5,0.5,7.0],[&#x27;road&#x27;,5.0,0.6,0.28,6.8],
           [&#x27;pier&#x27;,1.0,1.4,1.9,0.55],[&#x27;pier&#x27;,1.0,5.6,1.9,0.55],[&#x27;forest&#x27;,9.4,0,2.6,4.0]],
@@ -12761,7 +13173,7 @@ const SITE_MAPS={
         [0.3,4.6,4.6,2.2,&#x27;HQ BLDG&#x27;],[5.4,4.2,4.2,2.4,&#x27;COMMS NODE&#x27;]]},
 
 /* Two-site Mediterranean air station — runway on one side, NATO comms compound apart */
-&#x27;nas-sig&#x27;:{cols:12,rows:8,mg:[8.6,6.4],
+&#x27;nas-sig&#x27;:{cols:12,rows:8,mg:[8.6,7.2],
  terrain:[[&#x27;scrub&#x27;,0,0,12,8],[&#x27;runway&#x27;,0.5,0.9,8.6,0.9],[&#x27;taxi&#x27;,1.0,2.0,7.4,0.34],
           [&#x27;apron&#x27;,1.6,2.5,4.4,1.4],[&#x27;road&#x27;,0.4,4.4,10.8,0.26],[&#x27;road&#x27;,9.0,0.8,0.26,6.2]],
  fac:{&#x27;Main Runway&#x27;:[1.0,2.6,1.6,1.1,12],&#x27;Aircraft Ramp&#x27;:[3.2,2.6,1.0,1.2,14,2,&#x27;x&#x27;,1.5],
@@ -12774,7 +13186,7 @@ const SITE_MAPS={
         [9.2,0.7,2.6,3.4,&#x27;NATO COMMS&#x27;],[0.3,5.0,8.4,2.6,&#x27;BEQ&#x27;]]},
 
 /* Purpose-built missile-defence site — tight square perimeter, everything inside the fence */
-&#x27;nsf-deveselu&#x27;:{cols:9,rows:7,mg:[6.6,5.2],
+&#x27;nsf-deveselu&#x27;:{cols:9,rows:7,mg:[6.3,5.7],
  terrain:[[&#x27;grass&#x27;,0,0,9,7],[&#x27;perimeter&#x27;,0.6,0.6,7.8,5.8],[&#x27;apron&#x27;,1.4,1.4,3.0,2.2],
           [&#x27;road&#x27;,1.0,4.0,6.8,0.26],[&#x27;road&#x27;,4.8,1.2,0.26,3.2]],
  fac:{&#x27;Aegis Ashore Site&#x27;:[1.6,1.6,2.4,1.8,20],&#x27;Power Generation&#x27;:[5.4,1.5,1.4,1.2,12],
@@ -12785,7 +13197,7 @@ const SITE_MAPS={
         [4.8,2.8,2.8,2.0,&#x27;DATA CTR&#x27;],[1.2,4.3,3.4,2.0,&#x27;ADMIN&#x27;]]},
 
 /* Dense Gulf port — pier complex against the water, ammunition area pushed inland */
-&#x27;nsa-bahrain&#x27;:{cols:12,rows:8,mg:[3.0,6.8],
+&#x27;nsa-bahrain&#x27;:{cols:12,rows:8,mg:[2.4,6.1],
  terrain:[[&#x27;water&#x27;,9.0,0,3,8],[&#x27;quay&#x27;,8.4,0.4,0.6,7.2],[&#x27;pier&#x27;,9.2,1.0,1.7,0.6],
           [&#x27;pier&#x27;,9.2,3.0,1.7,0.6],[&#x27;pier&#x27;,9.2,5.0,1.7,0.6],[&#x27;road&#x27;,0.5,3.6,7.8,0.28],
           [&#x27;road&#x27;,4.4,0.6,0.28,6.6],[&#x27;apron&#x27;,5.2,0.8,2.8,2.4]],
@@ -12799,7 +13211,7 @@ const SITE_MAPS={
         [0.3,3.9,3.6,3.6,&#x27;BEQ&#x27;],[5.4,3.7,3.4,3.4,&#x27;AMMO&#x27;]]},
 
 /* Japanese naval air facility — runway, hangar line, seismic-braced support blocks */
-&#x27;naf-atsugi&#x27;:{cols:12,rows:8,mg:[9.4,6.2],
+&#x27;naf-atsugi&#x27;:{cols:12,rows:8,mg:[9.8,6.5],
  terrain:[[&#x27;grass&#x27;,0,0,12,8],[&#x27;runway&#x27;,0.6,1.0,9.2,0.9],[&#x27;taxi&#x27;,1.0,2.1,8.2,0.34],
           [&#x27;apron&#x27;,1.6,2.6,5.6,1.5],[&#x27;road&#x27;,0.4,4.6,10.6,0.26],[&#x27;road&#x27;,8.4,1.0,0.26,5.8]],
  fac:{&#x27;Flight Ops Runway&#x27;:[1.0,2.7,1.8,1.2,13],&#x27;Hangar Complex&#x27;:[3.4,2.7,1.0,1.3,16,3,&#x27;x&#x27;,1.3],
@@ -12843,7 +13255,7 @@ const SITE_MAPS={
         [0.5,4.4,4.8,3.0,&#x27;AFRICOM HQ&#x27;],[6.0,4.2,4.4,3.2,&#x27;EOC&#x27;]]},
 
 /* Runway and pier in one footprint — the only site in the set carrying both */
-&#x27;nas-rota&#x27;:{cols:13,rows:8,mg:[6.4,6.6],
+&#x27;nas-rota&#x27;:{cols:13,rows:8,mg:[5.9,5.6],
  terrain:[[&#x27;scrub&#x27;,0,0,13,8],[&#x27;water&#x27;,9.4,4.6,3.6,3.4],[&#x27;runway&#x27;,0.5,0.8,9.0,0.9],
           [&#x27;taxi&#x27;,1.0,1.9,8.0,0.32],[&#x27;apron&#x27;,1.6,2.4,4.6,1.4],[&#x27;quay&#x27;,9.0,4.4,0.5,3.4],
           [&#x27;pier&#x27;,9.6,5.0,1.5,0.55],[&#x27;pier&#x27;,9.6,6.4,1.5,0.55],[&#x27;road&#x27;,0.4,4.2,9.0,0.26]],
@@ -12857,7 +13269,7 @@ const SITE_MAPS={
         [0.3,4.7,5.6,2.8,&#x27;ADMIN&#x27;],[6.4,4.5,6.2,3.2,&#x27;DDG PIERS&#x27;]]},
 
 /* Harbour with an island in the middle — the shape that makes Pearl legible */
-&#x27;ns-pearl&#x27;:{cols:13,rows:9,mg:[10.2,7.2],
+&#x27;ns-pearl&#x27;:{cols:13,rows:9,mg:[11.2,7.5],
  terrain:[[&#x27;water&#x27;,0,0,13,9],[&#x27;island&#x27;,3.4,2.6,4.6,3.4],[&#x27;island&#x27;,0.4,0.4,2.8,2.6],
           [&#x27;island&#x27;,8.6,0.5,4.0,3.0],[&#x27;island&#x27;,8.2,4.4,4.4,4.2],[&#x27;island&#x27;,0.3,5.4,3.0,3.2],
           [&#x27;quay&#x27;,3.4,2.6,4.6,0.4],[&#x27;pier&#x27;,8.9,3.4,1.6,0.55],[&#x27;pier&#x27;,8.9,5.0,0,0],
@@ -12872,7 +13284,7 @@ const SITE_MAPS={
         [9.6,4.6,3.2,3.6,&#x27;DRY DOCK&#x27;],[0.2,5.2,3.2,3.6,&#x27;JICPAC&#x27;]]},
 
 /* River-side patrol air station — long primary runway, very large ramp */
-&#x27;nas-jax&#x27;:{cols:13,rows:8,mg:[10.4,6.4],
+&#x27;nas-jax&#x27;:{cols:13,rows:8,mg:[10.1,5.2],
  terrain:[[&#x27;grass&#x27;,0,0,13,8],[&#x27;water&#x27;,0,6.6,13,1.4],[&#x27;runway&#x27;,0.5,0.8,10.4,0.95],
           [&#x27;taxi&#x27;,1.0,1.95,9.4,0.34],[&#x27;apron&#x27;,1.4,2.5,7.6,1.9],[&#x27;quay&#x27;,0,6.3,11.0,0.4],
           [&#x27;road&#x27;,0.4,4.9,11.6,0.26]],
@@ -12886,7 +13298,7 @@ const SITE_MAPS={
         [7.0,2.3,5.4,2.2,&#x27;HANGARS&#x27;],[0.3,5.2,8.0,2.4,&#x27;HQ&#x27;]]},
 
 /* Island air station fed by a submarine cable — magazines held far from the flight line */
-&#x27;nas-whidbey&#x27;:{cols:12,rows:8,mg:[8.8,6.2],
+&#x27;nas-whidbey&#x27;:{cols:12,rows:8,mg:[9.2,5.7],
  terrain:[[&#x27;water&#x27;,0,0,12,1.2],[&#x27;water&#x27;,0,6.8,12,1.2],[&#x27;grass&#x27;,0,1.2,12,5.6],
           [&#x27;runway&#x27;,0.5,1.8,9.4,0.9],[&#x27;taxi&#x27;,1.0,2.9,8.4,0.32],[&#x27;apron&#x27;,1.6,3.4,5.4,1.4],
           [&#x27;road&#x27;,0.4,5.2,10.4,0.26],[&#x27;cable&#x27;,10.6,0.6,0.22,4.6]],
@@ -12899,7 +13311,7 @@ const SITE_MAPS={
         [0.3,5.5,7.0,2.2,&#x27;SUPPORT&#x27;],[9.6,5.4,2.2,2.4,&#x27;ORDNANCE&#x27;]]},
 
 /* Dredged basin cut inland — a single feed into a carrier-capable harbour */
-&#x27;ns-mayport&#x27;:{cols:12,rows:8,mg:[2.4,6.6],
+&#x27;ns-mayport&#x27;:{cols:12,rows:8,mg:[2.8,6.5],
  terrain:[[&#x27;grass&#x27;,0,0,12,8],[&#x27;water&#x27;,4.4,0.6,7.4,4.6],[&#x27;water&#x27;,11.0,0,1.0,8],
           [&#x27;quay&#x27;,4.2,0.5,0.5,4.8],[&#x27;quay&#x27;,4.2,5.1,7.0,0.5],[&#x27;pier&#x27;,5.0,1.0,0.65,2.6],
           [&#x27;pier&#x27;,7.0,1.0,0.65,2.6],[&#x27;pier&#x27;,9.0,1.0,0.65,2.6],
@@ -13710,6 +14122,26 @@ function paintTable(){
 
 /* ══ GLOBAL MAP ══ */
 let gmap=null, gmarkers={};
+/* Auto-zoom. Selecting an installation anywhere in the app recentres the global
+   map on that base. Flown when the map is the live view, set silently otherwise so
+   the map is already framed on the selection the moment the operator switches back.
+   The zoom never steps back out: if the operator is already tighter than base level
+   the current zoom is kept and only the centre moves. */
+const SITE_ZOOM=13, MAX_ZOOM=17;
+let tipTimer=null;
+function zoomToSite(s,animate){
+  if(!gmap||!s)return;
+  const cur=gmap.getZoom()||2;
+  const z=Math.min(MAX_ZOOM,Math.max(cur,SITE_ZOOM));
+  if(animate&amp;&amp;gmap.flyTo)gmap.flyTo([s.lat,s.lon],z,{duration:.85});
+  else gmap.setView([s.lat,s.lon],z,{animate:false});
+  const mk=gmarkers[s.id];
+  if(mk&amp;&amp;animate){
+    if(tipTimer){clearTimeout(tipTimer);tipTimer=null;}
+    try{mk.openTooltip();}catch(e){}
+    tipTimer=setTimeout(function(){try{mk.closeTooltip();}catch(e){}tipTimer=null;},2800);
+  }
+}
 function initMap(){
   if(gmap)return;
   if(typeof L===&#x27;undefined&#x27;){
@@ -13728,7 +14160,7 @@ function initMap(){
     mk.bindTooltip(&#x27;&lt;b style=&quot;font-family:Orbitron;letter-spacing:1px&quot;&gt;&#x27;+esc(s.name)+&#x27;&lt;/b&gt;&lt;br&gt;&#x27;+
       &#x27;RRS &#x27;+m.rrs+&#x27; \u00b7 &#x27;+m.posture+&#x27;&lt;br&gt;&#x27;+m.cl.toFixed(1)+&#x27; MW critical \u00b7 &#x27;+Math.round(m.coverage*100)+&#x27;% covered&lt;br&gt;&#x27;+
       m.fr.c1+&#x27; CAT I \u00b7 &#x27;+m.am.dark+&#x27; meters dark&#x27;,{direction:&#x27;top&#x27;,opacity:.95});
-    mk.on(&#x27;click&#x27;,function(){selectSite(s.id);setView(&#x27;iso&#x27;);});
+    mk.on(&#x27;click&#x27;,function(){selectSite(s.id);});
     mk.addTo(gmap); gmarkers[s.id]=mk;
   });
 }
@@ -13928,7 +14360,7 @@ function selectSite(id){
   document.getElementById(&#x27;stage-name&#x27;).textContent=s.name;
   document.getElementById(&#x27;stage-sub&#x27;).textContent=s.uic+&#x27; \u00b7 &#x27;+s.type+&#x27; \u00b7 &#x27;+s.regionName;
   loadSat(s,function(oc){if(iso.site&amp;&amp;iso.site.id===s.id){iso.sat=oc;drawIso();}});
-  if(VIEW===&#x27;map&#x27;&amp;&amp;gmap&amp;&amp;HEAT.on&amp;&amp;HEAT.scope===&#x27;site&#x27;)focusHeat();
+  zoomToSite(s,VIEW===&#x27;map&#x27;);
   refreshAll();
 }
 function refreshAll(){
@@ -14299,6 +14731,750 @@ function downloadReport(){
 }
 
 /* ══════════════════════════════════════════════════════════════
+   PDF EXPORT
+
+   The composer&#x27;s other outputs are built for a mail client: short,
+   chip-filtered, screen-coloured. A PDF is a different artifact — it gets
+   filed, forwarded and read on paper — so it always carries the full record
+   for the selected scope regardless of which Include chips are lit, and it
+   is laid out for a printed page rather than for this dark UI.
+
+   Nothing here reaches the network. The document is assembled in memory,
+   written into a hidden same-origin frame, paginated there against a real
+   Letter page box, and handed to the browser&#x27;s print dialog, where
+   &quot;Save as PDF&quot; produces the file.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── content model ──
+   Blocks are plain data so the paginator can measure and split them without
+   knowing what any of them mean. Table rows split across pages; headings
+   stay with the block that follows. */
+function pdfCover(scope, cls, stamp) {
+  const s = iso.site, m = score(s);
+  if (scope === &#x27;enterprise&#x27;) return {
+    title: &#x27;ENTERPRISE ENERGY RESILIENCE ROLL-UP&#x27;,
+    sub: &#x27;16 installations \u00b7 11 regions \u00b7 all postures&#x27;,
+    facts: [[&#x27;Scope&#x27;, &#x27;Enterprise \u2014 all installations&#x27;], [&#x27;Prepared&#x27;, stamp],
+            [&#x27;Source&#x27;, &#x27;ie-SRA SYS-03 BLACKSTART&#x27;], [&#x27;Marking&#x27;, cls]]
+  };
+  if (scope === &#x27;alerts&#x27;) return {
+    title: &#x27;OPEN RESILIENCE ALERTS&#x27;,
+    sub: ALERTS.filter(a =&gt; !a.ack).length + &#x27; open at time of generation&#x27;,
+    facts: [[&#x27;Scope&#x27;, &#x27;Alert log \u2014 all installations&#x27;], [&#x27;Prepared&#x27;, stamp],
+            [&#x27;Source&#x27;, &#x27;ie-SRA SYS-03 BLACKSTART&#x27;], [&#x27;Marking&#x27;, cls]]
+  };
+  if (scope === &#x27;frcs&#x27;) return {
+    title: &#x27;CONTROL-SYSTEM EXPOSURE SUMMARY&#x27;,
+    sub: &#x27;Facility-related control systems across 16 installations&#x27;,
+    facts: [[&#x27;Scope&#x27;, &#x27;FRCS posture \u2014 all installations&#x27;], [&#x27;Prepared&#x27;, stamp],
+            [&#x27;Source&#x27;, &#x27;ie-SRA SYS-03 BLACKSTART&#x27;], [&#x27;Marking&#x27;, cls]]
+  };
+  return {
+    title: s.name.toUpperCase(),
+    sub: &#x27;Installation energy resilience and control-system posture&#x27;,
+    facts: [[&#x27;UIC&#x27;, s.uic], [&#x27;Region&#x27;, s.regionName], [&#x27;Type&#x27;, s.type],
+            [&#x27;Utility&#x27;, s.utility], [&#x27;Position&#x27;, s.lat.toFixed(4) + &#x27;\u00b0, &#x27; + s.lon.toFixed(4) + &#x27;\u00b0&#x27;],
+            [&#x27;Resilience score&#x27;, m.rrs + &#x27; / 100 \u00b7 &#x27; + m.grade + &#x27; \u00b7 &#x27; + m.posture],
+            [&#x27;Prepared&#x27;, stamp], [&#x27;Marking&#x27;, cls]]
+  };
+}
+
+function pdfSiteBlocks(s, m, cls, note) {
+  const B = [];
+  const open = ALERTS.filter(a =&gt; !a.ack &amp;&amp; a.site === s.id);
+  const cons = consumption(s, &#x27;30d&#x27;, false);
+  const all = SITES.map(x =&gt; ({ s: x, m: score(x) })).sort((a, b) =&gt; b.m.rrs - a.m.rrs);
+  const rank = all.findIndex(x =&gt; x.s.id === s.id) + 1;
+  const shed = Math.max(0, m.cl - m.cap.firm);
+
+  B.push({ t: &#x27;kpi&#x27;, cells: [
+    { l: &#x27;Resilience score&#x27;, v: m.rrs, s: m.grade + &#x27; \u00b7 &#x27; + m.posture, c: gradeColor(m.grade) },
+    { l: &#x27;Critical load&#x27;, v: m.cl.toFixed(1) + &#x27; MW&#x27;, s: &#x27;of &#x27; + s.peak + &#x27; MW peak&#x27; },
+    { l: &#x27;Firm capacity&#x27;, v: m.cap.firm.toFixed(1) + &#x27; MW&#x27;, s: Math.round(m.coverage * 100) + &#x27;% coverage&#x27;,
+      c: m.coverage &gt;= 1 ? &#x27;#1f7a52&#x27; : m.coverage &gt;= .5 ? &#x27;#8a6014&#x27; : &#x27;#9c2b2b&#x27; },
+    { l: &#x27;Islanded endurance&#x27;, v: fmtH(m.endHrs), s: &#x27;objective 336h&#x27;,
+      c: m.endHrs &gt;= 72 ? &#x27;#1f7a52&#x27; : m.endHrs &gt;= 24 ? &#x27;#8a6014&#x27; : &#x27;#9c2b2b&#x27; },
+    { l: &#x27;Metering visibility&#x27;, v: m.am.visibility + &#x27;%&#x27;, s: m.am.dark + &#x27; meters dark&#x27;,
+      c: m.am.visibility &gt;= 85 ? &#x27;#1f7a52&#x27; : m.am.visibility &gt;= 65 ? &#x27;#8a6014&#x27; : &#x27;#9c2b2b&#x27; },
+    { l: &#x27;Control integrity&#x27;, v: m.fr.score + &#x27;/100&#x27;, s: m.fr.c1 + &#x27; CAT I open&#x27;,
+      c: m.fr.score &gt;= 80 ? &#x27;#1f7a52&#x27; : m.fr.score &gt;= 55 ? &#x27;#8a6014&#x27; : &#x27;#9c2b2b&#x27; }
+  ]});
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;1. Executive summary&#x27; });
+  B.push({ t: &#x27;p&#x27;, x: esc(s.name) + &#x27; (&#x27; + s.uic + &#x27;, &#x27; + s.regionName + &#x27;) carries a critical load of &#x27; +
+    m.cl.toFixed(1) + &#x27; MW against &#x27; + m.cap.firm.toFixed(1) + &#x27; MW of firm on-site capacity, giving &#x27; +
+    Math.round(m.coverage * 100) + &#x27;% islanding coverage and &#x27; + fmtH(m.endHrs) + &#x27; of endurance at that load. &#x27; +
+    &#x27;The resilience score is &#x27; + m.rrs + &#x27; (&#x27; + m.grade + &#x27;), placing the installation &#x27; + rank +
+    &#x27; of &#x27; + SITES.length + &#x27; in the enterprise, and the posture is &#x27; + m.posture + &#x27;.&#x27; });
+  B.push({ t: &#x27;p&#x27;, x: esc(s.note) });
+  if (shed &gt; 0)
+    B.push({ t: &#x27;callout&#x27;, tone: &#x27;red&#x27;, x: &#x27;On loss of utility supply the installation cannot carry its own critical load. &#x27; +
+      shed.toFixed(1) + &#x27; MW would be shed or unserved, against &#x27; + m.cl.toFixed(1) + &#x27; MW of critical demand.&#x27; });
+  else
+    B.push({ t: &#x27;callout&#x27;, tone: &#x27;green&#x27;, x: &#x27;Firm on-site capacity covers the full critical load. &#x27; +
+      &#x27;Endurance, not capacity, is the binding constraint at this installation.&#x27; });
+  if (s.outage)
+    B.push({ t: &#x27;callout&#x27;, tone: &#x27;red&#x27;, x: &#x27;The installation is currently without utility supply. &#x27; +
+      (s.islanded ? s.facs.filter(f =&gt; f.powered).length + &#x27; of &#x27; + s.facs.length + &#x27; facilities are carried on the microgrid.&#x27;
+                  : &#x27;Islanding did not occur and critical load is unserved.&#x27;) });
+
+  const keys = [];
+  if (s.feeds &lt; 2) keys.push(&#x27;Single utility feed \u2014 no alternate source of supply.&#x27;);
+  if (m.coverage &lt; 1) keys.push(&#x27;Islanding coverage of &#x27; + Math.round(m.coverage * 100) + &#x27;% leaves &#x27; + shed.toFixed(1) + &#x27; MW of critical load unserved.&#x27;);
+  if (m.endHrs &lt; 72) keys.push(&#x27;Endurance of &#x27; + fmtH(m.endHrs) + &#x27; is short of the 72-hour planning floor.&#x27;);
+  if (m.fr.c1) keys.push(m.fr.c1 + &#x27; CAT I control-system finding&#x27; + (m.fr.c1 &gt; 1 ? &#x27;s&#x27; : &#x27;&#x27;) + &#x27; open \u2014 these permit control action, not just disclosure.&#x27;);
+  if (m.fr.inet) keys.push(m.fr.inet + &#x27; control system&#x27; + (m.fr.inet &gt; 1 ? &#x27;s answer&#x27; : &#x27; answers&#x27;) + &#x27; on a public address.&#x27;);
+  if (m.fr.atoGap) keys.push(m.fr.atoGap + &#x27; system&#x27; + (m.fr.atoGap &gt; 1 ? &#x27;s are&#x27; : &#x27; is&#x27;) + &#x27; in service without a current authorization.&#x27;);
+  if (m.am.dark) keys.push(m.am.dark + &#x27; of &#x27; + m.am.total + &#x27; meters are dark \u2014 that load is modelled, not measured.&#x27;);
+  if (m.cap.auto &lt; m.cl) keys.push(&#x27;Only &#x27; + m.cap.auto.toFixed(1) + &#x27; MW transfers automatically against &#x27; + m.cl.toFixed(1) + &#x27; MW of critical load.&#x27;);
+  if (!keys.length) keys.push(&#x27;No threshold findings. Posture is sustained across capacity, endurance, control and metering.&#x27;);
+  B.push({ t: &#x27;h3&#x27;, x: &#x27;Key findings&#x27; });
+  B.push({ t: &#x27;ul&#x27;, items: keys });
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;2. Resilience score&#x27; });
+  B.push({ t: &#x27;p&#x27;, x: &#x27;The Resilience Readiness Score is a weighted composite of five factors. &#x27; +
+    &#x27;Each factor scores 0\u2013100 on its own basis and is then weighted into the total.&#x27; });
+  B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;Factor&#x27;, &#x27;Weight&#x27;, &#x27;Score&#x27;, &#x27;Weighted&#x27;, &#x27;Basis&#x27;],
+    align: [&#x27;l&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;l&#x27;],
+    rows: [
+      [&#x27;Islanding coverage&#x27;, &#x27;35%&#x27;, Math.round(m.sub.cov), (0.35 * m.sub.cov).toFixed(1),
+       m.cap.firm.toFixed(1) + &#x27; MW firm against &#x27; + m.cl.toFixed(1) + &#x27; MW critical&#x27;],
+      [&#x27;Endurance&#x27;, &#x27;25%&#x27;, Math.round(m.sub.end), (0.25 * m.sub.end).toFixed(1),
+       fmtH(m.endHrs) + &#x27; against a 336h objective (log scale)&#x27;],
+      [&#x27;Control integrity&#x27;, &#x27;20%&#x27;, Math.round(m.sub.ctrl), (0.20 * m.sub.ctrl).toFixed(1),
+       m.fr.c1 + &#x27; CAT I, &#x27; + m.fr.c2 + &#x27; CAT II, &#x27; + m.fr.c3 + &#x27; CAT III, &#x27; + m.fr.atoGap + &#x27; ATO gaps&#x27;],
+      [&#x27;Metering visibility&#x27;, &#x27;12%&#x27;, Math.round(m.sub.vis), (0.12 * m.sub.vis).toFixed(1),
+       m.am.reporting + &#x27;/&#x27; + m.am.total + &#x27; reporting, mean data quality &#x27; + m.am.avgDq + &#x27;%&#x27;],
+      [&#x27;Redundancy&#x27;, &#x27;8%&#x27;, Math.round(m.sub.red), (0.08 * m.sub.red).toFixed(1),
+       s.feeds + &#x27; utility feed&#x27; + (s.feeds &gt; 1 ? &#x27;s&#x27; : &#x27;&#x27;) + &#x27;, &#x27; + m.cap.bs.toFixed(1) + &#x27; MW black-start, &#x27; + m.cap.auto.toFixed(1) + &#x27; MW auto-transfer&#x27;]
+    ],
+    foot: [&#x27;Total&#x27;, &#x27;100%&#x27;, &#x27;&#x27;, String(m.rrs), m.grade + &#x27; \u00b7 &#x27; + m.posture] });
+  B.push({ t: &#x27;kv&#x27;, rows: [
+    [&#x27;Grade scale&#x27;, &#x27;A 85\u2013100 \u00b7 B 70\u201384 \u00b7 C 55\u201369 \u00b7 D 40\u201354 \u00b7 F below 40&#x27;],
+    [&#x27;Posture scale&#x27;, &#x27;SUSTAINED \u226570 \u00b7 DEGRADED \u226555 \u00b7 FRAGILE \u226540 \u00b7 CRITICAL below 40&#x27;],
+    [&#x27;Enterprise rank&#x27;, rank + &#x27; of &#x27; + SITES.length + &#x27; (enterprise mean &#x27; +
+      Math.round(all.reduce((a, x) =&gt; a + x.m.rrs, 0) / all.length) + &#x27;)&#x27;]
+  ]});
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;3. Capacity and endurance&#x27; });
+  B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;Measure&#x27;, &#x27;Value&#x27;, &#x27;Note&#x27;], align: [&#x27;l&#x27;, &#x27;r&#x27;, &#x27;l&#x27;],
+    rows: [
+      [&#x27;Installation peak demand&#x27;, s.peak.toFixed(1) + &#x27; MW&#x27;, &#x27;nameplate planning figure&#x27;],
+      [&#x27;Measured live load&#x27;, liveLoad(s).toFixed(1) + &#x27; MW&#x27;, &#x27;sum of meter readings, dark meters estimated&#x27;],
+      [&#x27;Critical load&#x27;, m.cl.toFixed(1) + &#x27; MW&#x27;, &#x27;critical facilities in full, vulnerable at 40%&#x27;],
+      [&#x27;Firm capacity&#x27;, m.cap.firm.toFixed(1) + &#x27; MW&#x27;, &#x27;dispatchable generation and storage, availability-derated&#x27;],
+      [&#x27;Variable capacity&#x27;, m.cap.variable.toFixed(1) + &#x27; MW&#x27;, &#x27;solar and wind \u2014 not counted toward coverage&#x27;],
+      [&#x27;Black-start capable&#x27;, m.cap.bs.toFixed(1) + &#x27; MW&#x27;, &#x27;able to energise a dead bus&#x27;],
+      [&#x27;Automatic transfer&#x27;, m.cap.auto.toFixed(1) + &#x27; MW&#x27;, &#x27;transfers without an operator action&#x27;],
+      [&#x27;Stored energy&#x27;, m.cap.mwh.toFixed(1) + &#x27; MWh&#x27;, &#x27;fuel and battery, at rated output&#x27;],
+      [&#x27;Islanding coverage&#x27;, Math.round(m.coverage * 100) + &#x27;%&#x27;, &#x27;firm capacity divided by critical load&#x27;],
+      [&#x27;Endurance at critical load&#x27;, fmtH(m.endHrs), &#x27;stored energy divided by critical load&#x27;],
+      [&#x27;Unserved on feed loss&#x27;, shed.toFixed(1) + &#x27; MW&#x27;, shed &gt; 0 ? &#x27;shed list applies&#x27; : &#x27;none \u2014 full coverage&#x27;],
+      [&#x27;Utility feeds&#x27;, String(s.feeds), s.feeds &lt; 2 ? &#x27;single point of failure&#x27; : &#x27;redundant supply&#x27;]
+    ]});
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;4. Demand profile&#x27; });
+  B.push({ t: &#x27;p&#x27;, x: &#x27;Thirty-day window, modelled from meter interval data and facility load roles.&#x27; });
+  B.push({ t: &#x27;kv&#x27;, rows: [
+    [&#x27;Peak demand&#x27;, (cons.peak / 1000).toFixed(2) + &#x27; MW&#x27;],
+    [&#x27;Measured average&#x27;, (cons.avgMeasured / 1000).toFixed(2) + &#x27; MW&#x27;],
+    [&#x27;Unmetered estimate&#x27;, (cons.avgUnmetered / 1000).toFixed(2) + &#x27; MW&#x27; +
+      (cons.avgUnmetered &gt; 0.5 ? &#x27; \u2014 load behind dark meters&#x27; : &#x27;&#x27;)],
+    [&#x27;Energy consumed&#x27;, (cons.energy &gt;= 1000 ? (cons.energy / 1000).toFixed(1) + &#x27; GWh&#x27; : Math.round(cons.energy) + &#x27; MWh&#x27;)],
+    [&#x27;Load factor&#x27;, Math.round(cons.loadFactor * 100) + &#x27;%&#x27;]
+  ]});
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;5. Facility inventory&#x27; });
+  B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;Facility&#x27;, &#x27;Class&#x27;, &#x27;Load MW&#x27;, &#x27;Meters&#x27;, &#x27;Reporting&#x27;, &#x27;On microgrid&#x27;],
+    align: [&#x27;l&#x27;, &#x27;l&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;l&#x27;],
+    rows: s.facs.map(function (f) {
+      const rep = f.meters.filter(x =&gt; x.status === &#x27;reporting&#x27;).length;
+      return [esc(f.name), f.type, f.load.toFixed(1), String(f.meters.length),
+              rep + &#x27;/&#x27; + f.meters.length, f.onMicrogrid ? &#x27;yes&#x27; : &#x27;no&#x27;];
+    }),
+    foot: [&#x27;Total&#x27;, &#x27;&#x27;, s.facs.reduce((a, f) =&gt; a + f.load, 0).toFixed(1),
+           String(m.am.total), m.am.reporting + &#x27;/&#x27; + m.am.total,
+           s.facs.filter(f =&gt; f.onMicrogrid).length + &#x27; of &#x27; + s.facs.length] });
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;6. Metering status&#x27; });
+  B.push({ t: &#x27;p&#x27;, x: m.am.total + &#x27; meters installed. &#x27; + m.am.reporting + &#x27; reporting, &#x27; + m.am.stale +
+    &#x27; stale, &#x27; + m.am.dark + &#x27; dark. Effective visibility &#x27; + m.am.visibility +
+    &#x27;%, mean data quality &#x27; + m.am.avgDq + &#x27;%. Visibility weights stale reads at half and scales by data quality.&#x27; });
+  const meters = [];
+  s.facs.forEach(f =&gt; f.meters.forEach(x =&gt; meters.push([f, x])));
+  meters.sort(function (a, b) {
+    const o = { dark: 0, stale: 1, reporting: 2 };
+    return o[a[1].status] - o[b[1].status] || a[0].name.localeCompare(b[0].name);
+  });
+  B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;Meter&#x27;, &#x27;Facility&#x27;, &#x27;Role&#x27;, &#x27;Comms&#x27;, &#x27;Int.&#x27;, &#x27;Status&#x27;, &#x27;DQ&#x27;, &#x27;Last read&#x27;],
+    align: [&#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;r&#x27;, &#x27;l&#x27;, &#x27;r&#x27;, &#x27;r&#x27;],
+    rows: meters.map(function (d) {
+      const x = d[1];
+      return [x.id, esc(d[0].name), x.role, x.comms, x.interval + &#x27;m&#x27;,
+              x.status.toUpperCase(), x.dq + &#x27;%&#x27;,
+              x.lastMin &gt; 1440 ? Math.round(x.lastMin / 1440) + &#x27;d&#x27; : Math.round(x.lastMin / 60) + &#x27;h&#x27;];
+    })});
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;7. Control systems&#x27; });
+  B.push({ t: &#x27;p&#x27;, x: s.frcs.length + &#x27; facility-related control systems in the boundary. &#x27; +
+    m.fr.c1 + &#x27; CAT I, &#x27; + m.fr.c2 + &#x27; CAT II and &#x27; + m.fr.c3 + &#x27; CAT III findings are open. &#x27; +
+    m.fr.inet + &#x27; expose a public address, &#x27; + m.fr.flat + &#x27; sit on a flat network, and &#x27; +
+    m.fr.atoGap + &#x27; operate without a current authorization.&#x27; });
+  B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;System&#x27;, &#x27;Platform&#x27;, &#x27;Protocol&#x27;, &#x27;ATO&#x27;, &#x27;Exposure&#x27;, &#x27;Scan age&#x27;, &#x27;Findings&#x27;],
+    align: [&#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;r&#x27;, &#x27;r&#x27;],
+    rows: s.frcs.map(function (sys) {
+      return [esc(sys.name), esc(sys.platform), sys.proto, sys.ato, sys.exposure,
+              sys.scanAge + &#x27;d&#x27;, String(sys.findings.length)];
+    })});
+  const seen = {};
+  s.frcs.forEach(sys =&gt; sys.findings.forEach(function (fid) {
+    if (!seen[fid]) seen[fid] = { f: FIND[fid], on: [] };
+    if (seen[fid].f) seen[fid].on.push(sys.name);
+  }));
+  const fids = Object.keys(seen).filter(k =&gt; seen[k].f)
+    .sort((a, b) =&gt; seen[a].f.cat - seen[b].f.cat || a.localeCompare(b));
+  if (fids.length) {
+    B.push({ t: &#x27;h3&#x27;, x: &#x27;Open findings in detail&#x27; });
+    fids.forEach(function (fid) {
+      const f = seen[fid].f;
+      B.push({ t: &#x27;finding&#x27;, cat: f.cat, id: f.id, title: esc(f.t),
+               on: seen[fid].on.map(esc).join(&#x27;, &#x27;), desc: esc(f.d), fix: esc(f.fix) });
+    });
+  }
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;8. Microgrid and distributed energy resources&#x27; });
+  if (!s.mg.length) B.push({ t: &#x27;p&#x27;, x: &#x27;No distributed energy resources are installed at this location.&#x27; });
+  else B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;Asset&#x27;, &#x27;Type&#x27;, &#x27;MW&#x27;, &#x27;Endurance&#x27;, &#x27;Transfer&#x27;, &#x27;Black start&#x27;, &#x27;Status&#x27;],
+    align: [&#x27;l&#x27;, &#x27;l&#x27;, &#x27;r&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;],
+    rows: s.mg.map(function (d) {
+      return [esc(d.name), (KIND_LABEL[d.kind] || d.kind), d.cap.toFixed(1),
+              d.kind === &#x27;BESS&#x27; ? d.dur.toFixed(1) + &#x27;h @ &#x27; + d.soc + &#x27;% SOC&#x27;
+                : (d.kind === &#x27;PV&#x27; || d.kind === &#x27;WIND&#x27;) ? &#x27;\u2014&#x27; : fmtH(d.dur),
+              d.mode, d.bs ? &#x27;yes&#x27; : &#x27;no&#x27;, d.status];
+    }),
+    foot: [&#x27;Total&#x27;, &#x27;&#x27;, s.mg.reduce((a, d) =&gt; a + d.cap, 0).toFixed(1), &#x27;&#x27;, &#x27;&#x27;,
+           m.cap.bs.toFixed(1) + &#x27; MW&#x27;, &#x27;&#x27;] });
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;9. Open alerts&#x27; });
+  if (!open.length) B.push({ t: &#x27;p&#x27;, x: &#x27;No open alerts for this installation at time of generation.&#x27; });
+  else B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;Sev&#x27;, &#x27;Code&#x27;, &#x27;Condition&#x27;, &#x27;Rationale&#x27;], align: [&#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;],
+    rows: open.sort((a, b) =&gt; SEV[a.sev].r - SEV[b.sev].r)
+      .map(a =&gt; [a.sev, a.code, esc(a.msg), esc(a.why || &#x27;\u2014&#x27;)]) });
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;10. Recommended actions&#x27; });
+  const acts = [];
+  if (m.coverage &lt; 1) acts.push([&#x27;Close the capacity gap&#x27;, &#x27;Add &#x27; + shed.toFixed(1) +
+    &#x27; MW of firm capacity, or reclassify load, to reach full islanding coverage of critical facilities.&#x27;]);
+  if (m.endHrs &lt; 72) acts.push([&#x27;Extend endurance&#x27;, &#x27;Endurance is &#x27; + fmtH(m.endHrs) +
+    &#x27;. On-site storage or a fuel contract with a guaranteed delivery window are the two levers.&#x27;]);
+  if (m.fr.inet) acts.push([&#x27;Remove public exposure&#x27;, &#x27;Take &#x27; + m.fr.inet + &#x27; control system&#x27; +
+    (m.fr.inet &gt; 1 ? &#x27;s&#x27; : &#x27;&#x27;) + &#x27; off public addressing and place the station behind the FRCS enclave boundary.&#x27;]);
+  if (m.fr.c1) acts.push([&#x27;Close CAT I findings&#x27;, &#x27;Resolve &#x27; + m.fr.c1 + &#x27; CAT I finding&#x27; +
+    (m.fr.c1 &gt; 1 ? &#x27;s&#x27; : &#x27;&#x27;) + &#x27; before the next assessment cycle. These permit control action, not just information disclosure.&#x27;]);
+  if (m.fr.atoGap) acts.push([&#x27;Restore authorization&#x27;, &#x27;Resolve &#x27; + m.fr.atoGap + &#x27; authorization gap&#x27; +
+    (m.fr.atoGap &gt; 1 ? &#x27;s&#x27; : &#x27;&#x27;) + &#x27;. Systems in service without a current ATO put risk acceptance on no one.&#x27;]);
+  if (m.am.dark) acts.push([&#x27;Restore metering&#x27;, &#x27;Bring &#x27; + m.am.dark +
+    &#x27; dark meters back into collection. Start at the collector, not the meter.&#x27;]);
+  if (s.feeds &lt; 2) acts.push([&#x27;Address single-feed exposure&#x27;, &#x27;Scope a second utility feed or a permanent alternate source. &#x27; +
+    &#x27;Single-feed sites cannot be made resilient through generation alone.&#x27;]);
+  if (m.cap.auto &lt; m.cl) acts.push([&#x27;Convert manual transfer&#x27;, &#x27;Only &#x27; + m.cap.auto.toFixed(1) +
+    &#x27; MW transfers automatically against &#x27; + m.cl.toFixed(1) + &#x27; MW of critical load. Convert manual-start units to automatic transfer or accept the shed list.&#x27;]);
+  if (!acts.length) acts.push([&#x27;Sustain&#x27;, &#x27;No threshold actions. Hold the posture through the sustainment cycle and re-baseline after the next assessment.&#x27;]);
+  B.push({ t: &#x27;actions&#x27;, items: acts });
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;11. Enterprise context&#x27; });
+  B.push({ t: &#x27;p&#x27;, x: &#x27;Where this installation sits against the rest of the portfolio. &#x27; +
+    &#x27;The four nearest neighbours by score are shown either side.&#x27; });
+  const lo = Math.max(0, rank - 3), hi = Math.min(all.length, rank + 2);
+  B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;#&#x27;, &#x27;Installation&#x27;, &#x27;Region&#x27;, &#x27;RRS&#x27;, &#x27;Posture&#x27;, &#x27;Crit MW&#x27;, &#x27;Cover&#x27;, &#x27;Endurance&#x27;, &#x27;CAT I&#x27;],
+    align: [&#x27;r&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;r&#x27;, &#x27;l&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;],
+    rows: all.slice(lo, hi).map(function (x, i) {
+      return [String(lo + i + 1), esc(x.s.name) + (x.s.id === s.id ? &#x27;  \u25c0&#x27; : &#x27;&#x27;), x.s.region,
+              String(x.m.rrs), x.m.posture, x.m.cl.toFixed(1),
+              Math.round(x.m.coverage * 100) + &#x27;%&#x27;, fmtH(x.m.endHrs), String(x.m.fr.c1)];
+    })});
+  if (note) { B.push({ t: &#x27;h2&#x27;, x: &#x27;12. Analyst note&#x27; }); B.push({ t: &#x27;p&#x27;, x: esc(note) }); }
+  return B;
+}
+
+function pdfEnterpriseBlocks(cls, note) {
+  const B = [];
+  const all = SITES.map(x =&gt; ({ s: x, m: score(x) })).sort((a, b) =&gt; a.m.rrs - b.m.rrs);
+  const avg = Math.round(all.reduce((a, x) =&gt; a + x.m.rrs, 0) / all.length);
+  const outs = all.filter(x =&gt; x.s.outage);
+  const unserved = all.reduce((a, x) =&gt; a + Math.max(0, x.m.cl - x.m.cap.auto), 0);
+  const critLoadTot = all.reduce((a, x) =&gt; a + x.m.cl, 0);
+  const firmTot = all.reduce((a, x) =&gt; a + x.m.cap.firm, 0);
+
+  B.push({ t: &#x27;kpi&#x27;, cells: [
+    { l: &#x27;Mean resilience&#x27;, v: avg, s: &#x27;across &#x27; + all.length + &#x27; installations&#x27;, c: gradeColor(avg &gt;= 85 ? &#x27;A&#x27; : avg &gt;= 70 ? &#x27;B&#x27; : avg &gt;= 55 ? &#x27;C&#x27; : avg &gt;= 40 ? &#x27;D&#x27; : &#x27;F&#x27;) },
+    { l: &#x27;Below DEGRADED&#x27;, v: all.filter(x =&gt; x.m.rrs &lt; 55).length, s: &#x27;of &#x27; + all.length + &#x27; sites&#x27;, c: &#x27;#9c2b2b&#x27; },
+    { l: &#x27;Critical load&#x27;, v: critLoadTot.toFixed(0) + &#x27; MW&#x27;, s: &#x27;enterprise total&#x27; },
+    { l: &#x27;Firm capacity&#x27;, v: firmTot.toFixed(0) + &#x27; MW&#x27;, s: Math.round(firmTot / critLoadTot * 100) + &#x27;% of critical&#x27; },
+    { l: &#x27;CAT I findings&#x27;, v: all.reduce((a, x) =&gt; a + x.m.fr.c1, 0), s: &#x27;open across the portfolio&#x27;, c: &#x27;#9c2b2b&#x27; },
+    { l: &#x27;Meters dark&#x27;, v: all.reduce((a, x) =&gt; a + x.m.am.dark, 0), s: &#x27;of &#x27; + all.reduce((a, x) =&gt; a + x.m.am.total, 0) + &#x27; installed&#x27; }
+  ]});
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;1. Summary&#x27; });
+  B.push({ t: &#x27;p&#x27;, x: &#x27;Across &#x27; + all.length + &#x27; installations the mean resilience score is &#x27; + avg + &#x27;. &#x27; +
+    all.filter(x =&gt; x.m.rrs &lt; 40).length + &#x27; sites are rated CRITICAL and &#x27; + all.filter(x =&gt; x.m.rrs &lt; 55).length +
+    &#x27; fall below the DEGRADED threshold. &#x27; + (outs.length ? outs.length + &#x27; site&#x27; + (outs.length &gt; 1 ? &#x27;s are&#x27; : &#x27; is&#x27;) +
+    &#x27; currently without utility supply.&#x27; : &#x27;No site is currently in outage.&#x27;) +
+    &#x27; If every installation lost its feed simultaneously, &#x27; + unserved.toFixed(1) +
+    &#x27; MW of critical load would not transfer automatically.&#x27; });
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;2. Site ranking&#x27; });
+  B.push({ t: &#x27;p&#x27;, x: &#x27;Ordered by resilience score, weakest first.&#x27; });
+  B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;#&#x27;, &#x27;Installation&#x27;, &#x27;Region&#x27;, &#x27;RRS&#x27;, &#x27;Posture&#x27;, &#x27;Crit MW&#x27;, &#x27;Firm MW&#x27;, &#x27;Cover&#x27;, &#x27;Endurance&#x27;, &#x27;CAT I&#x27;, &#x27;Dark&#x27;],
+    align: [&#x27;r&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;r&#x27;, &#x27;l&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;],
+    rows: all.map(function (x, i) {
+      return [String(i + 1), esc(x.s.name), x.s.region, String(x.m.rrs), x.m.posture,
+              x.m.cl.toFixed(1), x.m.cap.firm.toFixed(1), Math.round(x.m.coverage * 100) + &#x27;%&#x27;,
+              fmtH(x.m.endHrs), String(x.m.fr.c1), String(x.m.am.dark)];
+    })});
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;3. Regional roll-up&#x27; });
+  const byReg = {};
+  all.forEach(function (x) {
+    const k = x.s.region;
+    if (!byReg[k]) byReg[k] = { n: 0, rrs: 0, cl: 0, firm: 0, c1: 0, dark: 0, name: x.s.regionName };
+    const r = byReg[k];
+    r.n++; r.rrs += x.m.rrs; r.cl += x.m.cl; r.firm += x.m.cap.firm; r.c1 += x.m.fr.c1; r.dark += x.m.am.dark;
+  });
+  B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;Region&#x27;, &#x27;Name&#x27;, &#x27;Sites&#x27;, &#x27;Mean RRS&#x27;, &#x27;Crit MW&#x27;, &#x27;Firm MW&#x27;, &#x27;Cover&#x27;, &#x27;CAT I&#x27;, &#x27;Dark&#x27;],
+    align: [&#x27;l&#x27;, &#x27;l&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;],
+    rows: Object.keys(byReg).sort(function (a, b) { return byReg[a].rrs / byReg[a].n - byReg[b].rrs / byReg[b].n; })
+      .map(function (k) {
+        const r = byReg[k];
+        return [k, esc(r.name), String(r.n), String(Math.round(r.rrs / r.n)), r.cl.toFixed(1),
+                r.firm.toFixed(1), Math.round(r.firm / r.cl * 100) + &#x27;%&#x27;, String(r.c1), String(r.dark)];
+      })});
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;4. Control-system posture&#x27; });
+  B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;Installation&#x27;, &#x27;Systems&#x27;, &#x27;CAT I&#x27;, &#x27;CAT II&#x27;, &#x27;CAT III&#x27;, &#x27;Internet&#x27;, &#x27;Flat net&#x27;, &#x27;ATO gaps&#x27;, &#x27;Integrity&#x27;],
+    align: [&#x27;l&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;],
+    rows: SITES.map(x =&gt; ({ s: x, m: score(x) })).sort((a, b) =&gt; a.m.fr.score - b.m.fr.score)
+      .map(function (x) {
+        return [esc(x.s.name), String(x.m.fr.systems), String(x.m.fr.c1), String(x.m.fr.c2),
+                String(x.m.fr.c3), String(x.m.fr.inet), String(x.m.fr.flat), String(x.m.fr.atoGap),
+                x.m.fr.score + &#x27;/100&#x27;];
+      })});
+
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;5. Where to spend next&#x27; });
+  const acts = all.slice(0, 5).map(function (x) {
+    const gap = x.m.cl - x.m.cap.firm;
+    return [x.s.name + &#x27; \u2014 RRS &#x27; + x.m.rrs,
+      (gap &gt; 0 ? &#x27;Add &#x27; + gap.toFixed(1) + &#x27; MW of firm capacity to reach full coverage&#x27;
+               : &#x27;Capacity is adequate; the score is held down by control posture&#x27;) +
+      (x.m.fr.c1 ? &#x27;; close &#x27; + x.m.fr.c1 + &#x27; CAT I finding&#x27; + (x.m.fr.c1 &gt; 1 ? &#x27;s&#x27; : &#x27;&#x27;) : &#x27;&#x27;) +
+      (x.m.endHrs &lt; 24 ? &#x27;; endurance is &#x27; + fmtH(x.m.endHrs) + &#x27; and needs on-site fuel&#x27; : &#x27;&#x27;) + &#x27;.&#x27;];
+  });
+  B.push({ t: &#x27;actions&#x27;, items: acts });
+
+  const open = ALERTS.filter(a =&gt; !a.ack);
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;6. Open alerts&#x27; });
+  if (!open.length) B.push({ t: &#x27;p&#x27;, x: &#x27;No open alerts at time of generation.&#x27; });
+  else B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;Sev&#x27;, &#x27;Code&#x27;, &#x27;Installation&#x27;, &#x27;Condition&#x27;], align: [&#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;],
+    rows: open.sort((a, b) =&gt; SEV[a.sev].r - SEV[b.sev].r)
+      .map(a =&gt; [a.sev, a.code, esc(a.siteName), esc(a.msg)]) });
+  if (note) { B.push({ t: &#x27;h2&#x27;, x: &#x27;7. Analyst note&#x27; }); B.push({ t: &#x27;p&#x27;, x: esc(note) }); }
+  return B;
+}
+
+function pdfAlertBlocks(note) {
+  const B = [];
+  const open = ALERTS.filter(a =&gt; !a.ack), ack = ALERTS.filter(a =&gt; a.ack);
+  const bySev = {};
+  open.forEach(a =&gt; { bySev[a.sev] = (bySev[a.sev] || 0) + 1; });
+  B.push({ t: &#x27;kpi&#x27;, cells: [
+    { l: &#x27;Open alerts&#x27;, v: open.length, s: &#x27;at time of generation&#x27; },
+    { l: &#x27;Critical&#x27;, v: bySev.CRITICAL || 0, s: &#x27;immediate action&#x27;, c: &#x27;#9c2b2b&#x27; },
+    { l: &#x27;High&#x27;, v: bySev.HIGH || 0, s: &#x27;action this cycle&#x27;, c: &#x27;#8a6014&#x27; },
+    { l: &#x27;Acknowledged&#x27;, v: ack.length, s: &#x27;worked or accepted&#x27; }
+  ]});
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;1. Open alerts&#x27; });
+  if (!open.length) B.push({ t: &#x27;p&#x27;, x: &#x27;No open alerts at time of generation.&#x27; });
+  else B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;Sev&#x27;, &#x27;Code&#x27;, &#x27;Installation&#x27;, &#x27;Condition&#x27;, &#x27;Rationale&#x27;], align: [&#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;],
+    rows: open.sort((a, b) =&gt; SEV[a.sev].r - SEV[b.sev].r)
+      .map(a =&gt; [a.sev, a.code, esc(a.siteName || &#x27;\u2014&#x27;), esc(a.msg), esc(a.why || &#x27;\u2014&#x27;)]) });
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;2. By installation&#x27; });
+  const perSite = {};
+  open.forEach(a =&gt; { const k = a.siteName || &#x27;Enterprise&#x27;; perSite[k] = (perSite[k] || 0) + 1; });
+  const keys = Object.keys(perSite).sort((a, b) =&gt; perSite[b] - perSite[a]);
+  B.push({ t: &#x27;table&#x27;, cols: [&#x27;Installation&#x27;, &#x27;Open alerts&#x27;], align: [&#x27;l&#x27;, &#x27;r&#x27;],
+    rows: keys.length ? keys.map(k =&gt; [esc(k), String(perSite[k])]) : [[&#x27;\u2014&#x27;, &#x27;0&#x27;]] });
+  if (ack.length) {
+    B.push({ t: &#x27;h2&#x27;, x: &#x27;3. Acknowledged this session&#x27; });
+    B.push({ t: &#x27;table&#x27;, cols: [&#x27;Sev&#x27;, &#x27;Code&#x27;, &#x27;Installation&#x27;, &#x27;Condition&#x27;], align: [&#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;],
+      rows: ack.map(a =&gt; [a.sev, a.code, esc(a.siteName || &#x27;\u2014&#x27;), esc(a.msg)]) });
+  }
+  if (note) { B.push({ t: &#x27;h2&#x27;, x: &#x27;4. Analyst note&#x27; }); B.push({ t: &#x27;p&#x27;, x: esc(note) }); }
+  return B;
+}
+
+function pdfFrcsBlocks(note) {
+  const B = [];
+  const rows = SITES.map(x =&gt; ({ s: x, m: score(x) })).sort((a, b) =&gt; a.m.fr.score - b.m.fr.score);
+  const tot = rows.map(x =&gt; x.m);
+  const sum = k =&gt; tot.reduce((a, x) =&gt; a + x.fr[k], 0);
+  B.push({ t: &#x27;kpi&#x27;, cells: [
+    { l: &#x27;Control systems&#x27;, v: sum(&#x27;systems&#x27;), s: &#x27;across &#x27; + SITES.length + &#x27; installations&#x27; },
+    { l: &#x27;CAT I findings&#x27;, v: sum(&#x27;c1&#x27;), s: &#x27;permit control action&#x27;, c: &#x27;#9c2b2b&#x27; },
+    { l: &#x27;CAT II findings&#x27;, v: sum(&#x27;c2&#x27;), s: &#x27;weaken the boundary&#x27;, c: &#x27;#8a6014&#x27; },
+    { l: &#x27;Publicly addressed&#x27;, v: sum(&#x27;inet&#x27;), s: &#x27;answer on the internet&#x27;, c: &#x27;#9c2b2b&#x27; },
+    { l: &#x27;Flat network&#x27;, v: sum(&#x27;flat&#x27;), s: &#x27;no control separation&#x27;, c: &#x27;#8a6014&#x27; },
+    { l: &#x27;ATO gaps&#x27;, v: sum(&#x27;atoGap&#x27;), s: &#x27;no current authorization&#x27;, c: &#x27;#9c2b2b&#x27; }
+  ]});
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;1. Summary&#x27; });
+  B.push({ t: &#x27;p&#x27;, x: sum(&#x27;systems&#x27;) + &#x27; facility-related control systems are in the boundary across &#x27; +
+    SITES.length + &#x27; installations. &#x27; + sum(&#x27;c1&#x27;) + &#x27; CAT I, &#x27; + sum(&#x27;c2&#x27;) + &#x27; CAT II and &#x27; + sum(&#x27;c3&#x27;) +
+    &#x27; CAT III findings are open. &#x27; + sum(&#x27;inet&#x27;) + &#x27; systems answer on a public address and &#x27; + sum(&#x27;atoGap&#x27;) +
+    &#x27; operate without a current authorization.&#x27; });
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;2. Exposure by installation&#x27; });
+  B.push({ t: &#x27;table&#x27;,
+    cols: [&#x27;Installation&#x27;, &#x27;Region&#x27;, &#x27;Systems&#x27;, &#x27;CAT I&#x27;, &#x27;CAT II&#x27;, &#x27;CAT III&#x27;, &#x27;Internet&#x27;, &#x27;Flat net&#x27;, &#x27;ATO gaps&#x27;, &#x27;Integrity&#x27;],
+    align: [&#x27;l&#x27;, &#x27;l&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;, &#x27;r&#x27;],
+    rows: rows.map(function (x) {
+      return [esc(x.s.name), x.s.region, String(x.m.fr.systems), String(x.m.fr.c1), String(x.m.fr.c2),
+              String(x.m.fr.c3), String(x.m.fr.inet), String(x.m.fr.flat), String(x.m.fr.atoGap),
+              x.m.fr.score + &#x27;/100&#x27;];
+    })});
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;3. Systems carrying CAT I findings&#x27; });
+  const cat1 = [];
+  SITES.forEach(s =&gt; s.frcs.forEach(function (sys) {
+    const c1 = sys.findings.filter(f =&gt; FIND[f] &amp;&amp; FIND[f].cat === 1);
+    if (c1.length) cat1.push([esc(s.name), esc(sys.name), sys.ato, sys.exposure,
+      c1.map(f =&gt; FIND[f].id).join(&#x27;, &#x27;)]);
+  }));
+  B.push({ t: &#x27;table&#x27;, cols: [&#x27;Installation&#x27;, &#x27;System&#x27;, &#x27;ATO&#x27;, &#x27;Exposure&#x27;, &#x27;Findings&#x27;],
+    align: [&#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;, &#x27;l&#x27;],
+    rows: cat1.length ? cat1 : [[&#x27;\u2014&#x27;, &#x27;No CAT I findings open&#x27;, &#x27;&#x27;, &#x27;&#x27;, &#x27;&#x27;]] });
+  B.push({ t: &#x27;h2&#x27;, x: &#x27;4. Finding catalogue&#x27; });
+  B.push({ t: &#x27;p&#x27;, x: &#x27;Every finding type in the assessment library, with the remediation the assessment expects.&#x27; });
+  FINDING_LIB.slice().sort((a, b) =&gt; a.cat - b.cat || a.id.localeCompare(b.id)).forEach(function (f) {
+    B.push({ t: &#x27;finding&#x27;, cat: f.cat, id: f.id, title: esc(f.t), on: &#x27;&#x27;, desc: esc(f.d), fix: esc(f.fix) });
+  });
+  if (note) { B.push({ t: &#x27;h2&#x27;, x: &#x27;5. Analyst note&#x27; }); B.push({ t: &#x27;p&#x27;, x: esc(note) }); }
+  return B;
+}
+
+function pdfMethodology(scope) {
+  const B = [{ t: &#x27;h2&#x27;, x: &#x27;Methodology and assumptions&#x27; }];
+  B.push({ t: &#x27;p&#x27;, x: &#x27;The Resilience Readiness Score weights islanding coverage at 35%, endurance at 25%, &#x27; +
+    &#x27;control integrity at 20%, metering visibility at 12% and redundancy at 8%. &#x27; +
+    &#x27;Critical load counts critical facilities in full and vulnerable facilities at 40%. &#x27; +
+    &#x27;Firm capacity excludes solar and wind, and derates every asset by its availability state. &#x27; +
+    &#x27;Endurance divides stored energy by critical load and scores on a log curve against a 336-hour objective. &#x27; +
+    &#x27;Control integrity decays with weighted finding counts rather than flooring at zero, so two poor sites &#x27; +
+    &#x27;still rank against each other. Metering visibility weights stale reads at half and scales by data quality.&#x27; });
+  B.push({ t: &#x27;kv&#x27;, rows: [
+    [&#x27;Endurance objective&#x27;, &#x27;336 hours (14 days)&#x27;],
+    [&#x27;Planning floor&#x27;, &#x27;72 hours&#x27;],
+    [&#x27;Finding categories&#x27;, &#x27;CAT I permits control action \u00b7 CAT II weakens the boundary \u00b7 CAT III is hygiene&#x27;],
+    [&#x27;Availability derate&#x27;, &#x27;online 100% \u00b7 standby 90% \u00b7 maintenance, fault and planned 0%&#x27;],
+    [&#x27;Demand window&#x27;, &#x27;30 days, modelled from interval data and facility load roles&#x27;],
+    [&#x27;Generated by&#x27;, &#x27;ie-SRA SYS-03 BLACKSTART \u00b7 decision-support prototype&#x27;]
+  ]});
+  B.push({ t: &#x27;callout&#x27;, tone: &#x27;amber&#x27;, x: &#x27;Every value in this report is synthetic sample data. &#x27; +
+    &#x27;It is suitable for demonstrating the analysis and the report format, and is not suitable for &#x27; +
+    &#x27;operational, programming or investment decisions.&#x27; });
+  return B;
+}
+
+function pdfModel() {
+  const scope = document.getElementById(&#x27;rep-scope&#x27;).value;
+  const cls = document.getElementById(&#x27;rep-class&#x27;).value;
+  const note = document.getElementById(&#x27;rep-note&#x27;).value.trim();
+  const stamp = new Date().toISOString().replace(&#x27;T&#x27;, &#x27; &#x27;).slice(0, 16) + &#x27;Z&#x27;;
+  const s = iso.site, m = score(s);
+  let blocks;
+  if (scope === &#x27;enterprise&#x27;) blocks = pdfEnterpriseBlocks(cls, note);
+  else if (scope === &#x27;alerts&#x27;) blocks = pdfAlertBlocks(note);
+  else if (scope === &#x27;frcs&#x27;) blocks = pdfFrcsBlocks(note);
+  else blocks = pdfSiteBlocks(s, m, cls, note);
+  blocks = blocks.concat(pdfMethodology(scope));
+  const cover = pdfCover(scope, cls, stamp);
+  return {
+    cls: cls, stamp: stamp, cover: cover, blocks: blocks,
+    recipients: repRecips(),
+    file: &#x27;BLACKSTART_&#x27; + (scope === &#x27;site&#x27; ? slug(s.id) : scope) + &#x27;_&#x27; + new Date().toISOString().slice(0, 10)
+  };
+}
+
+/* ── print document ──
+   Letter portrait at 96dpi is 816 x 1056 px. The page box carries its own
+   margins so the classification banners can sit inside the paper edge, which
+   is where a marked document wants them; @page margin stays at zero. */
+function pdfCss() {
+  return [
+    &#x27;@page{size:letter portrait;margin:0}&#x27;,
+    &#x27;*{box-sizing:border-box}&#x27;,
+    &#x27;html,body{margin:0;padding:0}&#x27;,
+    &#x27;body{background:#586170;font-family:&quot;Helvetica Neue&quot;,Helvetica,Arial,sans-serif;&#x27;,
+      &#x27;font-size:9.6px;line-height:1.5;color:#17222f;-webkit-print-color-adjust:exact;print-color-adjust:exact}&#x27;,
+    &#x27;.page{position:relative;width:816px;height:1056px;background:#fff;margin:0 auto 20px;&#x27;,
+      &#x27;padding:64px 66px 74px;overflow:hidden;page-break-after:always;box-shadow:0 2px 14px rgba(0,0,0,.45)}&#x27;,
+    &#x27;.page:last-child{page-break-after:auto}&#x27;,
+    &#x27;.cls{position:absolute;left:0;right:0;height:24px;background:#1d2c3e;color:#fff;font-size:9px;&#x27;,
+      &#x27;letter-spacing:2.2px;text-align:center;line-height:24px;font-weight:700}&#x27;,
+    &#x27;.cls.top{top:0}.cls.bot{bottom:0}&#x27;,
+    &#x27;.rhead{position:absolute;top:34px;left:66px;right:66px;display:flex;justify-content:space-between;&#x27;,
+      &#x27;font-size:8px;letter-spacing:1.3px;color:#6a7686;text-transform:uppercase;&#x27;,
+      &#x27;border-bottom:1px solid #d6dde5;padding-bottom:5px}&#x27;,
+    &#x27;.rfoot{position:absolute;bottom:34px;left:66px;right:66px;display:flex;justify-content:space-between;&#x27;,
+      &#x27;font-size:8px;letter-spacing:1px;color:#6a7686;border-top:1px solid #d6dde5;padding-top:5px}&#x27;,
+    &#x27;.body{position:relative;height:100%}&#x27;,
+    /* cover */
+    &#x27;.cv-rule{height:3px;background:#12405e;margin:0 0 22px}&#x27;,
+    &#x27;.cv-kick{font-size:9px;letter-spacing:3.4px;color:#12405e;text-transform:uppercase;margin-bottom:10px}&#x27;,
+    &#x27;.cv-t{font-size:31px;line-height:1.14;letter-spacing:.4px;color:#0f1b28;font-weight:700;margin:0 0 8px}&#x27;,
+    &#x27;.cv-s{font-size:12px;color:#46596e;margin-bottom:26px}&#x27;,
+    &#x27;.cv-facts{width:100%;border-collapse:collapse;margin-bottom:26px}&#x27;,
+    &#x27;.cv-facts td{padding:5px 0;border-bottom:1px solid #e4e9ef;font-size:10px;vertical-align:top}&#x27;,
+    &#x27;.cv-facts td:first-child{width:150px;color:#6a7686;letter-spacing:.6px;text-transform:uppercase;font-size:8.5px;padding-top:7px}&#x27;,
+    &#x27;.cv-dist{font-size:9px;color:#46596e;line-height:1.7}&#x27;,
+    &#x27;.page.cover .rhead{display:none}&#x27;,
+    &#x27;.cv-h{font-size:9px;letter-spacing:2px;color:#12405e;text-transform:uppercase;font-weight:700;&#x27;,
+      &#x27;margin:22px 0 8px;padding-bottom:5px;border-bottom:1.6px solid #12405e}&#x27;,
+    &#x27;.cv-row{display:flex;gap:6px;align-items:baseline;font-size:9.4px;padding:3px 0}&#x27;,
+    &#x27;.cv-row .d{flex:1;border-bottom:1px dotted #b9c4d0;transform:translateY(-3px)}&#x27;,
+    &#x27;.cv-row .pg{color:#6a7686;font-size:8.6px}&#x27;,
+    /* headings and text */
+    &#x27;h2{font-size:12.5px;letter-spacing:.6px;color:#0f1b28;margin:17px 0 7px;padding-bottom:5px;&#x27;,
+      &#x27;border-bottom:1.6px solid #12405e;text-transform:uppercase;font-weight:700}&#x27;,
+    &#x27;h3{font-size:10.5px;letter-spacing:.4px;color:#12405e;margin:12px 0 5px;font-weight:700}&#x27;,
+    &#x27;p{margin:0 0 7px}&#x27;,
+    &#x27;ul,ol{margin:4px 0 8px 17px;padding:0}li{margin-bottom:3px}&#x27;,
+    /* kpi strip */
+    &#x27;.kpi{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}&#x27;,
+    &#x27;.kpi .c{flex:1 1 30%;border:1px solid #d6dde5;border-left:3px solid #12405e;padding:7px 9px}&#x27;,
+    &#x27;.kpi .l{font-size:7.6px;letter-spacing:1.2px;color:#6a7686;text-transform:uppercase}&#x27;,
+    &#x27;.kpi .v{font-size:17px;font-weight:700;color:#0f1b28;line-height:1.25}&#x27;,
+    &#x27;.kpi .s{font-size:8px;color:#6a7686}&#x27;,
+    /* tables */
+    &#x27;table.t{width:100%;border-collapse:collapse;margin:5px 0 9px;font-size:8.8px}&#x27;,
+    &#x27;table.t th{text-align:left;background:#eef2f6;color:#33445a;font-size:7.8px;letter-spacing:.9px;&#x27;,
+      &#x27;text-transform:uppercase;padding:5px 6px;border-bottom:1.4px solid #b9c4d0;font-weight:700}&#x27;,
+    &#x27;table.t td{padding:4px 6px;border-bottom:1px solid #e4e9ef;vertical-align:top}&#x27;,
+    &#x27;table.t tr.ft td{border-top:1.4px solid #b9c4d0;border-bottom:none;font-weight:700;background:#f6f8fa}&#x27;,
+    &#x27;table.t .r{text-align:right}&#x27;,
+    &#x27;table.t .cont{font-size:7.6px;color:#6a7686;letter-spacing:1px;padding:2px 6px;text-transform:uppercase}&#x27;,
+    /* key-value */
+    &#x27;table.kv{width:100%;border-collapse:collapse;margin:4px 0 9px;font-size:9px}&#x27;,
+    &#x27;table.kv td{padding:4px 6px;border-bottom:1px solid #e4e9ef;vertical-align:top}&#x27;,
+    &#x27;table.kv td:first-child{width:172px;color:#6a7686;text-transform:uppercase;font-size:8px;letter-spacing:.8px}&#x27;,
+    /* callouts, findings, actions */
+    &#x27;.callout{border-left:3px solid #12405e;background:#f2f6fa;padding:7px 10px;margin:6px 0 9px;font-size:9.2px}&#x27;,
+    &#x27;.callout.red{border-left-color:#9c2b2b;background:#fbf2f2}&#x27;,
+    &#x27;.callout.amber{border-left-color:#8a6014;background:#fbf7ef}&#x27;,
+    &#x27;.callout.green{border-left-color:#1f7a52;background:#f1f8f4}&#x27;,
+    &#x27;.find{border:1px solid #d6dde5;padding:8px 10px;margin:6px 0;font-size:9px}&#x27;,
+    &#x27;.find .h{display:flex;gap:8px;align-items:baseline;margin-bottom:4px}&#x27;,
+    &#x27;.find .cat{font-size:7.6px;font-weight:700;letter-spacing:1px;padding:1px 6px;border:1px solid;border-radius:2px}&#x27;,
+    &#x27;.find .cat1{color:#9c2b2b;border-color:#9c2b2b}.find .cat2{color:#8a6014;border-color:#8a6014}&#x27;,
+    &#x27;.find .cat3{color:#46596e;border-color:#9aa7b6}&#x27;,
+    &#x27;.find .ti{font-weight:700;color:#0f1b28}&#x27;,
+    &#x27;.find .on{font-size:8px;color:#6a7686;margin-bottom:3px}&#x27;,
+    &#x27;.find .fix{margin-top:4px;color:#1f4d38}&#x27;,
+    &#x27;.act{display:flex;gap:9px;margin:5px 0;font-size:9.2px}&#x27;,
+    &#x27;.act .n{flex:0 0 20px;height:20px;line-height:20px;text-align:center;background:#12405e;color:#fff;&#x27;,
+      &#x27;font-size:9px;font-weight:700;border-radius:2px}&#x27;,
+    &#x27;.act .ti{font-weight:700;color:#0f1b28}&#x27;,
+    &#x27;.meta{font-size:8.4px;color:#6a7686;letter-spacing:.7px;margin-bottom:12px}&#x27;,
+    &#x27;.bar{position:fixed;top:0;left:0;right:0;background:#0f1b28;color:#e8eef5;padding:9px 16px;&#x27;,
+      &#x27;font-size:12px;display:flex;gap:12px;align-items:center;z-index:9;font-family:Helvetica,Arial,sans-serif}&#x27;,
+    &#x27;.bar button{background:#18d4f8;border:0;color:#06121e;font-weight:700;padding:6px 14px;border-radius:3px;cursor:pointer}&#x27;,
+    &#x27;.bar .m{color:#8fa3b8}&#x27;,
+    &#x27;.sheet{padding-top:44px}&#x27;,
+    /* last so it wins over the screen rules above at equal specificity — the
+       toolbar offset must not survive into print or every sheet shifts down */
+    &#x27;@media print{body{background:#fff}.page{margin:0;box-shadow:none}&#x27;,
+      &#x27;.noprint{display:none!important}.sheet{padding-top:0}}&#x27;
+  ].join(&#x27;&#x27;);
+}
+
+/* Block renderers. Tables emit rows separately so the paginator can split them. */
+function pdfBlockHtml(b) {
+  if (b.t === &#x27;h2&#x27;) return &#x27;&lt;h2&gt;&#x27; + b.x + &#x27;&lt;/h2&gt;&#x27;;
+  if (b.t === &#x27;h3&#x27;) return &#x27;&lt;h3&gt;&#x27; + b.x + &#x27;&lt;/h3&gt;&#x27;;
+  if (b.t === &#x27;p&#x27;) return &#x27;&lt;p&gt;&#x27; + b.x + &#x27;&lt;/p&gt;&#x27;;
+  if (b.t === &#x27;meta&#x27;) return &#x27;&lt;div class=&quot;meta&quot;&gt;&#x27; + b.x + &#x27;&lt;/div&gt;&#x27;;
+  if (b.t === &#x27;callout&#x27;) return &#x27;&lt;div class=&quot;callout &#x27; + (b.tone || &#x27;&#x27;) + &#x27;&quot;&gt;&#x27; + b.x + &#x27;&lt;/div&gt;&#x27;;
+  if (b.t === &#x27;ul&#x27;) return &#x27;&lt;ul&gt;&#x27; + b.items.map(i =&gt; &#x27;&lt;li&gt;&#x27; + i + &#x27;&lt;/li&gt;&#x27;).join(&#x27;&#x27;) + &#x27;&lt;/ul&gt;&#x27;;
+  if (b.t === &#x27;ol&#x27;) return &#x27;&lt;ol&gt;&#x27; + b.items.map(i =&gt; &#x27;&lt;li&gt;&#x27; + i + &#x27;&lt;/li&gt;&#x27;).join(&#x27;&#x27;) + &#x27;&lt;/ol&gt;&#x27;;
+  if (b.t === &#x27;kpi&#x27;) return &#x27;&lt;div class=&quot;kpi&quot;&gt;&#x27; + b.cells.map(c =&gt;
+    &#x27;&lt;div class=&quot;c&quot;&gt;&lt;div class=&quot;l&quot;&gt;&#x27; + c.l + &#x27;&lt;/div&gt;&lt;div class=&quot;v&quot;&#x27; +
+    (c.c ? &#x27; style=&quot;color:&#x27; + c.c + &#x27;&quot;&#x27; : &#x27;&#x27;) + &#x27;&gt;&#x27; + c.v + &#x27;&lt;/div&gt;&#x27; +
+    &#x27;&lt;div class=&quot;s&quot;&gt;&#x27; + (c.s || &#x27;&#x27;) + &#x27;&lt;/div&gt;&lt;/div&gt;&#x27;).join(&#x27;&#x27;) + &#x27;&lt;/div&gt;&#x27;;
+  if (b.t === &#x27;kv&#x27;) return &#x27;&lt;table class=&quot;kv&quot;&gt;&lt;tbody&gt;&#x27; + b.rows.map(r =&gt;
+    &#x27;&lt;tr&gt;&lt;td&gt;&#x27; + r[0] + &#x27;&lt;/td&gt;&lt;td&gt;&#x27; + r[1] + &#x27;&lt;/td&gt;&lt;/tr&gt;&#x27;).join(&#x27;&#x27;) + &#x27;&lt;/tbody&gt;&lt;/table&gt;&#x27;;
+  if (b.t === &#x27;finding&#x27;) return &#x27;&lt;div class=&quot;find&quot;&gt;&lt;div class=&quot;h&quot;&gt;&#x27; +
+    &#x27;&lt;span class=&quot;cat cat&#x27; + b.cat + &#x27;&quot;&gt;CAT &#x27; + b.cat + &#x27;&lt;/span&gt;&#x27; +
+    &#x27;&lt;span class=&quot;ti&quot;&gt;&#x27; + b.id + &#x27; \u00b7 &#x27; + b.title + &#x27;&lt;/span&gt;&lt;/div&gt;&#x27; +
+    (b.on ? &#x27;&lt;div class=&quot;on&quot;&gt;Observed on: &#x27; + b.on + &#x27;&lt;/div&gt;&#x27; : &#x27;&#x27;) +
+    &#x27;&lt;div&gt;&#x27; + b.desc + &#x27;&lt;/div&gt;&lt;div class=&quot;fix&quot;&gt;&lt;b&gt;Remediation:&lt;/b&gt; &#x27; + b.fix + &#x27;&lt;/div&gt;&lt;/div&gt;&#x27;;
+  if (b.t === &#x27;actions&#x27;) return b.items.map((a, i) =&gt;
+    &#x27;&lt;div class=&quot;act&quot;&gt;&lt;div class=&quot;n&quot;&gt;&#x27; + (i + 1) + &#x27;&lt;/div&gt;&lt;div&gt;&lt;span class=&quot;ti&quot;&gt;&#x27; + a[0] +
+    &#x27;&lt;/span&gt; \u2014 &#x27; + a[1] + &#x27;&lt;/div&gt;&lt;/div&gt;&#x27;).join(&#x27;&#x27;);
+  return &#x27;&#x27;;
+}
+
+function pdfDocHtml(model) {
+  const M = JSON.stringify(model).replace(/&lt;/g, &#x27;\\u003c&#x27;);
+  return &#x27;&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&#x27; +
+    &#x27;&lt;title&gt;&#x27; + esc(model.file) + &#x27;&lt;/title&gt;&lt;style&gt;&#x27; + pdfCss() + &#x27;&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&#x27; +
+    &#x27;&lt;div class=&quot;bar noprint&quot;&gt;&lt;button onclick=&quot;window.print()&quot;&gt;Print / Save as PDF&lt;/button&gt;&#x27; +
+    &#x27;&lt;span class=&quot;m&quot;&gt;Choose &lt;b&gt;Save as PDF&lt;/b&gt; as the destination. Letter portrait, margins none, background graphics on.&lt;/span&gt;&lt;/div&gt;&#x27; +
+    &#x27;&lt;div class=&quot;sheet&quot; id=&quot;sheet&quot;&gt;&lt;/div&gt;&#x27; +
+    &#x27;&lt;script&gt;&#x27; + pdfPaginator() + &#x27;\nPAGINATE(&#x27; + M + &#x27;);&lt;\/script&gt;&#x27; +
+    &#x27;&lt;/body&gt;&lt;/html&gt;&#x27;;
+}
+
+/* The paginator runs inside the print document, where it can measure against a
+   real page box. It fills one page at a time and splits tables row by row,
+   repeating the header on the continuation. */
+function pdfPaginator() {
+  return [
+    &#x27;function PAGINATE(M){&#x27;,
+    &#x27;  var sheet=document.getElementById(&quot;sheet&quot;), pages=[], cur=null, body=null;&#x27;,
+    &#x27;  var HEAD=M.cover.title;&#x27;,
+    &#x27;  function page(cover){&#x27;,
+    &#x27;    var p=document.createElement(&quot;div&quot;); p.className=&quot;page&quot;+(cover?&quot; cover&quot;:&quot;&quot;);&#x27;,
+    &#x27;    p.innerHTML=\&#x27;&lt;div class=&quot;cls top&quot;&gt;\&#x27;+M.cls+\&#x27;&lt;/div&gt;&lt;div class=&quot;cls bot&quot;&gt;\&#x27;+M.cls+\&#x27;&lt;/div&gt;\&#x27;+&#x27;,
+    &#x27;      \&#x27;&lt;div class=&quot;rhead&quot;&gt;&lt;span&gt;\&#x27;+HEAD+\&#x27;&lt;/span&gt;&lt;span&gt;ie-SRA SYS-03 BLACKSTART&lt;/span&gt;&lt;/div&gt;\&#x27;+&#x27;,
+    &#x27;      \&#x27;&lt;div class=&quot;rfoot&quot;&gt;&lt;span&gt;\&#x27;+M.stamp+\&#x27; \\u00b7 SAMPLE DATA&lt;/span&gt;&lt;span class=&quot;pn&quot;&gt;&lt;/span&gt;&lt;/div&gt;\&#x27;+&#x27;,
+    &#x27;      \&#x27;&lt;div class=&quot;body&quot;&gt;&lt;/div&gt;\&#x27;;&#x27;,
+    &#x27;    sheet.appendChild(p); pages.push(p); cur=p; body=p.querySelector(&quot;.body&quot;);&#x27;,
+    &#x27;    return p;&#x27;,
+    &#x27;  }&#x27;,
+    &#x27;  function fits(){ return body.scrollHeight&lt;=body.clientHeight; }&#x27;,
+    &#x27;  function push(html){&#x27;,
+    &#x27;    var d=document.createElement(&quot;div&quot;); d.innerHTML=html;&#x27;,
+    &#x27;    while(d.firstChild){&#x27;,
+    &#x27;      var n=d.firstChild; body.appendChild(n);&#x27;,
+    &#x27;      if(!fits()){ body.removeChild(n); page(); body.appendChild(n);&#x27;,
+    &#x27;        if(!fits()) return; }&#x27;,
+    &#x27;    }&#x27;,
+    &#x27;  }&#x27;,
+    /* a heading alone at the foot of a page is a widow; hold it with what follows */
+    &#x27;  function pushWithNext(headHtml, nextFn){&#x27;,
+    &#x27;    var mark=body.childNodes.length;&#x27;,
+    &#x27;    push(headHtml); nextFn();&#x27;,
+    &#x27;    if(body.childNodes.length===0 &amp;&amp; mark===0) return;&#x27;,
+    &#x27;  }&#x27;,
+    &#x27;  function table(b){&#x27;,
+    &#x27;    var head=\&#x27;&lt;tr&gt;\&#x27;+b.cols.map(function(c,i){return \&#x27;&lt;th\&#x27;+(b.align&amp;&amp;b.align[i]===&quot;r&quot;?\&#x27; class=&quot;r&quot;\&#x27;:&quot;&quot;)+\&#x27;&gt;\&#x27;+c+\&#x27;&lt;/th&gt;\&#x27;;}).join(&quot;&quot;)+\&#x27;&lt;/tr&gt;\&#x27;;&#x27;,
+    &#x27;    var t=document.createElement(&quot;table&quot;); t.className=&quot;t&quot;;&#x27;,
+    &#x27;    t.innerHTML=\&#x27;&lt;thead&gt;\&#x27;+head+\&#x27;&lt;/thead&gt;&lt;tbody&gt;&lt;/tbody&gt;\&#x27;;&#x27;,
+    &#x27;    body.appendChild(t);&#x27;,
+    &#x27;    if(!fits()){ body.removeChild(t); page(); body.appendChild(t); }&#x27;,
+    &#x27;    var tb=t.querySelector(&quot;tbody&quot;), rows=b.rows.slice(), cont=false;&#x27;,
+    &#x27;    for(var i=0;i&lt;rows.length;i++){&#x27;,
+    &#x27;      var tr=document.createElement(&quot;tr&quot;);&#x27;,
+    &#x27;      tr.innerHTML=rows[i].map(function(v,j){return \&#x27;&lt;td\&#x27;+(b.align&amp;&amp;b.align[j]===&quot;r&quot;?\&#x27; class=&quot;r&quot;\&#x27;:&quot;&quot;)+\&#x27;&gt;\&#x27;+v+\&#x27;&lt;/td&gt;\&#x27;;}).join(&quot;&quot;);&#x27;,
+    &#x27;      tb.appendChild(tr);&#x27;,
+    &#x27;      if(!fits()){&#x27;,
+    &#x27;        tb.removeChild(tr); page();&#x27;,
+    &#x27;        t=document.createElement(&quot;table&quot;); t.className=&quot;t&quot;;&#x27;,
+    &#x27;        t.innerHTML=\&#x27;&lt;thead&gt;&lt;tr&gt;&lt;td class=&quot;cont&quot; colspan=&quot;\&#x27;+b.cols.length+\&#x27;&quot;&gt;\&#x27;+&#x27;,
+    &#x27;          (b.contLabel||&quot;table continued&quot;)+\&#x27;&lt;/td&gt;&lt;/tr&gt;\&#x27;+head+\&#x27;&lt;/thead&gt;&lt;tbody&gt;&lt;/tbody&gt;\&#x27;;&#x27;,
+    &#x27;        body.appendChild(t); tb=t.querySelector(&quot;tbody&quot;); tb.appendChild(tr); cont=true;&#x27;,
+    &#x27;        if(!fits()) return;&#x27;,
+    &#x27;      }&#x27;,
+    &#x27;    }&#x27;,
+    &#x27;    if(b.foot){&#x27;,
+    &#x27;      var ft=document.createElement(&quot;tr&quot;); ft.className=&quot;ft&quot;;&#x27;,
+    &#x27;      ft.innerHTML=b.foot.map(function(v,j){return \&#x27;&lt;td\&#x27;+(b.align&amp;&amp;b.align[j]===&quot;r&quot;?\&#x27; class=&quot;r&quot;\&#x27;:&quot;&quot;)+\&#x27;&gt;\&#x27;+v+\&#x27;&lt;/td&gt;\&#x27;;}).join(&quot;&quot;);&#x27;,
+    &#x27;      tb.appendChild(ft);&#x27;,
+    &#x27;      if(!fits()){ tb.removeChild(ft); page();&#x27;,
+    &#x27;        var t2=document.createElement(&quot;table&quot;); t2.className=&quot;t&quot;;&#x27;,
+    &#x27;        t2.innerHTML=\&#x27;&lt;thead&gt;\&#x27;+head+\&#x27;&lt;/thead&gt;&lt;tbody&gt;&lt;/tbody&gt;\&#x27;;&#x27;,
+    &#x27;        body.appendChild(t2); t2.querySelector(&quot;tbody&quot;).appendChild(ft); }&#x27;,
+    &#x27;    }&#x27;,
+    &#x27;  }&#x27;,
+    /* cover */
+    &#x27;  page(1);&#x27;,
+    &#x27;  var facts=M.cover.facts.map(function(f){return \&#x27;&lt;tr&gt;&lt;td&gt;\&#x27;+f[0]+\&#x27;&lt;/td&gt;&lt;td&gt;\&#x27;+f[1]+\&#x27;&lt;/td&gt;&lt;/tr&gt;\&#x27;;}).join(&quot;&quot;);&#x27;,
+    &#x27;  body.innerHTML=\&#x27;&lt;div class=&quot;cv-rule&quot;&gt;&lt;/div&gt;&lt;div class=&quot;cv-kick&quot;&gt;Installation Energy \\u00b7 Simulation, Reporting &amp;amp; Analytics&lt;/div&gt;\&#x27;+&#x27;,
+    &#x27;    \&#x27;&lt;div class=&quot;cv-t&quot;&gt;\&#x27;+M.cover.title+\&#x27;&lt;/div&gt;&lt;div class=&quot;cv-s&quot;&gt;\&#x27;+M.cover.sub+\&#x27;&lt;/div&gt;\&#x27;+&#x27;,
+    &#x27;    \&#x27;&lt;table class=&quot;cv-facts&quot;&gt;&lt;tbody&gt;\&#x27;+facts+\&#x27;&lt;/tbody&gt;&lt;/table&gt;\&#x27;+&#x27;,
+    &#x27;    \&#x27;&lt;div class=&quot;cv-dist&quot;&gt;&lt;b&gt;DISTRIBUTION&lt;/b&gt;&lt;br&gt;\&#x27;+(M.recipients.join(&quot;&lt;br&gt;&quot;)||&quot;Not addressed&quot;)+\&#x27;&lt;/div&gt;\&#x27;+&#x27;,
+    &#x27;    \&#x27;&lt;div id=&quot;toc&quot;&gt;&lt;/div&gt;\&#x27;;&#x27;,
+    &#x27;  page();&#x27;,
+    &#x27;  var toc=[];&#x27;,
+    &#x27;  M.blocks.forEach(function(b){&#x27;,
+    &#x27;    if(b.t===&quot;table&quot;){ table(b); }&#x27;,
+    &#x27;    else { push(RENDER(b)); if(b.t===&quot;h2&quot;) toc.push([b.x,pages.length]); }&#x27;,
+    &#x27;  });&#x27;,
+    &#x27;  var tocEl=pages[0].querySelector(&quot;#toc&quot;);&#x27;,
+    &#x27;  if(tocEl) tocEl.innerHTML=\&#x27;&lt;div class=&quot;cv-h&quot;&gt;Contents&lt;/div&gt;\&#x27;+toc.map(function(t){&#x27;,
+    &#x27;    return \&#x27;&lt;div class=&quot;cv-row&quot;&gt;&lt;span&gt;\&#x27;+t[0]+\&#x27;&lt;/span&gt;&lt;span class=&quot;d&quot;&gt;&lt;/span&gt;&lt;span class=&quot;pg&quot;&gt;\&#x27;+t[1]+\&#x27;&lt;/span&gt;&lt;/div&gt;\&#x27;;}).join(&quot;&quot;);&#x27;,
+    &#x27;  var n=pages.length;&#x27;,
+    &#x27;  pages.forEach(function(p,i){ p.querySelector(&quot;.pn&quot;).textContent=&quot;Page &quot;+(i+1)+&quot; of &quot;+n; });&#x27;,
+    &#x27;  document.title=M.file;&#x27;,
+    &#x27;  try{ parent.postMessage({pdf:&quot;ready&quot;,pages:n},&quot;*&quot;); }catch(e){}&#x27;,
+    &#x27;}&#x27;
+  ].join(&#x27;\n&#x27;);
+}
+
+function pdfRenderFn() {
+  /* pdfBlockHtml is needed inside the document too; ship it as a string so the
+     print frame stays self-contained and nothing depends on this module. */
+  return &#x27;var RENDER=&#x27; + pdfBlockHtml.toString().replace(/^function\s+\w+/, &#x27;function&#x27;) + &#x27;;&#x27;;
+}
+
+/* ── the button ── */
+let _pdfFrame = null;
+function createPdf() {
+  const model = pdfModel();
+  const doc = pdfDocHtml(model).replace(&#x27;&lt;script&gt;&#x27;, &#x27;&lt;script&gt;&#x27; + pdfRenderFn());
+  if (_pdfFrame) { _pdfFrame.remove(); _pdfFrame = null; }
+  const f = document.createElement(&#x27;iframe&#x27;);
+  f.setAttribute(&#x27;aria-hidden&#x27;, &#x27;true&#x27;);
+  f.style.cssText = &#x27;position:absolute;width:816px;height:1056px;left:-10000px;top:0;border:0;&#x27;;
+  document.body.appendChild(f);
+  _pdfFrame = f;
+  let done = false;
+  function go(pages) {
+    if (done) return; done = true;
+    toast(&#x27;INFO&#x27;, &#x27;REPORT&#x27;, &#x27;PDF ready \u2014 &#x27; + pages + &#x27; pages. Choose &quot;Save as PDF&quot; in the print dialog.&#x27;);
+    setTimeout(function () {
+      try { f.contentWindow.focus(); f.contentWindow.print(); }
+      catch (e) {
+        // some browsers refuse to print a frame they consider offscreen
+        const w = window.open(&#x27;&#x27;, &#x27;_blank&#x27;);
+        if (w) { w.document.write(doc); w.document.close(); }
+        else toast(&#x27;MODERATE&#x27;, &#x27;REPORT&#x27;, &#x27;The browser blocked the print view. Allow pop-ups for this page and try again.&#x27;);
+      }
+    }, 120);
+  }
+  function onMsg(e) {
+    if (e.data &amp;&amp; e.data.pdf === &#x27;ready&#x27;) { window.removeEventListener(&#x27;message&#x27;, onMsg); go(e.data.pages); }
+  }
+  window.addEventListener(&#x27;message&#x27;, onMsg);
+  const d = f.contentWindow.document;
+  d.open(); d.write(doc); d.close();
+  // pagination is synchronous, but fonts and reflow are not — fall back on a timer
+  setTimeout(function () {
+    if (!done) { window.removeEventListener(&#x27;message&#x27;, onMsg);
+      go(d.querySelectorAll(&#x27;.page&#x27;).length || 1); }
+  }, 1200);
+}
+
+/* ══════════════════════════════════════════════════════════════
    CONSUMPTION LAYER
    Geolocates meters around each installation, models hourly demand,
    and renders it as a heat surface on the global map.
@@ -14633,8 +15809,7 @@ function toggleHeat(){
   if(HEAT.on&amp;&amp;HEAT.scope===&#x27;site&#x27;)focusHeat();
 }
 function focusHeat(){
-  if(!gmap||!iso.site)return;
-  gmap.setView([iso.site.lat,iso.site.lon],14,{animate:false});
+  zoomToSite(iso.site,true);
 }
 function paintHeatControls(){
   const el=document.getElementById(&#x27;heat-ctl&#x27;);if(!el)return;
