@@ -792,6 +792,23 @@ html::after {
 .card-icon-wrap svg { width:100%; height:100%; }
 
 .card-head-text { display:flex; flex-direction:column; align-items:flex-start; gap:3px; min-width:0; overflow:hidden; }
+
+/* ── HUB GRID: badge and title share one line ── */
+#card-grid .card-head-text {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+}
+#card-grid .card-badge {
+  display: inline;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+#card-grid .card-title {
+  display: inline;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
 .card-badge {
   font-family: var(--dsp);
   font-size: var(--title-sz);
@@ -942,7 +959,7 @@ html::after {
   box-shadow: 0 0 12px rgba(176,184,196,.2);
 }
 
-/* ── CARD: Intel Archive (SYS-03) ── */
+/* ── CARD: Intel Archive (SYS-01C) ── */
 .card-intel::before {
   background: linear-gradient(90deg, transparent, #d4855a, transparent);
   opacity: .65;
@@ -1175,7 +1192,7 @@ html::after {
 
 /* ── SCAN LINE ── */
 
-/* ── SYS-03 ARCHIVE MODULES ── */
+/* ── SYS-01C ARCHIVE MODULES ── */
 .arc-body { flex:1; display:flex; flex-direction:column; overflow:hidden; background:var(--void); }
 .arc-toolbar {
   display:flex; align-items:center; gap:8px;
@@ -2307,7 +2324,7 @@ html::after {
 .card-analytics .launch-btn { background: rgba(0,229,255,.12); color: #00e5ff; border: 1px solid rgba(0,229,255,.38); border-radius: 10px; }
 .card-analytics .launch-btn:active, .card-analytics .launch-btn:hover { background: rgba(0,229,255,.22); box-shadow: 0 0 12px rgba(0,229,255,.2); }
 
-/* ── SYS-05 Security & Resiliency ── */
+/* ── SYS-03 Security & Resiliency ── */
 .card-secres::before { background: linear-gradient(90deg, transparent, #a07cf0, transparent); opacity: .58; }
 .card-secres:hover { border-color: rgba(160,124,240,.4); box-shadow: var(--card-bevel), 0 0 20px rgba(160,124,240,.12); }
 .card-secres .card-badge  { color: #a07cf0; }
@@ -2315,11 +2332,20 @@ html::after {
 .card-secres .meta-pill { border-color: rgba(160,124,240,.50); color: #c3aaf8; background: rgba(160,124,240,.11); }
 .card-secres .launch-btn { background: rgba(160,124,240,.12); color: #a07cf0; border: 1px solid rgba(160,124,240,.38); border-radius: 10px; }
 .card-secres .launch-btn:active, .card-secres .launch-btn:hover { background: rgba(160,124,240,.22); box-shadow: 0 0 12px rgba(160,124,240,.2); }
-/* matches the #launcher-shell specificity of the theme block further down */
 #launcher-shell .card-secres .meta-pill  { border-color: rgba(160,124,240,.50); color: #c3aaf8; background: rgba(160,124,240,.11); }
 #launcher-shell .card-secres .launch-btn { background: rgba(160,124,240,.14); color: #b596f5; border: 1px solid rgba(160,124,240,.55); }
 #launcher-shell .card-secres .launch-btn:hover { background: rgba(160,124,240,.24); box-shadow: 0 0 16px rgba(160,124,240,.18); }
 #launcher-shell .card-secres .card-desc em { color: #c3aaf8; }
+
+/* ── FULL SCREEN TOGGLE ── */
+#fs-btn { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; color: var(--txd);
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px;
+  padding: 3px 10px; cursor: pointer; transition: color .18s, border-color .18s, background .18s;
+  flex-shrink: 0; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+#fs-btn:hover { color: #9ebc52; border-color: rgba(158,188,82,.55); }
+#fs-btn.active { color: #9ebc52; border-color: rgba(158,188,82,.55); background: rgba(158,188,82,.10); }
+#fs-btn.blocked { color: #c07050; border-color: rgba(192,112,80,.5); }
+#fs-btn svg { display: block; }
 </style>
 </head>
 <body>
@@ -2466,7 +2492,7 @@ html::after {
     <span>NS NORFOLK · NAVFAC MIDLANT</span>
     <div class="bb-sep"></div><span>SYS-01A SCENARIO SIMULATOR</span>
     <div class="bb-sep"></div><span>SYS-01B SITE RECON</span>
-    <div class="bb-sep"></div><span>SYS-03 INTEL ARCHIVE</span>
+    <div class="bb-sep"></div><span>SYS-01C INTEL ARCHIVE</span>
     <div class="bb-sep"></div><span>ARIA AI ANALYST</span>
     <div style="margin-left:auto;">STRATEGIC DIGITAL TWIN · INSTALLATION ENERGY RESILIENCE</div>
   </div>
@@ -3000,11 +3026,6 @@ html, body { height: 100%; background: var(--void); color: var(--tx); font-famil
                 <div class=&quot;sv-module-name&quot;>SimRecon</div>
                 <div class=&quot;sv-module-desc&quot;>Wargame simulator + live site recon map</div>
               </div>
-              <div class=&quot;sv-module-box&quot; style=&quot;border-top:3px solid var(--amber);&quot;>
-                <div class=&quot;sv-module-id&quot;>SYS-03</div>
-                <div class=&quot;sv-module-name&quot;>Intel Archive</div>
-                <div class=&quot;sv-module-desc&quot;>Persistent scenario + recon site storage</div>
-              </div>
               <div class=&quot;sv-module-box&quot; style=&quot;border-top:3px solid var(--olive);&quot;>
                 <div class=&quot;sv-module-id&quot;>SYS-04</div>
                 <div class=&quot;sv-module-name&quot;>Data Drop Zone</div>
@@ -3017,7 +3038,7 @@ html, body { height: 100%; background: var(--void); color: var(--tx); font-famil
               </div>
             </div>
             <div style=&quot;margin-top:18px;font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--txd);&quot;>CLICK ANY CARD TO LAUNCH MODULE</div>
-            <div class=&quot;sv-label-overlay&quot;>HUB DASHBOARD · 4 MODULE CARDS</div>
+            <div class=&quot;sv-label-overlay&quot;>HUB DASHBOARD · 3 MODULE CARDS</div>
           </div>
 
           <!-- BEAT 03: SimRecon Hub -->
@@ -3037,6 +3058,11 @@ html, body { height: 100%; background: var(--void); color: var(--tx); font-famil
                 <div class=&quot;sv-module-id&quot;>SYS-01B</div>
                 <div class=&quot;sv-module-name&quot;>Site Recon Map — e-Recon</div>
                 <div style=&quot;font-size:13px;color:var(--txd);margin-top:7px;&quot;>Live NS Norfolk satellite + 3D isometric overlay</div>
+              </div>
+              <div class=&quot;sv-module-box&quot; style=&quot;border:1px solid var(--border);&quot;>
+                <div class=&quot;sv-module-id&quot;>SYS-01C</div>
+                <div class=&quot;sv-module-name&quot;>Intel Archive</div>
+                <div style=&quot;font-size:13px;color:var(--txd);margin-top:7px;&quot;>Persistent scenario playback + recon site catalog</div>
               </div>
               <div class=&quot;sv-module-box&quot; style=&quot;border:1px solid var(--border);&quot;>
                 <div class=&quot;sv-module-id&quot;>SYS-04</div>
@@ -3220,7 +3246,7 @@ html, body { height: 100%; background: var(--void); color: var(--tx); font-famil
           <!-- BEAT 09: Recon Sites Catalog -->
           <div class=&quot;slide-scene&quot; id=&quot;scene-09&quot;>
             <div style=&quot;width:100%;max-width:560px;&quot;>
-              <div style=&quot;font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--amber);margin-bottom:14px;&quot;>SYS-03B // RECON SITES CATALOG</div>
+              <div style=&quot;font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--amber);margin-bottom:14px;&quot;>SYS-01C-B // RECON SITES CATALOG</div>
               <div style=&quot;display:flex;flex-direction:column;gap:10px;&quot;>
                 <div style=&quot;background:rgba(14,24,36,.85);border:1px solid var(--border);border-left:3px solid #e05555;border-radius:0 6px 6px 0;padding:12px 16px;display:flex;align-items:center;gap:14px;&quot;>
                   <div style=&quot;width:10px;height:10px;border-radius:50%;background:#e05555;flex-shrink:0;&quot;></div>
@@ -3244,7 +3270,7 @@ html, body { height: 100%; background: var(--void); color: var(--tx); font-famil
                 </div>
               </div>
             </div>
-            <div class=&quot;sv-label-overlay&quot;>SYS-03B · GEO-TAGGED INSTALLATION CATALOG</div>
+            <div class=&quot;sv-label-overlay&quot;>SYS-01C-B · GEO-TAGGED INSTALLATION CATALOG</div>
           </div>
 
           <!-- BEAT 10: AI Assistant -->
@@ -3282,10 +3308,10 @@ html, body { height: 100%; background: var(--void); color: var(--tx); font-famil
           <!-- BEAT 11: Intel Archive -->
           <div class=&quot;slide-scene&quot; id=&quot;scene-11&quot;>
             <div style=&quot;width:100%;max-width:540px;&quot;>
-              <div style=&quot;font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--amber);margin-bottom:14px;&quot;>SYS-03 // INTEL ARCHIVE</div>
+              <div style=&quot;font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--amber);margin-bottom:14px;&quot;>SYS-01C // INTEL ARCHIVE</div>
               <div style=&quot;display:flex;gap:8px;margin-bottom:12px;&quot;>
-                <div style=&quot;flex:1;background:rgba(212,160,90,.08);border:1px solid rgba(212,160,90,.25);border-radius:4px;padding:7px 10px;font-family:var(--mono);font-size:9px;color:var(--amber);text-align:center;&quot;>SYS-03A<br><span style=&quot;color:var(--txd);&quot;>Saved Scenarios</span></div>
-                <div style=&quot;flex:1;background:rgba(158,188,82,.08);border:1px solid rgba(158,188,82,.25);border-radius:4px;padding:7px 10px;font-family:var(--mono);font-size:9px;color:var(--olive);text-align:center;&quot;>SYS-03B<br><span style=&quot;color:var(--txd);&quot;>Recon Sites</span></div>
+                <div style=&quot;flex:1;background:rgba(212,160,90,.08);border:1px solid rgba(212,160,90,.25);border-radius:4px;padding:7px 10px;font-family:var(--mono);font-size:9px;color:var(--amber);text-align:center;&quot;>SYS-01C-A<br><span style=&quot;color:var(--txd);&quot;>Saved Scenarios</span></div>
+                <div style=&quot;flex:1;background:rgba(158,188,82,.08);border:1px solid rgba(158,188,82,.25);border-radius:4px;padding:7px 10px;font-family:var(--mono);font-size:9px;color:var(--olive);text-align:center;&quot;>SYS-01C-B<br><span style=&quot;color:var(--txd);&quot;>Recon Sites</span></div>
               </div>
               <div class=&quot;sv-archive-list&quot;>
                 <div class=&quot;arc-row&quot;>
@@ -3306,7 +3332,7 @@ html, body { height: 100%; background: var(--void); color: var(--tx); font-famil
               </div>
               <div style=&quot;margin-top:12px;font-size:13px;color:var(--txd);&quot;>All data persists in localStorage — no server required.</div>
             </div>
-            <div class=&quot;sv-label-overlay&quot;>SYS-03A / 03B · PERSISTENT ARCHIVE</div>
+            <div class=&quot;sv-label-overlay&quot;>SYS-01C-A / 01C-B · PERSISTENT ARCHIVE</div>
           </div>
 
           <!-- BEAT 12: Closing frame -->
@@ -3371,7 +3397,7 @@ const beats = [
     title: &quot;SimRecon Hub&quot;,
     screen: &quot;SYS-01 // SIMRECON HUB&quot;,
     scene: &quot;scene-03&quot;,
-    vo: `Inside SimRecon, three sub-systems branch off: <strong>SYS-01A</strong> — the Scenario Wargame Simulator; <strong>SYS-01B</strong> — the live Site Recon Map; and <strong>SYS-04</strong> — the Data Drop Zone. Today we'll run the wargame first, then step into the recon map.`,
+    vo: `Inside SimRecon, four sub-systems branch off: <strong>SYS-01A</strong> — the Scenario Wargame Simulator; <strong>SYS-01B</strong> — the live Site Recon Map; <strong>SYS-01C</strong> — the Intel Archive; and <strong>SYS-04</strong> — the Data Drop Zone. Today we'll run the wargame first, then step into the recon map.`,
     actions: [
       &quot;Show the SYS-01 sub-hub cards&quot;,
       &quot;Point to scenario selector (Scenario A / B toggle)&quot;,
@@ -3446,11 +3472,11 @@ const beats = [
   },
   {
     title: &quot;Recon Sites Catalog&quot;,
-    screen: &quot;SYS-03B // RECON SITES&quot;,
+    screen: &quot;SYS-01C-B // RECON SITES&quot;,
     scene: &quot;scene-09&quot;,
-    vo: `Every e-Recon session saves to the <strong>Recon Sites catalog</strong> in SYS-03B — geo-tagged installation records storing energy posture snapshots, sensor readings, and asset placement history. Filter by region, installation type, or readiness status. Three installations shown here: NS Norfolk at 42%, NB San Diego and NAS North Island each at 55%. Each record feeds directly into the AI Assistant's situational context for deeper analysis.`,
+    vo: `Every e-Recon session saves to the <strong>Recon Sites catalog</strong> in SYS-01C-B — geo-tagged installation records storing energy posture snapshots, sensor readings, and asset placement history. Filter by region, installation type, or readiness status. Three installations shown here: NS Norfolk at 42%, NB San Diego and NAS North Island each at 55%. Each record feeds directly into the AI Assistant's situational context for deeper analysis.`,
     actions: [
-      &quot;Navigate to SYS-03 Intel Archive → SYS-03B Recon Sites&quot;,
+      &quot;SYS-01 SimRecon → SYS-01C Intel Archive → SYS-01C-B Recon Sites&quot;,
       &quot;Show the three installation cards with resilience scores&quot;,
       &quot;Demonstrate region or status filter&quot;,
       &quot;Point to the ADD ENTRY button for new recon sessions&quot;
@@ -3472,14 +3498,14 @@ const beats = [
   },
   {
     title: &quot;Intel Archive — Persistent Storage&quot;,
-    screen: &quot;SYS-03 // INTEL ARCHIVE&quot;,
+    screen: &quot;SYS-01C // INTEL ARCHIVE&quot;,
     scene: &quot;scene-11&quot;,
     vo: `The <strong>Intel Archive</strong> persists everything — saved wargame scenarios, recon site records from e-Recon sessions, phase logs, asset deployments, and warning orders. It runs entirely on browser localStorage, requiring no server. Browse, filter, and replay any saved session. The AI Assistant automatically draws on archive data to contextualize its analysis.`,
     actions: [
-      &quot;Open SYS-03 Intel Archive from hub&quot;,
-      &quot;Show SYS-03A: Saved Scenarios list&quot;,
+      &quot;Open SYS-01C Intel Archive from the SimRecon hub&quot;,
+      &quot;Show SYS-01C-A: Saved Scenarios list&quot;,
       &quot;Click a saved scenario card to preview&quot;,
-      &quot;Navigate to SYS-03B: Recon Sites and show the catalog&quot;
+      &quot;Navigate to SYS-01C-B: Recon Sites and show the catalog&quot;
     ],
     start: &quot;1:50&quot;, end: &quot;2:00&quot;
   },
@@ -3855,6 +3881,17 @@ init();
     <div class="c-clock" id="wall-clock">--:--:-- ET</div>
 
     <button id="home-btn" onclick="showSplash()" title="Back to splash" style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--txd);background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:3px 10px;cursor:pointer;transition:color .18s,border-color .18s;flex-shrink:0;white-space:nowrap;">⌂ HOME</button>
+    <button id="fs-btn" onclick="toggleFullscreen()" title="Full screen view">
+      <svg id="fs-ico-in" width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="4.4,1 1,1 1,4.4"/><polyline points="7.6,1 11,1 11,4.4"/>
+        <polyline points="4.4,11 1,11 1,7.6"/><polyline points="7.6,11 11,11 11,7.6"/>
+      </svg>
+      <svg id="fs-ico-out" width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+        <polyline points="1,4.4 4.4,4.4 4.4,1"/><polyline points="11,4.4 7.6,4.4 7.6,1"/>
+        <polyline points="1,7.6 4.4,7.6 4.4,11"/><polyline points="11,7.6 7.6,7.6 7.6,11"/>
+      </svg>
+      <span id="fs-lbl">FULL</span>
+    </button>
     <button id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark">
       <div class="t-pill"></div>
       <span class="t-lbl" id="t-lbl">DARK</span>
@@ -3911,12 +3948,13 @@ init();
             </div>
           </div>
           <div class="card-desc">
-            <em>Military installation readiness simulator</em> — scenario simulation and live e-Recon intelligence panel. Combines wargame analysis with real-time reconnaissance across monitored nodes.
+            <em>Military installation readiness simulator</em> — scenario simulation, live e-Recon intelligence panel, and the persistent intel archive. Combines wargame analysis with real-time reconnaissance across monitored nodes.
           </div>
           <div class="card-meta">
             <span class="meta-pill">Scenario Sim</span>
             <span class="meta-pill">e-Recon</span>
-            <span class="meta-pill">2 Modules</span>
+            <span class="meta-pill">Intel Archive</span>
+            <span class="meta-pill">3 Modules</span>
           </div>
           <button class="launch-btn" onclick="event.stopPropagation();openApp('overlay-esim-hub')">&#x2B21; &nbsp;ENTER</button>
         </div>
@@ -3928,7 +3966,7 @@ init();
               <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><polyline points="3,20 8,13 13,16 18,8 23,11" stroke="#00e5ff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="13" r="1.5" fill="#00e5ff" opacity=".8"/><circle cx="13" cy="16" r="1.5" fill="#00e5ff" opacity=".8"/><circle cx="18" cy="8" r="1.5" fill="#00e5ff" opacity=".8"/><line x1="3" y1="22" x2="23" y2="22" stroke="#00e5ff" stroke-width=".7" opacity=".4"/></svg>
             </div>
             <div class="card-head-text">
-              <div class="card-badge">SYS-02 // ANALYTICS</div>
+              <div class="card-badge">SYS-02</div>
               <div class="card-title"><span style="color:#00e5ff;">Intelligent</span> <span style="color:#ffffff;">Analytics</span></div>
             </div>
           </div>
@@ -3939,30 +3977,37 @@ init();
           <button class="launch-btn" onclick="event.stopPropagation();openApp('overlay-analytics')">&#x2B21; &nbsp;ENTER</button>
         </div>
 
-      
-        <!-- ── CARD 3: Intel Archive (SYS-03) ── -->
-        <div class="app-card card-intel" id="card-intel-hub" onclick="openApp('overlay-intel-hub')" style="cursor:pointer;">
+
+        <!-- ── CARD: Security &amp; Resiliency (SYS-03) ── -->
+        <div class="app-card card-secres" id="card-secres-hub" onclick="openApp('overlay-secres')" style="cursor:pointer;">
           <div class="card-head">
-            <div style="position:relative;width:52px;height:52px;border:2px solid #d4855a;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--dsp);font-weight:900;font-size:9px;color:#ffffff;letter-spacing:.08em;flex-shrink:0;background:radial-gradient(circle at 32% 28%,rgba(212,133,90,.22),transparent 70%);box-shadow:0 0 0 3px rgba(14,24,36,.9),0 0 0 4px #d4855a,0 0 18px rgba(212,133,90,.35);">
-              INT
-                          </div>
+            <div style="position:relative;width:52px;height:52px;border:2px solid #a07cf0;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:radial-gradient(circle at 32% 28%,rgba(160,124,240,.22),transparent 70%);box-shadow:0 0 0 3px rgba(14,24,36,.9),0 0 0 4px #a07cf0,0 0 18px rgba(160,124,240,.35);">
+              <svg width="27" height="27" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 3 L23.5 6.6 V14.2 C23.5 19.4 19.4 23.6 14 25.4 C8.6 23.6 4.5 19.4 4.5 14.2 V6.6 Z" stroke="#a07cf0" stroke-width="1.4" fill="rgba(160,124,240,0.10)" stroke-linejoin="round"/>
+                <polyline points="15.6,8.6 10.6,15 13.8,15 12.4,20.2 17.4,13.6 14.2,13.6" fill="#a07cf0" stroke="#a07cf0" stroke-width="1" stroke-linejoin="round" opacity=".95">
+                  <animate attributeName="opacity" values="0.95;0.45;0.95" dur="2.3s" repeatCount="indefinite"/>
+                </polyline>
+              </svg>
+            </div>
             <div class="card-head-text">
               <div class="card-badge">SYS-03</div>
-              <div class="card-title"><span style="color:#d4855a;">Saved</span> <span style="color:#ffffff;">Scenarios &amp; Recon</span></div>
+              <div class="card-title"><span style="color:#a07cf0;">Security</span> <span style="color:#ffffff;">&amp; Resiliency</span></div>
             </div>
           </div>
           <div class="card-desc">
-            <em>Persistent intelligence archive</em> — saved scenario playbacks and catalogued recon site records. Review past simulation runs, compare grid failure outcomes, and browse geo-tagged installation intelligence entries.
+            <em>Integrated grid posture</em> &mdash; smart metering, control-system exposure and microgrid capacity on one picture. Each installation has its own isometric site map, scored on islanding coverage, endurance, FRCS findings and metering visibility, then modelled under feed loss to show what actually stays lit.<br><br>
+            Consumption heat mapping over 24h to 12 months, alerting, and emailable resilience reporting.
           </div>
           <div class="card-meta">
-            <span class="meta-pill">Saved Scenarios</span>
-            <span class="meta-pill">Recon Sites</span>
-            <span class="meta-pill">2 Modules</span>
+            <span class="meta-pill">AMI / Smart Grid</span>
+            <span class="meta-pill">FRCS Exposure</span>
+            <span class="meta-pill">Microgrid</span>
+            <span class="meta-pill">16 Site Maps</span>
           </div>
-          <button class="launch-btn" onclick="event.stopPropagation();openApp('overlay-intel-hub')">&#x2B21; &nbsp;ENTER</button>
+          <button class="launch-btn" onclick="event.stopPropagation();openApp('overlay-secres')">&#x2B21; &nbsp;ENTER</button>
         </div>
 
-        <!-- ── CARD 4: Data Drop Zone (SYS-04) ── -->
+        <!-- ── CARD: Data Drop Zone (SYS-04) ── -->
         <div class="app-card card-esim" id="card-dropzone-hub" onclick="closeApp('overlay-esim-hub');openApp('overlay-dropzone');" style="cursor:pointer;">
           <div class="card-head">
             <div class="card-icon-wrap">
@@ -3995,34 +4040,6 @@ init();
           <button class="launch-btn" onclick="event.stopPropagation();openApp('overlay-dropzone');">&#x2B21; &nbsp;ENTER</button>
         </div>
 
-        <!-- ── CARD 5: Security &amp; Resiliency (SYS-05) ── -->
-        <div class="app-card card-secres" id="card-secres-hub" onclick="openApp('overlay-secres')" style="cursor:pointer;">
-          <div class="card-head">
-            <div style="position:relative;width:52px;height:52px;border:2px solid #a07cf0;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:radial-gradient(circle at 32% 28%,rgba(160,124,240,.22),transparent 70%);box-shadow:0 0 0 3px rgba(14,24,36,.9),0 0 0 4px #a07cf0,0 0 18px rgba(160,124,240,.35);">
-              <svg width="27" height="27" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M14 3 L23.5 6.6 V14.2 C23.5 19.4 19.4 23.6 14 25.4 C8.6 23.6 4.5 19.4 4.5 14.2 V6.6 Z" stroke="#a07cf0" stroke-width="1.4" fill="rgba(160,124,240,0.10)" stroke-linejoin="round"/>
-                <polyline points="15.6,8.6 10.6,15 13.8,15 12.4,20.2 17.4,13.6 14.2,13.6" fill="#a07cf0" stroke="#a07cf0" stroke-width="1" stroke-linejoin="round" opacity=".95">
-                  <animate attributeName="opacity" values="0.95;0.45;0.95" dur="2.3s" repeatCount="indefinite"/>
-                </polyline>
-              </svg>
-            </div>
-            <div class="card-head-text">
-              <div class="card-badge">SYS-05 // BLACKSTART</div>
-              <div class="card-title"><span style="color:#a07cf0;">Security</span> <span style="color:#ffffff;">&amp; Resiliency</span></div>
-            </div>
-          </div>
-          <div class="card-desc">
-            <em>Integrated grid posture</em> — smart metering, control-system exposure and microgrid capacity on one picture. Scores each installation on islanding coverage, endurance, FRCS findings and metering visibility, then models feed loss to show what actually stays lit.<br><br>
-            Consumption heat mapping over 24h to 12 months, alerting, and emailable resilience reporting.
-          </div>
-          <div class="card-meta">
-            <span class="meta-pill">AMI / Smart Grid</span>
-            <span class="meta-pill">FRCS Exposure</span>
-            <span class="meta-pill">Microgrid</span>
-            <span class="meta-pill">RRS Scoring</span>
-          </div>
-          <button class="launch-btn" onclick="event.stopPropagation();openApp('overlay-secres')">&#x2B21; &nbsp;ENTER</button>
-        </div>
 </div><!-- #card-grid -->
     </div><!-- #stage -->
 
@@ -6378,8 +6395,8 @@ function toggleAiPanel() {
   </div>
   <div style="flex:1;overflow-y:auto;background:radial-gradient(ellipse 70% 55% at 50% 110%,rgba(212,168,80,.13) 0%,transparent 65%),radial-gradient(ellipse 55% 40% at 12% 25%,rgba(158,188,82,.09) 0%,transparent 60%),radial-gradient(ellipse 45% 35% at 88% 18%,rgba(192,112,56,.07) 0%,transparent 55%),radial-gradient(ellipse 100% 100% at 50% 50%,#1e1608 0%,#110e06 100%);display:flex;flex-direction:column;align-items:center;padding:28px 20px 20px;gap:18px;">
 
-    <!-- Three sub-cards -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;width:100%;max-width:900px;">
+    <!-- Four sub-cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(246px,1fr));gap:18px;width:100%;max-width:1180px;">
 
       <!-- SYS-01A: Scenario Simulator -->
       <div class="app-card card-wargame" style="cursor:pointer;" onclick="closeApp('overlay-esim-hub');setTimeout(function(){launchSim();},420);">
@@ -6472,6 +6489,39 @@ function toggleAiPanel() {
           <span class="meta-pill" style="border-color:rgba(90,138,60,.28);color:rgba(106,170,64,.85);background:rgba(90,138,60,.07);">Geo Intel</span>
         </div>
         <button style="font-family:var(--dsp);font-size:10px;letter-spacing:2px;border:1px solid rgba(90,138,60,.42);border-radius:10px;padding:var(--btn-pad);width:100%;cursor:pointer;background:rgba(90,138,60,.15);color:#6aaa40;transition:background .18s,box-shadow .18s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;" onclick="event.stopPropagation();closeApp('overlay-esim-hub');setTimeout(function(){openApp('overlay-erecon');},420);">&#x2B21; &nbsp;LAUNCH SYS-01B</button>
+      </div>
+
+      <!-- SYS-01C: Intel Archive -->
+      <div class="app-card card-intel" style="cursor:pointer;" onclick="closeApp('overlay-esim-hub');setTimeout(function(){openApp('overlay-intel-hub');},420);">
+        <div class="card-head">
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="14" width="52" height="44" rx="4" stroke="#d4855a" stroke-width="1.4" fill="rgba(212,133,90,0.05)"/>
+              <line x1="10" y1="26" x2="62" y2="26" stroke="#d4855a" stroke-width=".7" opacity=".4"/>
+              <rect x="16" y="32" width="18" height="10" rx="2" stroke="#d4855a" stroke-width="1" fill="rgba(212,133,90,0.1)"/>
+              <rect x="16" y="46" width="26" height="6" rx="2" stroke="#d4855a" stroke-width=".8" fill="rgba(212,133,90,0.07)" opacity=".6"/>
+              <rect x="40" y="32" width="16" height="22" rx="2" stroke="#d4855a" stroke-width="1" fill="rgba(212,133,90,0.08)"/>
+              <circle cx="18" cy="20" r="2" fill="#d4855a" opacity=".6"><animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/></circle>
+              <circle cx="24" cy="20" r="2" fill="#d4855a" opacity=".4"/>
+              <circle cx="30" cy="20" r="2" fill="#d4855a" opacity=".25"/>
+              <path d="M48 36 L44 42 L48 42 L43 52 L54 40 L49 40 Z" fill="#d4855a" opacity=".7"/>
+            </svg>
+          </div>
+          <div class="card-head-text">
+            <div class="card-badge">SYS-01C</div>
+            <div class="card-title">Intel Archive</div>
+          </div>
+        </div>
+        <div class="card-desc" style="flex:1;">
+          <em>Persistent intelligence archive</em> — saved scenario playbacks and catalogued recon site records. Review past simulation runs, compare grid failure outcomes, and browse geo-tagged installation intelligence entries.<br><br>
+          Feeds <em>situational context</em> back into ARIA for deeper analysis.
+        </div>
+        <div class="card-meta">
+          <span class="meta-pill">Saved Scenarios</span>
+          <span class="meta-pill">Recon Sites</span>
+          <span class="meta-pill">2 Modules</span>
+        </div>
+        <button class="launch-btn" onclick="event.stopPropagation();closeApp('overlay-esim-hub');setTimeout(function(){openApp('overlay-intel-hub');},420);">&#x2B21; &nbsp;LAUNCH SYS-01C</button>
       </div>
 
       <!-- SYS-04: Data Drop Zone -->
@@ -11646,16 +11696,16 @@ window.addEventListener(&#x27;message&#x27;, function(e) {
 </div>
 
 <!-- ═══════════════════════════════════════
-     OVERLAY: SECURITY & RESILIENCY (SYS-05) — BLACKSTART
+     OVERLAY: SECURITY & RESILIENCY (SYS-03) — BLACKSTART
      ═══════════════════════════════════════ -->
 <div class="app-overlay overlay-duers" id="overlay-secres">
-  <iframe class="overlay-frame" id="frame-secres"
+  <iframe class="overlay-frame" id="frame-secres" allowfullscreen
     srcdoc="&lt;!DOCTYPE html&gt;
 &lt;html lang=&quot;en&quot;&gt;
 &lt;head&gt;
 &lt;meta charset=&quot;UTF-8&quot;&gt;
 &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1.0&quot;&gt;
-&lt;title&gt;ie-SRA · SYS-05 BLACKSTART · Grid Resilience &amp;amp; Control-System Exposure&lt;/title&gt;
+&lt;title&gt;ie-SRA · SYS-03 BLACKSTART · Grid Resilience &amp;amp; Control-System Exposure&lt;/title&gt;
 &lt;meta name=&quot;version&quot; content=&quot;0.9-draft&quot;&gt;
 &lt;meta name=&quot;build&quot; content=&quot;2026-08-27&quot;&gt;
 &lt;link rel=&quot;stylesheet&quot; href=&quot;https://unpkg.com/leaflet@1.9.4/dist/leaflet.css&quot;/&gt;
@@ -11702,11 +11752,57 @@ button{font-family:var(--mono);}
 
 /* ══ LAYOUT ══ */
 .workspace{display:flex;flex:1;overflow:hidden;height:calc(100vh - 38px);}
-.sidebar{width:236px;background:rgba(10,18,32,.98);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.sidebar{width:var(--sb-w,236px);background:rgba(10,18,32,.98);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;transition:width .22s cubic-bezier(.4,0,.2,1);}
+.sidebar.stowed{width:0;border-right-color:transparent;overflow:hidden;}
 .sidebar::-webkit-scrollbar{width:3px;}
 .sidebar::-webkit-scrollbar-thumb{background:var(--border);}
 .stage{flex:1;display:flex;flex-direction:column;min-width:0;position:relative;background:var(--void);}
-.rail{width:330px;background:rgba(10,18,32,.98);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;min-height:0;}
+.rail{width:var(--rail-w,330px);background:rgba(10,18,32,.98);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;min-height:0;transition:width .22s cubic-bezier(.4,0,.2,1);}
+.rail.stowed{width:0;border-left-color:transparent;overflow:hidden;}
+
+/* ── PANEL SPLITTERS ──
+   Drag to restretch a side panel, double-click to restore the default width,
+   arrow keys to nudge when focused. Hidden while the panel it serves is stowed.
+   The grip pill is deliberately wider than the seam line so it stays legible
+   once both go cyan on hover, and sits at 33% height so it does not collide
+   with the stow/unstow arrow the stage pins at 50%. */
+.splitter{flex:0 0 5px;width:5px;cursor:col-resize;background:transparent;position:relative;
+  z-index:55;touch-action:none;transition:background .16s;}
+.splitter::before{content:&#x27;&#x27;;position:absolute;top:0;bottom:0;left:2px;width:1px;
+  background:var(--border);transition:background .16s;}
+.splitter::after{content:&#x27;&#x27;;position:absolute;top:33%;left:50%;width:3px;height:26px;
+  transform:translate(-50%,-50%);border-radius:2px;background:var(--border2);
+  transition:background .16s,height .16s,box-shadow .16s;}
+.splitter:hover,.splitter.dragging,.splitter:focus-visible{background:var(--cyan-d);}
+.splitter:hover::before,.splitter.dragging::before,.splitter:focus-visible::before{background:var(--cyan);}
+.splitter:hover::after,.splitter.dragging::after,.splitter:focus-visible::after{
+  background:var(--cyan);height:44px;box-shadow:0 0 8px var(--cyan);}
+.splitter:focus-visible{outline:none;}
+.splitter.off{display:none;}
+body.resizing{cursor:col-resize;user-select:none;-webkit-user-select:none;}
+body.resizing .sidebar,body.resizing .rail{transition:none;}
+
+/* ── PANEL OPEN/CLOSE HANDLES ──
+   Pinned to the inner edges of the stage, so they stay reachable after the
+   panel they control has collapsed to zero width. */
+.panel-tog{position:absolute;top:50%;transform:translateY(-50%);z-index:60;
+  width:15px;height:54px;padding:0;cursor:pointer;
+  background:rgba(13,24,37,.96);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;transition:all .16s;}
+.panel-tog:hover{border-color:var(--cyan);background:var(--cyan-d);}
+.panel-tog::after{content:&#x27;&#x27;;width:0;height:0;
+  border-top:5px solid transparent;border-bottom:5px solid transparent;
+  transition:border-color .16s;}
+.panel-tog.left{left:0;border-left:none;border-radius:0 4px 4px 0;}
+.panel-tog.right{right:0;border-right:none;border-radius:4px 0 0 4px;}
+.panel-tog.left::after{border-right:6px solid var(--tx);}
+.panel-tog.left.out::after{border-right:none;border-left:6px solid var(--tx);}
+.panel-tog.right::after{border-left:6px solid var(--tx);}
+.panel-tog.right.out::after{border-left:none;border-right:6px solid var(--tx);}
+.panel-tog:hover.left::after{border-right-color:var(--cyan);}
+.panel-tog:hover.left.out::after{border-left-color:var(--cyan);}
+.panel-tog:hover.right::after{border-left-color:var(--cyan);}
+.panel-tog:hover.right.out::after{border-right-color:var(--cyan);}
 
 /* ══ SIDEBAR SECTIONS ══ */
 .sec{border-bottom:1px solid var(--border);}
@@ -11754,8 +11850,10 @@ button{font-family:var(--mono);}
 
 /* ══ CANVAS STAGE ══ */
 #iso-wrap{flex:1;position:relative;min-height:0;overflow:hidden;}
-#iso-canvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab;display:block;}
+#iso-canvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab;display:block;
+  touch-action:none;}
 #iso-canvas.drag{cursor:grabbing;}
+#iso-canvas.panning{cursor:move;}
 #map-wrap{flex:1;min-height:0;display:none;flex-direction:column;}
 #globe-wrap{flex:1;position:relative;min-height:0;}
 #globe{position:absolute;inset:0;background:#060c14;}
@@ -11810,8 +11908,31 @@ button{font-family:var(--mono);}
 .rpane{display:none;} .rpane.on{display:block;}
 
 .blk{margin-bottom:13px;}
-.blk-h{font-family:var(--dsp);font-size:8.5px;letter-spacing:1.8px;color:var(--txd);text-transform:uppercase;padding-bottom:5px;margin-bottom:7px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:baseline;gap:6px;}
+.blk-h{font-family:var(--dsp);font-size:8.5px;letter-spacing:1.8px;color:var(--txd);text-transform:uppercase;padding-bottom:5px;margin-bottom:7px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:baseline;gap:6px;cursor:pointer;user-select:none;transition:color .14s;}
+.blk-h:hover{color:var(--tx);}
 .blk-h span{font-family:var(--mono);letter-spacing:.4px;color:var(--amber);font-size:9px;}
+/* A bare 8x6 triangle in --txd was technically rendering but perceptually absent
+   at the panel edge. The caret is now a bordered control, matching the button
+   language used elsewhere, with the triangle drawn inside it. */
+.blk-h .blk-cx{width:16px;height:16px;flex-shrink:0;margin-left:auto;align-self:center;
+  border:1px solid var(--border2);border-radius:3px;background:rgba(24,212,248,.06);
+  display:flex;align-items:center;justify-content:center;transition:all .16s;}
+.blk-h .blk-cx::after{content:&#x27;&#x27;;width:0;height:0;
+  border-left:4px solid transparent;border-right:4px solid transparent;
+  border-top:5px solid var(--tx);
+  transition:transform .2s,border-top-color .16s;transform:rotate(180deg);}
+.blk.closed .blk-cx::after{transform:rotate(0deg);}
+.blk-h:hover .blk-cx{border-color:var(--cyan);background:var(--cyan-d);}
+.blk-h:hover .blk-cx::after{border-top-color:var(--cyan);}
+.blk-h{padding-right:2px;}
+.blk.closed .blk-h{color:var(--tx);}
+.blk.closed .blk-b{display:none;}
+.blk.closed{margin-bottom:6px;}
+.blk.closed .blk-h{margin-bottom:0;}
+.rail-ctl{display:flex;align-items:center;gap:5px;padding:5px 9px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.rail-ctl b{font-family:var(--dsp);font-size:7.5px;letter-spacing:1.5px;color:var(--txf);font-weight:400;margin-right:auto;}
+.rc-btn{background:none;border:1px solid var(--border);color:var(--txf);font-size:7.5px;letter-spacing:.9px;padding:3px 7px;border-radius:2px;cursor:pointer;transition:all .14s;}
+.rc-btn:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-d);}
 .kv{display:flex;justify-content:space-between;gap:10px;padding:3.5px 0;font-size:10px;border-bottom:1px solid rgba(26,45,66,.4);}
 .kv:last-child{border-bottom:none;}
 .kv-k{color:var(--txf);}
@@ -11874,7 +11995,9 @@ button{font-family:var(--mono);}
 .alert.ackd{opacity:.42;}
 
 /* ══ TOASTS ══ */
-#toasts{position:absolute;right:48px;top:46px;z-index:9000;display:flex;flex-direction:column;gap:6px;max-width:300px;pointer-events:none;}
+/* top:46 sat on the map view&#x27;s control bar; 78 clears both that and the ISO
+   zoom column, right:48 clears the zoom buttons themselves */
+#toasts{position:absolute;right:48px;top:78px;z-index:9000;display:flex;flex-direction:column;gap:6px;max-width:300px;pointer-events:none;}
 .toast{background:rgba(8,16,28,.97);border:1px solid var(--border2);border-left-width:3px;border-radius:3px;padding:9px 12px;font-size:9.5px;color:var(--tx);line-height:1.5;box-shadow:0 6px 22px rgba(0,0,0,.55);animation:tin .28s cubic-bezier(.2,.9,.3,1);}
 @keyframes tin{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
 .toast b{display:block;font-family:var(--dsp);font-size:8.5px;letter-spacing:1.4px;margin-bottom:3px;}
@@ -11932,7 +12055,7 @@ button{font-family:var(--mono);}
 &lt;div id=&quot;hub-bar&quot; style=&quot;display:none;height:0;overflow:hidden;&quot;&gt;
   &lt;div style=&quot;height:32px;background:rgba(8,14,24,.97);border-bottom:1px solid rgba(158,188,82,.3);display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0;position:relative;z-index:99999;&quot;&gt;
     &lt;button onclick=&quot;window.parent&amp;&amp;window.parent.closeApp?window.parent.closeApp(&#x27;overlay-secres&#x27;):null&quot; style=&quot;background:none;border:1px solid rgba(158,188,82,.45);color:#9ebc52;font-family:monospace;font-size:9px;letter-spacing:1.5px;padding:3px 10px;border-radius:4px;cursor:pointer;&quot;&gt;&amp;#x2B60; HUB&lt;/button&gt;
-    &lt;span style=&quot;font-family:monospace;font-size:8px;letter-spacing:2px;color:rgba(158,188,82,.7);&quot;&gt;SYS-05 BLACKSTART · v0.9 DRAFT&lt;/span&gt;
+    &lt;span style=&quot;font-family:monospace;font-size:8px;letter-spacing:2px;color:rgba(158,188,82,.7);&quot;&gt;SYS-03 BLACKSTART · v0.9 DRAFT&lt;/span&gt;
     &lt;span style=&quot;margin-left:auto;font-family:monospace;font-size:7.5px;color:#4a6480;&quot;&gt;Sample dataset — not operational data&lt;/span&gt;
   &lt;/div&gt;
 &lt;/div&gt;
@@ -11942,7 +12065,7 @@ button{font-family:var(--mono);}
   &lt;div class=&quot;c-dot&quot;&gt;&lt;/div&gt;
   &lt;span class=&quot;c-logo&quot;&gt;BLACKSTART&lt;/span&gt;
   &lt;span class=&quot;c-sep&quot;&gt;//&lt;/span&gt;
-  &lt;span class=&quot;c-title&quot;&gt;ie-SRA · SYS-05 · SMART GRID / FRCS / MICROGRID INTEGRATED POSTURE&lt;/span&gt;
+  &lt;span class=&quot;c-title&quot;&gt;ie-SRA · SYS-03 · SMART GRID / FRCS / MICROGRID INTEGRATED POSTURE&lt;/span&gt;
   &lt;div class=&quot;c-spacer&quot;&gt;&lt;/div&gt;
   &lt;button class=&quot;c-btn&quot; id=&quot;btn-alerts&quot; onclick=&quot;openAlerts()&quot;&gt;ALERTS&lt;span class=&quot;alert-pip&quot; id=&quot;alert-pip&quot;&gt;0&lt;/span&gt;&lt;/button&gt;
   &lt;button class=&quot;c-btn&quot; onclick=&quot;openReport()&quot;&gt;COMPOSE REPORT&lt;/button&gt;
@@ -11956,14 +12079,14 @@ button{font-family:var(--mono);}
 
   &lt;!-- ══ LEFT SIDEBAR ══ --&gt;
   &lt;aside class=&quot;sidebar&quot;&gt;
-    &lt;div class=&quot;sec open&quot; id=&quot;sec-inst&quot;&gt;
+    &lt;div class=&quot;sec&quot; id=&quot;sec-inst&quot;&gt;
       &lt;div class=&quot;sec-hdr&quot; onclick=&quot;toggleSec(&#x27;sec-inst&#x27;)&quot;&gt;
         &lt;span class=&quot;sec-t&quot;&gt;Installations&lt;/span&gt;&lt;span class=&quot;sec-v&quot; id=&quot;v-inst&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;sec-a&quot;&gt;▼&lt;/span&gt;
       &lt;/div&gt;
       &lt;div class=&quot;sec-b&quot; style=&quot;padding:0 8px 8px;&quot;&gt;&lt;div id=&quot;inst-list&quot;&gt;&lt;/div&gt;&lt;/div&gt;
     &lt;/div&gt;
 
-    &lt;div class=&quot;sec open&quot; id=&quot;sec-layers&quot;&gt;
+    &lt;div class=&quot;sec&quot; id=&quot;sec-layers&quot;&gt;
       &lt;div class=&quot;sec-hdr&quot; onclick=&quot;toggleSec(&#x27;sec-layers&#x27;)&quot;&gt;
         &lt;span class=&quot;sec-t&quot;&gt;Layers&lt;/span&gt;&lt;span class=&quot;sec-v&quot; id=&quot;v-layers&quot;&gt;3 on&lt;/span&gt;&lt;span class=&quot;sec-a&quot;&gt;▼&lt;/span&gt;
       &lt;/div&gt;
@@ -11972,11 +12095,11 @@ button{font-family:var(--mono);}
         &lt;div class=&quot;layer-row&quot;&gt;&lt;div class=&quot;layer-l&quot;&gt;&lt;div class=&quot;ldot&quot; style=&quot;background:#a07cf0&quot;&gt;&lt;/div&gt;FRCS controllers&lt;/div&gt;&lt;button class=&quot;tog on v&quot; id=&quot;tg-frcs&quot; onclick=&quot;toggleLayer(&#x27;frcs&#x27;)&quot;&gt;&lt;/button&gt;&lt;/div&gt;
         &lt;div class=&quot;layer-row&quot;&gt;&lt;div class=&quot;layer-l&quot;&gt;&lt;div class=&quot;ldot&quot; style=&quot;background:#4db88a&quot;&gt;&lt;/div&gt;Microgrid tie&lt;/div&gt;&lt;button class=&quot;tog on s&quot; id=&quot;tg-mg&quot; onclick=&quot;toggleLayer(&#x27;mg&#x27;)&quot;&gt;&lt;/button&gt;&lt;/div&gt;
         &lt;div class=&quot;layer-row&quot;&gt;&lt;div class=&quot;layer-l&quot;&gt;&lt;div class=&quot;ldot&quot; style=&quot;background:#d4a05a&quot;&gt;&lt;/div&gt;Facility labels&lt;/div&gt;&lt;button class=&quot;tog on&quot; id=&quot;tg-lbl&quot; onclick=&quot;toggleLayer(&#x27;lbl&#x27;)&quot;&gt;&lt;/button&gt;&lt;/div&gt;
-        &lt;div class=&quot;layer-row&quot;&gt;&lt;div class=&quot;layer-l&quot;&gt;&lt;div class=&quot;ldot&quot; style=&quot;background:#6e90b0&quot;&gt;&lt;/div&gt;Satellite underlay&lt;/div&gt;&lt;button class=&quot;tog on&quot; id=&quot;tg-sat&quot; onclick=&quot;toggleLayer(&#x27;sat&#x27;)&quot;&gt;&lt;/button&gt;&lt;/div&gt;
+        &lt;div class=&quot;layer-row&quot;&gt;&lt;div class=&quot;layer-l&quot;&gt;&lt;div class=&quot;ldot&quot; style=&quot;background:#6e90b0&quot;&gt;&lt;/div&gt;Satellite underlay&lt;/div&gt;&lt;button class=&quot;tog&quot; id=&quot;tg-sat&quot; onclick=&quot;toggleLayer(&#x27;sat&#x27;)&quot;&gt;&lt;/button&gt;&lt;/div&gt;
       &lt;/div&gt;
     &lt;/div&gt;
 
-    &lt;div class=&quot;sec open&quot; id=&quot;sec-ops&quot;&gt;
+    &lt;div class=&quot;sec&quot; id=&quot;sec-ops&quot;&gt;
       &lt;div class=&quot;sec-hdr&quot; onclick=&quot;toggleSec(&#x27;sec-ops&#x27;)&quot;&gt;
         &lt;span class=&quot;sec-t&quot;&gt;Scenario&lt;/span&gt;&lt;span class=&quot;sec-v&quot; id=&quot;v-ops&quot;&gt;nominal&lt;/span&gt;&lt;span class=&quot;sec-a&quot;&gt;▼&lt;/span&gt;
       &lt;/div&gt;
@@ -12011,11 +12134,17 @@ button{font-family:var(--mono);}
     &lt;/div&gt;
   &lt;/aside&gt;
 
+  &lt;div class=&quot;splitter&quot; id=&quot;split-left&quot; role=&quot;separator&quot; aria-orientation=&quot;vertical&quot;
+       aria-label=&quot;Resize installations panel&quot; tabindex=&quot;0&quot;
+       title=&quot;Drag to resize · double-click to reset&quot;&gt;&lt;/div&gt;
+
   &lt;!-- ══ STAGE ══ --&gt;
   &lt;main class=&quot;stage&quot;&gt;
+    &lt;button class=&quot;panel-tog left&quot; id=&quot;tog-left&quot; onclick=&quot;togglePanel(&#x27;left&#x27;)&quot; title=&quot;Hide installations panel&quot;&gt;&lt;/button&gt;
+    &lt;button class=&quot;panel-tog right&quot; id=&quot;tog-right&quot; onclick=&quot;togglePanel(&#x27;right&#x27;)&quot; title=&quot;Hide detail panel&quot;&gt;&lt;/button&gt;
     &lt;div class=&quot;stage-bar&quot;&gt;
-      &lt;button class=&quot;vtab on&quot; id=&quot;vt-iso&quot; onclick=&quot;setView(&#x27;iso&#x27;)&quot;&gt;ISO GRID&lt;/button&gt;
-      &lt;button class=&quot;vtab&quot; id=&quot;vt-map&quot; onclick=&quot;setView(&#x27;map&#x27;)&quot;&gt;GLOBAL MAP&lt;/button&gt;
+      &lt;button class=&quot;vtab&quot; id=&quot;vt-iso&quot; onclick=&quot;setView(&#x27;iso&#x27;)&quot;&gt;ISO GRID&lt;/button&gt;
+      &lt;button class=&quot;vtab on&quot; id=&quot;vt-map&quot; onclick=&quot;setView(&#x27;map&#x27;)&quot;&gt;GLOBAL MAP&lt;/button&gt;
       &lt;button class=&quot;vtab&quot; id=&quot;vt-tbl&quot; onclick=&quot;setView(&#x27;tbl&#x27;)&quot;&gt;ENTERPRISE ROLL-UP&lt;/button&gt;
       &lt;span class=&quot;stage-name&quot; id=&quot;stage-name&quot;&gt;—&lt;/span&gt;
       &lt;span class=&quot;stage-sub&quot; id=&quot;stage-sub&quot;&gt;&lt;/span&gt;
@@ -12034,7 +12163,9 @@ button{font-family:var(--mono);}
         &lt;button class=&quot;ictl&quot; onclick=&quot;isoZoom(0.85)&quot; title=&quot;Zoom out&quot;&gt;−&lt;/button&gt;
         &lt;button class=&quot;ictl&quot; onclick=&quot;isoRot(-0.13)&quot; title=&quot;Rotate left&quot;&gt;↶&lt;/button&gt;
         &lt;button class=&quot;ictl&quot; onclick=&quot;isoRot(0.13)&quot; title=&quot;Rotate right&quot;&gt;↷&lt;/button&gt;
-        &lt;button class=&quot;ictl&quot; onclick=&quot;isoReset()&quot; title=&quot;Reset view&quot;&gt;⌂&lt;/button&gt;
+        &lt;button class=&quot;ictl&quot; onclick=&quot;isoTilt(0.06)&quot; title=&quot;Tilt toward top-down&quot;&gt;▲&lt;/button&gt;
+        &lt;button class=&quot;ictl&quot; onclick=&quot;isoTilt(-0.06)&quot; title=&quot;Tilt toward eye level&quot;&gt;▼&lt;/button&gt;
+        &lt;button class=&quot;ictl&quot; onclick=&quot;isoReset()&quot; title=&quot;Reset view — drag orbits, shift-drag pans, wheel zooms&quot;&gt;⌂&lt;/button&gt;
       &lt;/div&gt;
       &lt;div class=&quot;iso-legend&quot;&gt;
         &lt;div class=&quot;lg&quot;&gt;&lt;i style=&quot;background:#c0404a&quot;&gt;&lt;/i&gt;Critical facility&lt;/div&gt;
@@ -12090,6 +12221,10 @@ button{font-family:var(--mono);}
     &lt;div id=&quot;toasts&quot;&gt;&lt;/div&gt;
   &lt;/main&gt;
 
+  &lt;div class=&quot;splitter&quot; id=&quot;split-right&quot; role=&quot;separator&quot; aria-orientation=&quot;vertical&quot;
+       aria-label=&quot;Resize detail panel&quot; tabindex=&quot;0&quot;
+       title=&quot;Drag to resize · double-click to reset&quot;&gt;&lt;/div&gt;
+
   &lt;!-- ══ RIGHT RAIL ══ --&gt;
   &lt;aside class=&quot;rail&quot;&gt;
     &lt;div class=&quot;rail-tabs&quot;&gt;
@@ -12098,6 +12233,11 @@ button{font-family:var(--mono);}
       &lt;button class=&quot;rtab&quot; onclick=&quot;setTab(&#x27;frcs&#x27;)&quot; id=&quot;rt-frcs&quot;&gt;FRCS&lt;/button&gt;
       &lt;button class=&quot;rtab&quot; onclick=&quot;setTab(&#x27;mg&#x27;)&quot; id=&quot;rt-mg&quot;&gt;MICROGRID&lt;/button&gt;
       &lt;button class=&quot;rtab&quot; onclick=&quot;setTab(&#x27;alerts&#x27;)&quot; id=&quot;rt-alerts&quot;&gt;ALERTS&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;rail-ctl&quot;&gt;
+      &lt;b id=&quot;rail-ctl-lbl&quot;&gt;SECTIONS&lt;/b&gt;
+      &lt;button class=&quot;rc-btn&quot; onclick=&quot;setAllBlocks(true)&quot;&gt;EXPAND ALL&lt;/button&gt;
+      &lt;button class=&quot;rc-btn&quot; onclick=&quot;setAllBlocks(false)&quot;&gt;COLLAPSE ALL&lt;/button&gt;
     &lt;/div&gt;
     &lt;div class=&quot;rail-body&quot;&gt;
       &lt;div class=&quot;rpane on&quot; id=&quot;pane-posture&quot;&gt;&lt;/div&gt;
@@ -12195,7 +12335,7 @@ button{font-family:var(--mono);}
 &lt;/div&gt;
 &lt;script&gt;
 /* ══════════════════════════════════════════════════════════════
-   ie-SRA · SYS-05 BLACKSTART
+   ie-SRA · SYS-03 BLACKSTART
    Integrated Smart Grid / FRCS / Microgrid resilience picture
    Standalone draft — all values synthetic
    ══════════════════════════════════════════════════════════════ */
@@ -12536,38 +12676,347 @@ function postureColor(p){return p===&#x27;SUSTAINED&#x27;?&#x27;#4db88a&#x27;:p=
 function fmtH(h){return h&gt;=999?&#x27;999h+&#x27;:h&gt;=48?(h/24).toFixed(1)+&#x27;d&#x27;:h.toFixed(1)+&#x27;h&#x27;;}
 function esc(x){return String(x).replace(/[&amp;&lt;&gt;&quot;]/g,c=&gt;({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;}[c]));}
 
+/* ══════════════════════════════════════════════════════════════
+   PER-INSTALLATION ISO SITE MAPS
+
+   Each installation gets a hand-laid footprint rather than a shared
+   grid: its own extent, terrain, building shapes and zone names.
+   fac keys must match the facility names in BASE exactly — anything
+   unmatched falls back to auto-placement so the map still draws.
+
+   fac / scenery entry:  [col, row, width, depth, height]
+   terrain entry:        [kind, col, row, width, depth]
+   ══════════════════════════════════════════════════════════════ */
+const SITE_MAPS={
+
+/* Desert range complex — dispersed, dry lakebed, long runway, remote magazines */
+&#x27;naws-cl&#x27;:{cols:14,rows:9,mg:[6.2,7.4],
+ terrain:[[&#x27;scrub&#x27;,0,0,14,9],[&#x27;playa&#x27;,8.4,0.4,5.2,3.4],[&#x27;runway&#x27;,1,1.2,7.4,0.9],
+          [&#x27;taxi&#x27;,1.6,2.3,6.2,0.34],[&#x27;apron&#x27;,2.2,2.8,3.0,1.2],[&#x27;road&#x27;,0.6,4.6,12.6,0.26],
+          [&#x27;road&#x27;,6.9,1.2,0.26,6.4]],
+ fac:{&#x27;Main Airfield&#x27;:[2.4,2.9,2.6,1.0,13],&#x27;Harvey Field&#x27;:[9.6,4.2,2.0,1.1,11],
+      &#x27;Weapons Test Range&#x27;:[10.4,0.9,2.6,2.0,16],&#x27;Power Substation&#x27;:[5.4,5.4,1.0,0.9,9],
+      &#x27;Fuel Depot&#x27;:[0.6,5.6,1.6,1.4,12],&#x27;Admin Complex&#x27;:[2.8,6.4,2.4,1.2,15]},
+ scenery:[[1.0,3.1,0.9,0.7,17,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],[6.0,3.0,1.1,0.8,10,&#x27;Hangar 3&#x27;,&#x27;\u{1F3D7}&#x27;],
+          [11.2,6.2,1.3,1.0,7,&#x27;Magazine A&#x27;,null],[12.4,7.4,1.1,0.9,7,&#x27;Magazine B&#x27;,null],
+          [8.6,6.0,1.4,1.0,12,&#x27;Shops&#x27;,null],[0.5,7.2,1.8,1.1,9,&#x27;Motor Pool&#x27;,null],
+          [5.0,7.6,1.5,0.9,13,&#x27;BEQ&#x27;,null]],
+ zones:[[0.4,0.6,8.4,3.6,&#x27;HARVEY FIELD&#x27;],[9.2,0.5,4.4,3.8,&#x27;RANDSBURG WASH&#x27;],
+        [0.3,4.9,5.6,3.8,&#x27;MAIN BASE&#x27;],[8.2,4.9,5.4,3.8,&#x27;LAUREL MTN&#x27;]]},
+
+/* Fleet concentration pier complex — carrier row projecting into the harbour */
+&#x27;ns-norf&#x27;:{cols:13,rows:8,mg:[10.4,6.6],
+ terrain:[[&#x27;water&#x27;,0,0,13,3.1],[&#x27;pier&#x27;,1.4,0.2,0.7,2.9],[&#x27;pier&#x27;,3.2,0.2,0.7,2.9],
+          [&#x27;pier&#x27;,5.0,0.2,0.7,2.9],[&#x27;pier&#x27;,6.8,0.2,0.7,2.9],[&#x27;quay&#x27;,0.4,3.0,10.4,0.7],
+          [&#x27;road&#x27;,0.4,4.6,12.2,0.28],[&#x27;apron&#x27;,8.6,0.6,3.4,2.2]],
+ fac:{&#x27;Carrier Pier Row&#x27;:[1.3,0.9,1.0,1.5,9,4,&#x27;x&#x27;,1.5],&#x27;Command HQ&#x27;:[1.0,3.9,2.0,1.3,21],
+      &#x27;NMCP Medical&#x27;:[4.4,3.9,2.4,1.6,19],&#x27;Fuel Farm&#x27;:[9.6,3.4,1.6,1.4,12],
+      &#x27;Admin District&#x27;:[2.0,5.6,1.4,1.3,14,2,&#x27;x&#x27;,1.9]},
+ scenery:[[7.6,3.9,1.6,1.2,9,&#x27;Warehouse&#x27;,null],[9.4,5.4,1.8,1.2,8,&#x27;Supply&#x27;,null],
+          [6.4,5.8,1.0,0.9,11,&#x27;Gate 2&#x27;,null],[11.6,1.2,1.1,1.6,10,&#x27;Crane&#x27;,null],
+          [0.4,6.6,2.2,1.1,9,&#x27;Parking&#x27;,null],[7.2,6.8,2.0,1.0,12,&#x27;BEQ&#x27;,null]],
+ zones:[[0.3,0.2,7.6,3.4,&#x27;CARRIER ROW&#x27;],[8.4,0.3,4.4,3.4,&#x27;PIER 1-6&#x27;],
+        [0.3,3.7,5.2,4.0,&#x27;HQ COMPLEX&#x27;],[6.2,3.7,6.4,4.0,&#x27;NMCP&#x27;]]},
+
+/* Coastal peninsula air station — runway parallel to the shore, hangar row behind */
+&#x27;nas-nc&#x27;:{cols:12,rows:8,mg:[9.6,6.4],
+ terrain:[[&#x27;water&#x27;,0,6.4,12,1.6],[&#x27;water&#x27;,10.4,0,1.6,6.6],[&#x27;runway&#x27;,0.6,1.0,9.0,0.95],
+          [&#x27;taxi&#x27;,0.9,2.1,8.4,0.34],[&#x27;apron&#x27;,1.4,2.6,6.4,1.5],[&#x27;road&#x27;,0.5,4.6,9.6,0.26],
+          [&#x27;quay&#x27;,0,6.1,10.2,0.4]],
+ fac:{&#x27;Flight Ops / Runway&#x27;:[1.0,2.8,1.8,1.1,14],&#x27;Hangar Complex&#x27;:[3.6,2.7,1.1,1.3,16,3,&#x27;x&#x27;,1.4],
+      &#x27;Fuel Depot&#x27;:[8.4,3.0,1.4,1.3,11],&#x27;Comms Node&#x27;:[0.6,5.0,1.2,1.0,20],
+      &#x27;Admin Zone&#x27;:[3.0,5.1,2.8,1.3,13]},
+ scenery:[[6.6,5.0,1.6,1.1,10,&#x27;Ops Support&#x27;,null],[8.6,5.2,1.4,1.0,9,&#x27;Supply&#x27;,null],
+          [2.2,0.4,0.8,0.6,15,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],[1.0,6.6,2.4,0.9,7,&#x27;Pier Shed&#x27;,null],
+          [4.4,6.7,2.0,0.9,8,&#x27;Boat House&#x27;,null],[0.4,3.1,0.9,0.8,11,&#x27;Fire Sta&#x27;,null]],
+ zones:[[0.3,0.6,9.6,1.8,&#x27;FLIGHT OPS&#x27;],[1.0,2.5,7.2,2.0,&#x27;HANGAR ROW&#x27;],
+        [7.8,2.6,2.6,2.0,&#x27;DEPOT&#x27;],[0.3,4.8,7.4,2.6,&#x27;COMMAND&#x27;]]},
+
+/* Shipyard on an inlet — graving docks cut into the shoreline, magazines held well back */
+&#x27;nbk&#x27;:{cols:12,rows:8,mg:[9.0,6.8],
+ terrain:[[&#x27;water&#x27;,0,0,4.2,8],[&#x27;drydock&#x27;,3.0,0.8,1.5,1.7],[&#x27;drydock&#x27;,3.0,2.9,1.5,1.7],
+          [&#x27;drydock&#x27;,3.0,5.0,1.5,1.7],[&#x27;quay&#x27;,4.4,0.5,0.5,7.0],[&#x27;road&#x27;,5.0,0.6,0.28,6.8],
+          [&#x27;pier&#x27;,1.0,1.4,1.9,0.55],[&#x27;pier&#x27;,1.0,5.6,1.9,0.55],[&#x27;forest&#x27;,9.4,0,2.6,4.0]],
+ fac:{&#x27;Drydock Complex&#x27;:[4.9,1.2,1.7,0.9,14,3,&#x27;y&#x27;,1.15],&#x27;Shipyard HQ&#x27;:[7.2,1.0,1.6,1.4,22],
+      &#x27;Medical Center&#x27;:[7.0,3.2,1.9,1.5,17],&#x27;Ammo Storage&#x27;:[10.2,5.6,1.2,1.0,7],
+      &#x27;Pier Complex&#x27;:[5.2,5.0,2.2,1.4,10]},
+ scenery:[[9.2,1.2,1.0,0.9,13,&#x27;Shop 12&#x27;,null],[7.8,5.2,1.4,1.1,9,&#x27;Warehouse&#x27;,null],
+          [5.4,6.8,1.8,0.9,8,&#x27;Fab Shop&#x27;,null],[10.6,7.0,1.1,0.9,7,&#x27;Magazine&#x27;,null],
+          [6.6,0.4,0.7,0.5,19,&#x27;Crane 4&#x27;,null],[8.8,6.6,1.2,0.9,10,&#x27;Gate 1&#x27;,null]],
+ zones:[[4.6,0.4,4.6,4.4,&#x27;DRYDOCK 1&#x27;],[6.8,0.3,2.4,2.6,&#x27;SHIPYARD HQ&#x27;],
+        [9.6,4.9,2.4,2.8,&#x27;AMMO STORAGE&#x27;],[4.8,4.6,4.2,3.0,&#x27;PIER COMPLEX&#x27;]]},
+
+/* Compact riverside campus — dense, little separation, one small apron */
+&#x27;jbab&#x27;:{cols:10,rows:7,mg:[7.8,5.6],
+ terrain:[[&#x27;water&#x27;,0,0,10,1.5],[&#x27;quay&#x27;,0,1.4,8.0,0.4],[&#x27;apron&#x27;,5.6,2.0,3.6,2.0],
+          [&#x27;road&#x27;,0.4,3.4,8.8,0.26],[&#x27;road&#x27;,3.2,1.9,0.26,4.6],[&#x27;grass&#x27;,0.3,5.0,3.0,1.7]],
+ fac:{&#x27;Intel Complex&#x27;:[0.6,2.0,2.2,1.2,24],&#x27;Command Center&#x27;:[1.2,4.0,2.0,1.2,20],
+      &#x27;Comms Node&#x27;:[0.5,5.4,1.2,1.0,26],&#x27;Flight Apron&#x27;:[6.4,2.4,1.6,1.1,9],
+      &#x27;Admin / Support&#x27;:[3.8,4.2,2.4,1.3,15]},
+ scenery:[[3.8,2.1,1.6,1.1,17,&#x27;Bldg 20&#x27;,null],[5.8,4.4,1.4,1.1,13,&#x27;Bldg 41&#x27;,null],
+          [8.4,4.6,1.2,1.0,11,&#x27;Gate&#x27;,null],[7.6,0.3,1.4,1.0,9,&#x27;Boathouse&#x27;,null],
+          [2.0,5.6,1.4,0.9,10,&#x27;BEQ&#x27;,null],[8.2,2.2,0.8,0.7,14,&#x27;Hangar 2&#x27;,null]],
+ zones:[[0.3,1.8,3.2,2.6,&#x27;INTEL COMPLEX&#x27;],[5.2,1.8,4.2,2.6,&#x27;APRON&#x27;],
+        [0.3,4.6,4.6,2.2,&#x27;HQ BLDG&#x27;],[5.4,4.2,4.2,2.4,&#x27;COMMS NODE&#x27;]]},
+
+/* Two-site Mediterranean air station — runway on one side, NATO comms compound apart */
+&#x27;nas-sig&#x27;:{cols:12,rows:8,mg:[8.6,6.4],
+ terrain:[[&#x27;scrub&#x27;,0,0,12,8],[&#x27;runway&#x27;,0.5,0.9,8.6,0.9],[&#x27;taxi&#x27;,1.0,2.0,7.4,0.34],
+          [&#x27;apron&#x27;,1.6,2.5,4.4,1.4],[&#x27;road&#x27;,0.4,4.4,10.8,0.26],[&#x27;road&#x27;,9.0,0.8,0.26,6.2]],
+ fac:{&#x27;Main Runway&#x27;:[1.0,2.6,1.6,1.1,12],&#x27;Aircraft Ramp&#x27;:[3.2,2.6,1.0,1.2,14,2,&#x27;x&#x27;,1.5],
+      &#x27;NATO Comms Hub&#x27;:[9.6,1.0,1.8,1.5,23],&#x27;Fuel Storage&#x27;:[6.6,2.8,1.4,1.2,11],
+      &#x27;Admin / BEQ&#x27;:[2.0,5.2,2.8,1.4,13]},
+ scenery:[[9.8,3.2,1.4,1.1,12,&#x27;Annex&#x27;,null],[5.4,5.4,1.6,1.1,10,&#x27;Chapel&#x27;,null],
+          [7.4,5.6,1.8,1.1,9,&#x27;Exchange&#x27;,null],[0.5,5.4,1.2,1.0,11,&#x27;Fire Sta&#x27;,null],
+          [1.4,0.3,0.8,0.6,16,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],[10.2,6.2,1.2,1.0,8,&#x27;Gate 3&#x27;,null]],
+ zones:[[0.3,0.6,8.8,1.8,&#x27;MAIN RUNWAY&#x27;],[1.2,2.4,6.6,1.8,&#x27;FUEL&#x27;],
+        [9.2,0.7,2.6,3.4,&#x27;NATO COMMS&#x27;],[0.3,5.0,8.4,2.6,&#x27;BEQ&#x27;]]},
+
+/* Purpose-built missile-defence site — tight square perimeter, everything inside the fence */
+&#x27;nsf-deveselu&#x27;:{cols:9,rows:7,mg:[6.6,5.2],
+ terrain:[[&#x27;grass&#x27;,0,0,9,7],[&#x27;perimeter&#x27;,0.6,0.6,7.8,5.8],[&#x27;apron&#x27;,1.4,1.4,3.0,2.2],
+          [&#x27;road&#x27;,1.0,4.0,6.8,0.26],[&#x27;road&#x27;,4.8,1.2,0.26,3.2]],
+ fac:{&#x27;Aegis Ashore Site&#x27;:[1.6,1.6,2.4,1.8,20],&#x27;Power Generation&#x27;:[5.4,1.5,1.4,1.2,12],
+      &#x27;Comms / Data Ctr&#x27;:[5.2,3.0,1.6,1.3,16],&#x27;Admin Complex&#x27;:[1.8,4.6,2.2,1.2,12]},
+ scenery:[[4.4,4.8,1.4,1.0,10,&#x27;Support&#x27;,null],[6.6,4.4,1.2,1.0,9,&#x27;Guard&#x27;,null],
+          [1.0,3.2,0.9,0.8,14,&#x27;Water Twr&#x27;,null],[6.8,1.0,0.8,0.7,11,&#x27;Fuel&#x27;,null]],
+ zones:[[1.2,1.2,3.4,2.8,&#x27;AEGIS ASHORE&#x27;],[5.0,1.1,2.6,2.0,&#x27;POWER PLANT&#x27;],
+        [4.8,2.8,2.8,2.0,&#x27;DATA CTR&#x27;],[1.2,4.3,3.4,2.0,&#x27;ADMIN&#x27;]]},
+
+/* Dense Gulf port — pier complex against the water, ammunition area pushed inland */
+&#x27;nsa-bahrain&#x27;:{cols:12,rows:8,mg:[3.0,6.8],
+ terrain:[[&#x27;water&#x27;,9.0,0,3,8],[&#x27;quay&#x27;,8.4,0.4,0.6,7.2],[&#x27;pier&#x27;,9.2,1.0,1.7,0.6],
+          [&#x27;pier&#x27;,9.2,3.0,1.7,0.6],[&#x27;pier&#x27;,9.2,5.0,1.7,0.6],[&#x27;road&#x27;,0.5,3.6,7.8,0.28],
+          [&#x27;road&#x27;,4.4,0.6,0.28,6.6],[&#x27;apron&#x27;,5.2,0.8,2.8,2.4]],
+ fac:{&#x27;5th Fleet HQ&#x27;:[1.0,0.8,2.4,1.6,22],&#x27;Naval Pier Complex&#x27;:[6.0,1.2,0.9,1.5,11,2,&#x27;x&#x27;,1.3],
+      &#x27;Comms / Intel Hub&#x27;:[1.2,4.2,2.0,1.4,19],&#x27;Ammunition Storage&#x27;:[0.5,6.4,1.4,1.1,7],
+      &#x27;Fuel Farm&#x27;:[6.2,4.0,1.6,1.3,11],&#x27;Admin / BEQ&#x27;:[3.6,4.4,2.0,1.3,15]},
+ scenery:[[5.8,6.2,1.8,1.1,12,&#x27;Exchange&#x27;,null],[3.4,6.6,1.6,1.0,10,&#x27;Gym&#x27;,null],
+          [2.2,2.6,1.4,0.8,13,&#x27;Bldg 8&#x27;,null],[7.4,6.4,1.4,1.0,9,&#x27;Gate 1&#x27;,null],
+          [0.5,2.2,1.0,0.9,11,&#x27;Chiller&#x27;,null],[6.4,3.0,1.2,0.7,8,&#x27;Shed&#x27;,null]],
+ zones:[[0.3,0.5,3.9,3.0,&#x27;5TH FLEET HQ&#x27;],[5.0,0.5,3.8,3.0,&#x27;PIER COMPLEX&#x27;],
+        [0.3,3.9,3.6,3.6,&#x27;BEQ&#x27;],[5.4,3.7,3.4,3.4,&#x27;AMMO&#x27;]]},
+
+/* Japanese naval air facility — runway, hangar line, seismic-braced support blocks */
+&#x27;naf-atsugi&#x27;:{cols:12,rows:8,mg:[9.4,6.2],
+ terrain:[[&#x27;grass&#x27;,0,0,12,8],[&#x27;runway&#x27;,0.6,1.0,9.2,0.9],[&#x27;taxi&#x27;,1.0,2.1,8.2,0.34],
+          [&#x27;apron&#x27;,1.6,2.6,5.6,1.5],[&#x27;road&#x27;,0.4,4.6,10.6,0.26],[&#x27;road&#x27;,8.4,1.0,0.26,5.8]],
+ fac:{&#x27;Flight Ops Runway&#x27;:[1.0,2.7,1.8,1.2,13],&#x27;Hangar Complex&#x27;:[3.4,2.7,1.0,1.3,16,3,&#x27;x&#x27;,1.3],
+      &#x27;JP-8 Fuel Farm&#x27;:[9.0,2.4,1.5,1.3,11],&#x27;Comms Node&#x27;:[0.6,5.2,1.3,1.1,21],
+      &#x27;Admin / Support&#x27;:[2.6,5.2,2.6,1.3,14]},
+ scenery:[[7.6,2.8,1.2,1.1,12,&#x27;Maint&#x27;,null],[5.8,5.4,1.6,1.1,10,&#x27;Exchange&#x27;,null],
+          [7.8,5.4,1.6,1.1,9,&#x27;Housing&#x27;,null],[1.6,0.3,0.8,0.6,16,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],
+          [9.8,5.0,1.2,1.0,8,&#x27;Gate 2&#x27;,null],[0.5,3.0,1.0,0.9,12,&#x27;Fire Sta&#x27;,null]],
+ zones:[[0.3,0.6,9.4,1.8,&#x27;FLIGHT OPS&#x27;],[1.2,2.5,6.4,1.9,&#x27;HANGAR ROW&#x27;],
+        [8.6,2.2,3.0,2.2,&#x27;JP-8 FARM&#x27;],[0.3,5.0,7.0,2.6,&#x27;SUPPORT&#x27;]]},
+
+/* Island harbour — deep-water piers, sub base on its own peninsula, tank field inland */
+&#x27;ns-guam&#x27;:{cols:13,rows:9,mg:[6.0,7.6],
+ terrain:[[&#x27;water&#x27;,0,0,13,3.4],[&#x27;water&#x27;,0,3.2,3.0,2.4],[&#x27;quay&#x27;,3.0,3.2,8.4,0.6],
+          [&#x27;pier&#x27;,4.0,0.8,0.7,2.5],[&#x27;pier&#x27;,5.8,0.8,0.7,2.5],[&#x27;pier&#x27;,7.6,0.8,0.7,2.5],
+          [&#x27;pier&#x27;,0.6,3.0,2.2,0.6],[&#x27;road&#x27;,3.2,5.0,9.2,0.28],[&#x27;forest&#x27;,10.6,5.6,2.4,3.2],
+          [&#x27;tanks&#x27;,9.4,3.9,3.0,1.6]],
+ fac:{&#x27;Apra Harbor Piers&#x27;:[3.9,1.4,0.9,1.6,10,3,&#x27;x&#x27;,1.8],&#x27;Sub Base&#x27;:[0.6,4.0,2.4,1.6,14],
+      &#x27;Fuel Tank Farm&#x27;:[9.7,4.1,0.8,1.2,9,3,&#x27;x&#x27;,0.95],&#x27;Comms / C2 Node&#x27;:[3.4,5.6,2.0,1.4,22],
+      &#x27;Ordnance Annex&#x27;:[11.0,7.4,1.4,1.1,7],&#x27;Admin Zone&#x27;:[6.0,5.6,2.6,1.4,14]},
+ scenery:[[9.0,0.6,1.6,1.4,13,&#x27;Wharf Shed&#x27;,null],[3.4,4.0,1.6,0.8,9,&#x27;Supply&#x27;,null],
+          [5.6,4.0,1.4,0.8,10,&#x27;Shops&#x27;,null],[0.5,6.4,2.0,1.2,11,&#x27;BEQ&#x27;,null],
+          [8.8,6.0,1.6,1.1,9,&#x27;Gate 3&#x27;,null],[3.0,7.4,2.2,1.1,12,&#x27;Housing&#x27;,null],
+          [7.4,4.0,1.2,0.8,8,&#x27;Pump Sta&#x27;,null]],
+ zones:[[3.2,0.4,6.2,3.4,&#x27;APRA HARBOR&#x27;],[0.3,3.6,3.0,2.6,&#x27;SUB BASE&#x27;],
+        [9.2,3.6,3.4,2.4,&#x27;TANK FARM&#x27;],[9.8,6.6,3.0,2.2,&#x27;ORDNANCE&#x27;]]},
+
+/* Expeditionary forward base — container and tent rows, prime power, shared airfield edge */
+&#x27;camp-lemonnier&#x27;:{cols:11,rows:8,mg:[8.4,6.4],
+ terrain:[[&#x27;sand&#x27;,0,0,11,8],[&#x27;runway&#x27;,0.4,0.8,9.6,0.85],[&#x27;taxi&#x27;,1.2,1.8,7.0,0.3],
+          [&#x27;apron&#x27;,1.8,2.2,4.0,1.4],[&#x27;road&#x27;,0.5,4.0,9.6,0.26],[&#x27;road&#x27;,6.0,2.0,0.26,5.2],
+          [&#x27;perimeter&#x27;,0.3,3.6,10.2,4.0]],
+ fac:{&#x27;Flight Ops / Runway&#x27;:[1.2,2.3,1.6,1.1,12],&#x27;Drone Ops Center&#x27;:[3.4,2.3,2.0,1.2,14],
+      &#x27;AFRICOM Fwd HQ&#x27;:[1.0,4.6,2.2,1.4,17],&#x27;JP-8 Fuel Farm&#x27;:[8.4,2.2,1.6,1.3,10],
+      &#x27;Admin / EOC&#x27;:[3.8,4.8,2.0,1.2,13]},
+ scenery:[[6.4,4.6,1.4,0.7,7,&#x27;Billet Row&#x27;,null],[6.4,5.5,1.4,0.7,7,&#x27;Billet Row&#x27;,null],
+          [6.4,6.4,1.4,0.7,7,&#x27;Billet Row&#x27;,null],[8.4,4.6,1.6,1.0,9,&#x27;DFAC&#x27;,null],
+          [1.2,6.4,2.0,0.9,8,&#x27;Container Yd&#x27;,null],[5.8,2.4,0.9,0.7,15,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],
+          [3.6,6.4,1.8,0.9,8,&#x27;Motor Pool&#x27;,null]],
+ zones:[[0.3,0.6,9.8,1.6,&#x27;FLIGHT OPS&#x27;],[1.2,2.1,5.0,1.7,&#x27;DRONE OPS&#x27;],
+        [0.5,4.4,4.8,3.0,&#x27;AFRICOM HQ&#x27;],[6.0,4.2,4.4,3.2,&#x27;EOC&#x27;]]},
+
+/* Runway and pier in one footprint — the only site in the set carrying both */
+&#x27;nas-rota&#x27;:{cols:13,rows:8,mg:[6.4,6.6],
+ terrain:[[&#x27;scrub&#x27;,0,0,13,8],[&#x27;water&#x27;,9.4,4.6,3.6,3.4],[&#x27;runway&#x27;,0.5,0.8,9.0,0.9],
+          [&#x27;taxi&#x27;,1.0,1.9,8.0,0.32],[&#x27;apron&#x27;,1.6,2.4,4.6,1.4],[&#x27;quay&#x27;,9.0,4.4,0.5,3.4],
+          [&#x27;pier&#x27;,9.6,5.0,1.5,0.55],[&#x27;pier&#x27;,9.6,6.4,1.5,0.55],[&#x27;road&#x27;,0.4,4.2,9.0,0.26]],
+ fac:{&#x27;Main Runway&#x27;:[1.0,2.5,1.8,1.1,13],&#x27;Destroyer Pier Row&#x27;:[6.9,5.0,1.7,0.8,10,2,&#x27;y&#x27;,1.2],
+      &#x27;JP-8 / AVGAS Farm&#x27;:[7.0,2.4,1.6,1.3,10],&#x27;Comms Node&#x27;:[0.6,5.0,1.3,1.1,20],
+      &#x27;Admin Complex&#x27;:[2.6,5.0,2.6,1.3,14]},
+ scenery:[[3.6,2.5,2.4,1.2,15,&#x27;Hangar Row&#x27;,null],[9.4,2.4,1.4,1.1,9,&#x27;Supply&#x27;,null],
+          [5.4,6.6,1.4,1.0,10,&#x27;Exchange&#x27;,null],[1.4,0.3,0.8,0.6,15,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],
+          [0.5,6.6,1.6,0.9,8,&#x27;Housing&#x27;,null],[10.4,2.6,1.2,1.0,8,&#x27;Gate 2&#x27;,null]],
+ zones:[[0.3,0.5,9.4,1.7,&#x27;MAIN RUNWAY&#x27;],[1.2,2.2,7.4,1.8,&#x27;FUEL FARM&#x27;],
+        [0.3,4.7,5.6,2.8,&#x27;ADMIN&#x27;],[6.4,4.5,6.2,3.2,&#x27;DDG PIERS&#x27;]]},
+
+/* Harbour with an island in the middle — the shape that makes Pearl legible */
+&#x27;ns-pearl&#x27;:{cols:13,rows:9,mg:[10.2,7.2],
+ terrain:[[&#x27;water&#x27;,0,0,13,9],[&#x27;island&#x27;,3.4,2.6,4.6,3.4],[&#x27;island&#x27;,0.4,0.4,2.8,2.6],
+          [&#x27;island&#x27;,8.6,0.5,4.0,3.0],[&#x27;island&#x27;,8.2,4.4,4.4,4.2],[&#x27;island&#x27;,0.3,5.4,3.0,3.2],
+          [&#x27;quay&#x27;,3.4,2.6,4.6,0.4],[&#x27;pier&#x27;,8.9,3.4,1.6,0.55],[&#x27;pier&#x27;,8.9,5.0,0,0],
+          [&#x27;drydock&#x27;,9.2,5.2,1.4,1.6],[&#x27;road&#x27;,3.6,4.4,4.2,0.24]],
+ fac:{&#x27;Ford Island C2&#x27;:[4.0,3.0,2.4,1.5,19],&#x27;Sub Base Piers&#x27;:[9.1,1.0,1.1,1.5,11,2,&#x27;x&#x27;,1.4],
+      &#x27;Dry Dock Complex&#x27;:[10.8,5.0,1.5,2.2,14],&#x27;Comms / JICPAC&#x27;:[0.6,5.9,2.0,1.4,21],
+      &#x27;Fuel Storage&#x27;:[9.0,7.0,1.8,1.2,9],&#x27;Admin / BEQ&#x27;:[0.7,0.8,2.0,1.4,13]},
+ scenery:[[5.0,4.8,1.8,1.0,10,&#x27;Hangar 6&#x27;,null],[4.0,4.8,0.8,0.7,16,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],
+          [11.8,1.2,0.7,1.2,11,&#x27;Crane&#x27;,null],[1.0,7.6,1.8,0.9,9,&#x27;Support&#x27;,null],
+          [8.8,4.6,1.2,0.8,8,&#x27;Pump Sta&#x27;,null],[6.4,3.1,1.2,1.0,12,&#x27;Ops Bldg&#x27;,null]],
+ zones:[[3.2,2.4,5.0,3.8,&#x27;FORD ISLAND&#x27;],[8.4,0.3,4.4,3.4,&#x27;SUB BASE&#x27;],
+        [9.6,4.6,3.2,3.6,&#x27;DRY DOCK&#x27;],[0.2,5.2,3.2,3.6,&#x27;JICPAC&#x27;]]},
+
+/* River-side patrol air station — long primary runway, very large ramp */
+&#x27;nas-jax&#x27;:{cols:13,rows:8,mg:[10.4,6.4],
+ terrain:[[&#x27;grass&#x27;,0,0,13,8],[&#x27;water&#x27;,0,6.6,13,1.4],[&#x27;runway&#x27;,0.5,0.8,10.4,0.95],
+          [&#x27;taxi&#x27;,1.0,1.95,9.4,0.34],[&#x27;apron&#x27;,1.4,2.5,7.6,1.9],[&#x27;quay&#x27;,0,6.3,11.0,0.4],
+          [&#x27;road&#x27;,0.4,4.9,11.6,0.26]],
+ fac:{&#x27;Primary Runway&#x27;:[1.0,2.7,1.8,1.2,13],&#x27;P-8 Patrol Ramp&#x27;:[3.4,2.7,0.9,1.4,10,3,&#x27;x&#x27;,1.25],
+      &#x27;Hangar Complex&#x27;:[7.4,2.6,1.1,1.5,17,2,&#x27;x&#x27;,1.4],&#x27;Fuel Farm&#x27;:[10.6,2.8,1.6,1.4,11],
+      &#x27;Admin / HQ&#x27;:[2.4,5.4,2.8,1.4,15]},
+ scenery:[[5.8,5.4,1.8,1.1,10,&#x27;Depot Shop&#x27;,null],[8.2,5.5,1.8,1.1,9,&#x27;Warehouse&#x27;,null],
+          [1.6,0.3,0.8,0.6,16,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],[0.5,5.5,1.4,1.0,11,&#x27;Fire Sta&#x27;,null],
+          [3.2,7.0,2.0,0.8,7,&#x27;Boat Ramp&#x27;,null],[11.0,5.6,1.4,1.0,8,&#x27;Gate 1&#x27;,null]],
+ zones:[[0.3,0.5,10.8,1.8,&#x27;PRIMARY RWY&#x27;],[1.2,2.4,5.8,2.2,&#x27;P-8 RAMP&#x27;],
+        [7.0,2.3,5.4,2.2,&#x27;HANGARS&#x27;],[0.3,5.2,8.0,2.4,&#x27;HQ&#x27;]]},
+
+/* Island air station fed by a submarine cable — magazines held far from the flight line */
+&#x27;nas-whidbey&#x27;:{cols:12,rows:8,mg:[8.8,6.2],
+ terrain:[[&#x27;water&#x27;,0,0,12,1.2],[&#x27;water&#x27;,0,6.8,12,1.2],[&#x27;grass&#x27;,0,1.2,12,5.6],
+          [&#x27;runway&#x27;,0.5,1.8,9.4,0.9],[&#x27;taxi&#x27;,1.0,2.9,8.4,0.32],[&#x27;apron&#x27;,1.6,3.4,5.4,1.4],
+          [&#x27;road&#x27;,0.4,5.2,10.4,0.26],[&#x27;cable&#x27;,10.6,0.6,0.22,4.6]],
+ fac:{&#x27;Primary Airfield&#x27;:[1.0,3.5,1.8,1.2,13],&#x27;EA-18G Hangar Row&#x27;:[3.4,3.5,1.0,1.3,16,3,&#x27;x&#x27;,1.3],
+      &#x27;Ordnance Storage&#x27;:[10.2,6.0,1.3,1.0,7],&#x27;Admin / Support&#x27;:[2.4,5.7,2.8,1.3,13]},
+ scenery:[[7.4,3.6,1.4,1.2,11,&#x27;Maint&#x27;,null],[5.8,5.8,1.6,1.1,10,&#x27;Exchange&#x27;,null],
+          [1.6,1.0,0.8,0.6,16,&#x27;Tower&#x27;,&#x27;\u{1F5FC}&#x27;],[0.5,5.8,1.4,1.0,11,&#x27;Fire Sta&#x27;,null],
+          [10.4,4.2,1.2,1.0,9,&#x27;Cable Hut&#x27;,null],[7.8,6.2,1.4,1.0,8,&#x27;Gate 2&#x27;,null]],
+ zones:[[0.3,1.5,9.8,1.8,&#x27;PRIMARY AIRFIELD&#x27;],[1.2,3.3,6.4,1.8,&#x27;EA-18G ROW&#x27;],
+        [0.3,5.5,7.0,2.2,&#x27;SUPPORT&#x27;],[9.6,5.4,2.2,2.4,&#x27;ORDNANCE&#x27;]]},
+
+/* Dredged basin cut inland — a single feed into a carrier-capable harbour */
+&#x27;ns-mayport&#x27;:{cols:12,rows:8,mg:[2.4,6.6],
+ terrain:[[&#x27;grass&#x27;,0,0,12,8],[&#x27;water&#x27;,4.4,0.6,7.4,4.6],[&#x27;water&#x27;,11.0,0,1.0,8],
+          [&#x27;quay&#x27;,4.2,0.5,0.5,4.8],[&#x27;quay&#x27;,4.2,5.1,7.0,0.5],[&#x27;pier&#x27;,5.0,1.0,0.65,2.6],
+          [&#x27;pier&#x27;,7.0,1.0,0.65,2.6],[&#x27;pier&#x27;,9.0,1.0,0.65,2.6],
+          [&#x27;road&#x27;,0.5,5.9,10.6,0.26],[&#x27;road&#x27;,3.6,0.6,0.26,5.0]],
+ fac:{&#x27;Carrier Pier&#x27;:[4.9,1.4,1.1,1.4,11,2,&#x27;x&#x27;,1.5],&#x27;Destroyer Piers&#x27;:[8.3,1.4,1.0,1.4,10,2,&#x27;x&#x27;,1.4],
+      &#x27;Fuel Farm&#x27;:[0.6,1.4,1.6,1.4,11],&#x27;Admin Complex&#x27;:[1.0,3.6,2.4,1.3,14]},
+ scenery:[[4.6,6.4,2.0,1.1,10,&#x27;Exchange&#x27;,null],[7.0,6.4,1.8,1.1,9,&#x27;Warehouse&#x27;,null],
+          [0.6,6.6,1.4,1.0,11,&#x27;Gate 1&#x27;,null],[2.0,2.0,1.2,1.0,13,&#x27;Ops Bldg&#x27;,null],
+          [9.2,6.2,1.4,1.0,8,&#x27;Housing&#x27;,null],[1.0,5.0,1.6,0.7,8,&#x27;Motor Pool&#x27;,null]],
+ zones:[[4.2,0.4,7.2,2.6,&#x27;CARRIER PIER&#x27;],[4.2,3.0,7.2,2.2,&#x27;DDG PIERS&#x27;],
+        [0.3,1.1,3.4,3.2,&#x27;FUEL FARM&#x27;],[0.3,5.6,10.8,2.2,&#x27;ADMIN&#x27;]]}
+};
+
 /* ══════════════════════════════════════════
-   ISOMETRIC GRID RENDERER
+   ISOMETRIC RENDERER
    ══════════════════════════════════════════ */
-const ICON_MAP=[[/runway|airfield|flight ops/i,&#x27;\u2708&#x27;],[/carrier|pier row|berth|wharf|piers/i,&#x27;\u2693&#x27;],
+const ICON_MAP=[[/runway|airfield|flight ops/i,&#x27;\u2708&#x27;],[/carrier|pier row|berth|wharf|piers|pier/i,&#x27;\u2693&#x27;],
  [/ramp|apron/i,&#x27;\u{1F6E9}&#x27;],[/hangar/i,&#x27;\u{1F3D7}&#x27;],[/drydock|dry dock|shipyard/i,&#x27;\u{1F6A2}&#x27;],
  [/substation|power gen|power sub/i,&#x27;\u26A1&#x27;],[/command|hq|5th fleet|c2|africom|eoc/i,&#x27;\u2318&#x27;],
  [/intel|isr|scif|jicpac/i,&#x27;\u{1F441}&#x27;],[/comms|nato|radar/i,&#x27;\u{1F4E1}&#x27;],[/fuel|jp-8|avgas|tank farm/i,&#x27;\u26FD&#x27;],
- [/medical|hospital|nmcp/i,&#x27;\u271A&#x27;],[/ammo|ordnance|weapons/i,&#x27;\u{1F6E1}&#x27;],[/aegis|missile/i,&#x27;\u{1F3AF}&#x27;],
+ [/medical|hospital|nmcp/i,&#x27;\u271A&#x27;],[/ammo|ordnance|weapons|magazine/i,&#x27;\u{1F6E1}&#x27;],[/aegis|missile/i,&#x27;\u{1F3AF}&#x27;],
  [/drone|uav/i,&#x27;\u{1F6F8}&#x27;],[/sub base|submarine/i,&#x27;\u{1F41F}&#x27;],[/range|test/i,&#x27;\u{1F3AF}&#x27;],[/admin|support|beq/i,&#x27;\u{1F3E2}&#x27;]];
 function iconFor(n){for(const p of ICON_MAP) if(p[0].test(n)) return p[1]; return &#x27;\u25A0&#x27;;}
 
-const POSITIONS=[[1,0],[4,0],[7,0],[0,1],[2,1],[5,1],[8,1],[1,2],[3,2],[6,2],[8,2],[0,3],[2,3],[5,3],[7,3],[1,4],[3,4],[6,4],[8,4]];
-const JIT=[0,4,-2,6,-4,2,-6,4,0,-2,6,-4];
-function hFor(t,i){const j=JIT[i%JIT.length];return t===&#x27;critical&#x27;?Math.max(24,30+j):t===&#x27;vulnerable&#x27;?Math.max(18,22+j):Math.max(10,12+Math.abs(j));}
+/* Terrain palette. Each entry: [fill, stroke, alpha] */
+const TERRAIN={
+  water    :{f:&#x27;#0b2a44&#x27;,s:&#x27;rgba(60,150,200,.30)&#x27;,wave:1},
+  scrub    :{f:&#x27;#1c1e14&#x27;,s:&#x27;rgba(120,120,70,.12)&#x27;},
+  sand     :{f:&#x27;#241d12&#x27;,s:&#x27;rgba(170,140,80,.14)&#x27;},
+  grass    :{f:&#x27;#12200f&#x27;,s:&#x27;rgba(90,150,80,.13)&#x27;},
+  forest   :{f:&#x27;#0d1a10&#x27;,s:&#x27;rgba(70,140,90,.20)&#x27;},
+  playa    :{f:&#x27;#232016&#x27;,s:&#x27;rgba(180,170,120,.18)&#x27;},
+  runway   :{f:&#x27;#15171c&#x27;,s:&#x27;rgba(200,210,225,.34)&#x27;,center:1},
+  taxi     :{f:&#x27;#171a20&#x27;,s:&#x27;rgba(200,210,225,.22)&#x27;},
+  apron    :{f:&#x27;#14181f&#x27;,s:&#x27;rgba(150,165,185,.20)&#x27;},
+  quay     :{f:&#x27;#1a1d23&#x27;,s:&#x27;rgba(150,165,185,.28)&#x27;},
+  pier     :{f:&#x27;#20242c&#x27;,s:&#x27;rgba(170,185,205,.40)&#x27;,deck:1},
+  drydock  :{f:&#x27;#0a1a26&#x27;,s:&#x27;rgba(90,170,210,.45)&#x27;,deck:1},
+  road     :{f:&#x27;#171a1f&#x27;,s:&#x27;rgba(140,150,165,.18)&#x27;},
+  island   :{f:&#x27;#131c14&#x27;,s:&#x27;rgba(90,150,90,.22)&#x27;},
+  tanks    :{f:&#x27;#1b1a16&#x27;,s:&#x27;rgba(180,150,90,.24)&#x27;},
+  perimeter:{f:&#x27;rgba(0,0,0,0)&#x27;,s:&#x27;rgba(212,160,90,.42)&#x27;,dash:1},
+  cable    :{f:&#x27;#101c22&#x27;,s:&#x27;rgba(24,212,248,.35)&#x27;,dash:1}
+};
+const BC={standard:{t:&#x27;#8a7a5a&#x27;,R:&#x27;#5a5038&#x27;,L:&#x27;#3a3428&#x27;,F:&#x27;#4a4230&#x27;},
+          critical:{t:&#x27;#c0404a&#x27;,R:&#x27;#802838&#x27;,L:&#x27;#601828&#x27;,F:&#x27;#702030&#x27;},
+          vulnerable:{t:&#x27;#c07828&#x27;,R:&#x27;#804818&#x27;,L:&#x27;#602808&#x27;,F:&#x27;#703818&#x27;},
+          support:{t:&#x27;#5c6470&#x27;,R:&#x27;#3c424c&#x27;,L:&#x27;#282c34&#x27;,F:&#x27;#333941&#x27;}};
+const DARKC={t:&#x27;#2a3038&#x27;,R:&#x27;#1c2028&#x27;,L:&#x27;#141820&#x27;,F:&#x27;#181c24&#x27;};
 
+/* Build a draw model per installation from SITE_MAPS, auto-placing anything unmapped */
 const LAYOUT={};
 SITES.forEach(function(s){
-  const sorted=s.facs.map((f,i)=&gt;({f:f,i:i})).sort(function(a,b){
-    const o={critical:0,vulnerable:1,standard:2};return (o[a.f.type]||2)-(o[b.f.type]||2);});
-  const b=sorted.map(function(x,i){
-    const p=POSITIONS[i]||[(i*2)%9,Math.floor(i/4.5)%6];
-    return {c:p[0],r:p[1],h:hFor(x.f.type,i),type:x.f.type,icon:iconFor(x.f.name),name:x.f.name,fi:x.i};
+  const M=SITE_MAPS[s.id]||{cols:10,rows:7,terrain:[],fac:{},scenery:[],zones:[],mg:[5,6]};
+  const b=[], used=[];
+  s.facs.forEach(function(f,i){
+    const box=M.fac&amp;&amp;M.fac[f.name];
+    if(!box){used.push(i);return;}
+    const n=box[5]||1, axis=box[6]||&#x27;x&#x27;, gap=box[7]!=null?box[7]:(axis===&#x27;x&#x27;?box[2]*1.35:box[3]*1.35);
+    for(let k=0;k&lt;n;k++){
+      b.push({c:box[0]+(axis===&#x27;x&#x27;?k*gap:0), r:box[1]+(axis===&#x27;y&#x27;?k*gap:0),
+              w:box[2], d:box[3], h:box[4], part:k, parts:n,
+              type:f.type, icon:iconFor(f.name), name:f.name, fi:i});
+    }
   });
-  const used={};b.forEach(x=&gt;used[x.c+&#x27;,&#x27;+x.r]=1);
-  const fill=POSITIONS.filter(p=&gt;!used[p[0]+&#x27;,&#x27;+p[1]]);
-  for(let k=0;k&lt;Math.max(0,10-b.length)&amp;&amp;k&lt;fill.length;k++)
-    b.push({c:fill[k][0],r:fill[k][1],h:10+(k%3)*2,type:&#x27;std&#x27;,icon:null,name:null,fi:-1});
-  const z=s.zones&amp;&amp;s.zones.length&gt;=4?s.zones:[&#x27;ZONE A&#x27;,&#x27;ZONE B&#x27;,&#x27;ZONE C&#x27;,&#x27;ZONE D&#x27;];
-  LAYOUT[s.id]={buildings:b,zones:[[0,0,3,3,z[0]],[5,0,3,3,z[1]],[0,3,3,3,z[2]],[5,3,3,3,z[3]]],mgCell:[4,5]};
+  // fallback placement for any facility the map does not name
+  used.forEach(function(i,k){
+    const f=s.facs[i];
+    b.push({c:0.6+(k%3)*2.2, r:M.rows-2.2-Math.floor(k/3)*1.4, w:1.6,d:1.1,h:12,
+            part:0,parts:1,type:f.type,icon:iconFor(f.name),name:f.name,fi:i});
+  });
+  (M.scenery||[]).forEach(function(x){
+    b.push({c:x[0],r:x[1],w:x[2],d:x[3],h:x[4],part:0,parts:1,
+            type:&#x27;support&#x27;,icon:x[6]||null,name:x[5],fi:-1});
+  });
+  LAYOUT[s.id]={cols:M.cols,rows:M.rows,buildings:b,terrain:M.terrain||[],
+                zones:M.zones||[],mgCell:M.mg||[M.cols/2,M.rows-1]};
 });
 
-/* tile helpers */
+/* ── FACILITY SPREAD ──
+   Every site template is laid out on a tight grid, which packs neighbouring
+   facilities hard against each other. This pass scales centre-to-centre spacing
+   outward from the plate centre by SPREAD while leaving each footprint at its
+   original grid size, so neighbours pull apart instead of sharing an edge.
+   Terrain plots and zones scale with it so facilities stay on their ground.
+   The plate grows by SPREAD too, and drawIso fits the plate to the viewport, so
+   the default framing is unchanged — the gain lands as clear space between
+   buildings rather than as a larger, more heavily cropped site. */
+const SPREAD=1.2;
+Object.keys(LAYOUT).forEach(function(id){
+  const L=LAYOUT[id];
+  const ocx=L.cols/2, ocy=L.rows/2;
+  const cols2=Math.round(L.cols*SPREAD), rows2=Math.round(L.rows*SPREAD);
+  const ncx=cols2/2, ncy=rows2/2;
+  const sx=function(v){return ncx+(v-ocx)*SPREAD;};
+  const sy=function(v){return ncy+(v-ocy)*SPREAD;};
+
+  L.buildings.forEach(function(bl){ bl.c=sx(bl.c); bl.r=sy(bl.r); });
+
+  L.terrain=(L.terrain||[]).map(function(t){
+    const q=t.slice();
+    q[1]=sx(t[1]); q[2]=sy(t[2]);
+    q[3]=t[3]*SPREAD; q[4]=t[4]*SPREAD;
+    return q;
+  });
+
+  L.zones=(L.zones||[]).map(function(z){
+    const q=z.slice();
+    q[0]=sx(z[0]); q[1]=sy(z[1]);
+    q[2]=z[2]*SPREAD; q[3]=z[3]*SPREAD;
+    return q;
+  });
+
+  L.mgCell=[sx(L.mgCell[0]), sy(L.mgCell[1])];
+  L.cols=cols2; L.rows=rows2;
+});
+
+/* satellite tile assembly */
 function latLonToTile(lat,lon,z){const n=Math.pow(2,z);const tx=Math.floor((lon+180)/360*n);const la=lat*Math.PI/180;
   const ty=Math.floor((1-Math.log(Math.tan(la)+1/Math.cos(la))/Math.PI)/2*n);return {x:tx,y:ty};}
 const _tiles={};
@@ -12586,135 +13035,203 @@ function loadSat(s,cb){
   })(col,row);}
 }
 
-const iso={pan:{x:0,y:0},zoom:1,angle:0,drag:false,lx:0,ly:0,hits:[],site:null,sat:null};
-const LAYERS={ami:true,frcs:true,mg:true,lbl:true,sat:true};
-function proj(c,r,tw,th,a){const bx=(c-r)*tw/2,by=(c+r)*th/2,co=Math.cos(a),si=Math.sin(a);
-  return {x:bx*co-by*si,y:bx*si+by*co};}
+const iso={pan:{x:0,y:0},zoom:1,angle:0,pitch:0.5,drag:false,lx:0,ly:0,hits:[],site:null,sat:null};
+const LAYERS={ami:true,frcs:true,mg:true,lbl:true,sat:false};
+/* Turntable projection. The yaw is applied to the grid coordinates first and the
+   isometric squash second, so the ground plane stays level and building extrusion
+   stays vertical however far the camera swings round. Rotating the projected image
+   instead — which is what this used to do — tips the horizon and shears the boxes. */
+function proj(c,r,tw,th,a){const co=Math.cos(a),si=Math.sin(a);
+  const cr=c*co-r*si, rr=c*si+r*co;
+  return {x:(cr-rr)*tw/2,y:(cr+rr)*th/2};}
 
 function drawIso(){
-  const cv=document.getElementById(&#x27;iso-canvas&#x27;);const s=iso.site;if(!cv||!s)return;
+  const cv=document.getElementById(&#x27;iso-canvas&#x27;); const s=iso.site; if(!cv||!s)return;
   const wrap=document.getElementById(&#x27;iso-wrap&#x27;);
   const W=wrap.clientWidth||900,H=wrap.clientHeight||520;
   const dpr=Math.min(window.devicePixelRatio||1,2);
   if(cv.width!==W*dpr||cv.height!==H*dpr){cv.width=W*dpr;cv.height=H*dpr;}
-  const ctx=cv.getContext(&#x27;2d&#x27;);ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.clearRect(0,0,W,H);iso.hits=[];
-  const L=LAYOUT[s.id];
+  const ctx=cv.getContext(&#x27;2d&#x27;); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H); iso.hits=[];
+  const L=LAYOUT[s.id], COLS=L.cols, ROWS=L.rows;
+
+  /* tile size derived from the site&#x27;s own extent so large and small bases both fit */
+  const span=COLS+ROWS;
+  // base template scaled 1.5x — larger than the viewport on the bigger sites,
+  // which is what pan and zoom are for
+  /* The height term is divided by the pitch so the plate keeps the same screen
+     footprint as the camera tilts — otherwise climbing toward top-down stretches
+     the site off the bottom of the stage. 0.5/pitch is 1 at the default pitch,
+     so the framing at rest is untouched. */
+  const TW=Math.min(2.925*W/span, 3.93*H/span*(0.5/iso.pitch))*iso.zoom,
+        TH=TW*iso.pitch, a=iso.angle;
+  /* Extrusion shortens as the camera climbs toward top-down and lengthens as it
+     drops toward side-on. Normalised so pitch 0.5 renders exactly as before. */
+  const HSC=(1-iso.pitch*0.62)/0.69;
+  const ctr=proj(COLS/2,ROWS/2,TW,TH,a);
+  const OX=W/2-ctr.x+iso.pan.x, OY=H*0.53-ctr.y+iso.pan.y;
+  const ts=(c,r)=&gt;{const p=proj(c,r,TW,TH,a);return {x:OX+p.x,y:OY+p.y};};
+  const quad=(c,r,w,d)=&gt;[ts(c,r),ts(c+w,r),ts(c+w,r+d),ts(c,r+d)];
+  const fillQ=(q,fill,stroke,lw)=&gt;{
+    ctx.beginPath();ctx.moveTo(q[0].x,q[0].y);
+    for(let i=1;i&lt;4;i++)ctx.lineTo(q[i].x,q[i].y);
+    ctx.closePath();
+    if(fill){ctx.fillStyle=fill;ctx.fill();}
+    if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}
+  };
 
   /* satellite underlay */
   if(LAYERS.sat&amp;&amp;iso.sat){
     const sc=Math.max(W/iso.sat.width,H/iso.sat.height)*iso.zoom*0.9;
     ctx.drawImage(iso.sat,W/2-iso.sat.width*sc/2+iso.pan.x*0.3,H/2-iso.sat.height*sc/2+iso.pan.y*0.3,
       iso.sat.width*sc,iso.sat.height*sc);
-    ctx.fillStyle=s.outage?&#x27;rgba(20,4,8,0.76)&#x27;:&#x27;rgba(4,10,22,0.64)&#x27;;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=s.outage?&#x27;rgba(20,4,8,0.78)&#x27;:&#x27;rgba(4,10,22,0.68)&#x27;;ctx.fillRect(0,0,W,H);
   }else{ctx.fillStyle=s.outage?&#x27;#160408&#x27;:&#x27;#080e18&#x27;;ctx.fillRect(0,0,W,H);}
 
-  const BASE_T=Math.max(44,W/8.6),TW=BASE_T*iso.zoom,TH=TW*0.5,a=iso.angle,COLS=9,ROWS=6;
-  const OX=W/2-0.75*TW+iso.pan.x, OY=H*0.47-1.875*TW+iso.pan.y;
-  const ts=(c,r)=&gt;{const p=proj(c,r,TW,TH,a);return {x:OX+p.x,y:OY+p.y};};
-
-  /* ground */
+  /* ground plate */
+  fillQ(quad(0,0,COLS,ROWS),&#x27;rgba(9,20,38,0.42)&#x27;,null);
   for(let gr=0;gr&lt;ROWS;gr++)for(let gc=0;gc&lt;COLS;gc++){
-    const p0=ts(gc,gr),p1=ts(gc+1,gr),p2=ts(gc+1,gr+1),p3=ts(gc,gr+1);
-    ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.lineTo(p3.x,p3.y);ctx.closePath();
-    ctx.fillStyle=(gc+gr)%2===0?&#x27;rgba(10,24,50,0.32)&#x27;:&#x27;rgba(6,16,36,0.28)&#x27;;ctx.fill();
-    ctx.strokeStyle=s.outage?&#x27;rgba(224,85,85,0.13)&#x27;:&#x27;rgba(24,212,248,0.16)&#x27;;ctx.lineWidth=0.5;ctx.stroke();
+    fillQ(quad(gc,gr,1,1),(gc+gr)%2===0?&#x27;rgba(10,24,50,0.26)&#x27;:&#x27;rgba(6,16,36,0.22)&#x27;,
+      s.outage?&#x27;rgba(224,85,85,0.10)&#x27;:&#x27;rgba(24,212,248,0.11)&#x27;,0.5);
   }
-  /* zones */
-  ctx.setLineDash([4,3]);ctx.strokeStyle=&#x27;rgba(77,184,138,0.55)&#x27;;ctx.lineWidth=1.1;
-  L.zones.forEach(function(z){
-    const c0=ts(z[0],z[1]),c1=ts(z[0]+z[2],z[1]),c2=ts(z[0]+z[2],z[1]+z[3]),c3=ts(z[0],z[1]+z[3]);
-    ctx.beginPath();ctx.moveTo(c0.x,c0.y);ctx.lineTo(c1.x,c1.y);ctx.lineTo(c2.x,c2.y);ctx.lineTo(c3.x,c3.y);ctx.closePath();
-    ctx.fillStyle=&#x27;rgba(77,184,138,0.05)&#x27;;ctx.fill();ctx.stroke();
-    const mx=(c0.x+c1.x+c2.x+c3.x)/4,my=(c0.y+c1.y+c2.y+c3.y)/4;
-    ctx.setLineDash([]);const fs=Math.max(7,Math.min(TW*0.16,11));
-    ctx.font=&#x27;bold &#x27;+fs+&#x27;px &quot;Share Tech Mono&quot;&#x27;;ctx.textAlign=&#x27;center&#x27;;ctx.textBaseline=&#x27;middle&#x27;;
-    const w=ctx.measureText(z[4]).width;ctx.fillStyle=&#x27;rgba(4,10,22,0.6)&#x27;;
-    ctx.fillRect(mx-w/2-3,my-fs/2-2,w+6,fs+4);ctx.fillStyle=&#x27;rgba(77,184,138,0.7)&#x27;;ctx.fillText(z[4],mx,my);
-    ctx.setLineDash([4,3]);
+
+  /* terrain */
+  L.terrain.forEach(function(t){
+    const k=TERRAIN[t[0]]; if(!k||t[3]&lt;=0||t[4]&lt;=0)return;
+    const q=quad(t[1],t[2],t[3],t[4]);
+    if(k.dash){ctx.save();ctx.setLineDash([5,4]);fillQ(q,k.f,k.s,1.2);ctx.restore();}
+    else fillQ(q,k.f,k.s,k.deck?1.3:0.8);
+    if(k.wave){                       // a few slack lines so water reads as water
+      ctx.save();ctx.strokeStyle=&#x27;rgba(80,170,215,.13)&#x27;;ctx.lineWidth=0.8;
+      for(let i=1;i&lt;4;i++){
+        const rr=t[2]+t[4]*i/4;
+        const p1=ts(t[1]+t[3]*0.06,rr), p2=ts(t[1]+t[3]*0.94,rr);
+        ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();
+      }
+      ctx.restore();
+    }
+    if(k.center){                     // runway centreline
+      ctx.save();ctx.setLineDash([TW*0.16,TW*0.13]);
+      ctx.strokeStyle=&#x27;rgba(230,238,250,.32)&#x27;;ctx.lineWidth=1.1;
+      const horiz=t[3]&gt;=t[4];
+      const p1=horiz?ts(t[1]+0.15,t[2]+t[4]/2):ts(t[1]+t[3]/2,t[2]+0.15);
+      const p2=horiz?ts(t[1]+t[3]-0.15,t[2]+t[4]/2):ts(t[1]+t[3]/2,t[2]+t[4]-0.15);
+      ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();ctx.restore();
+    }
   });
-  ctx.setLineDash([]);
+
+  /* zone envelopes */
+  ctx.save();ctx.setLineDash([4,3]);
+  L.zones.forEach(function(z){
+    fillQ(quad(z[0],z[1],z[2],z[3]),&#x27;rgba(77,184,138,0.045)&#x27;,&#x27;rgba(77,184,138,0.42)&#x27;,1.1);
+  });
+  ctx.setLineDash([]);ctx.restore();
+  // labels are collected here and drawn last, so buildings never bury them
+  const labels=[];
+  L.zones.forEach(function(z){
+    const m=ts(z[0]+z[2]/2,z[1]+z[3]/2);
+    labels.push({x:m.x,y:m.y,text:z[4],zone:true,pri:3,col:&#x27;rgba(77,184,138,0.68)&#x27;});
+  });
 
   /* microgrid node */
-  const mgP=ts(L.mgCell[0]+0.5,L.mgCell[1]+0.5);
+  const mgP=ts(L.mgCell[0],L.mgCell[1]);
   const cap=capacity(s);
   if(LAYERS.mg){
-    const rr=Math.max(9,TW*0.22);
-    ctx.save();
-    ctx.shadowColor=&#x27;rgba(77,184,138,0.75)&#x27;;ctx.shadowBlur=s.islanded?22:10;
+    const rr=Math.max(9,TW*0.26);
+    ctx.save();ctx.shadowColor=&#x27;rgba(77,184,138,0.75)&#x27;;ctx.shadowBlur=s.islanded?22:10;
     ctx.beginPath();
-    for(let i=0;i&lt;6;i++){const th=Math.PI/3*i-Math.PI/6;const px=mgP.x+rr*Math.cos(th),py=mgP.y+rr*0.55*Math.sin(th);
-      i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+    for(let i=0;i&lt;6;i++){const th=Math.PI/3*i-Math.PI/6;
+      const px=mgP.x+rr*Math.cos(th),py=mgP.y+rr*0.55*Math.sin(th);i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
     ctx.closePath();
     ctx.fillStyle=s.islanded?&#x27;rgba(77,184,138,0.5)&#x27;:&#x27;rgba(77,184,138,0.22)&#x27;;ctx.fill();
     ctx.strokeStyle=&#x27;#4db88a&#x27;;ctx.lineWidth=1.5;ctx.stroke();ctx.restore();
-    ctx.font=&#x27;bold &#x27;+Math.max(9,TW*0.2)+&#x27;px sans-serif&#x27;;ctx.textAlign=&#x27;center&#x27;;ctx.textBaseline=&#x27;middle&#x27;;
+    ctx.font=&#x27;bold &#x27;+Math.max(9,TW*0.24)+&#x27;px sans-serif&#x27;;ctx.textAlign=&#x27;center&#x27;;ctx.textBaseline=&#x27;middle&#x27;;
     ctx.fillStyle=&#x27;#d8ffe8&#x27;;ctx.fillText(&#x27;\u26A1&#x27;,mgP.x,mgP.y-1);
-    const lf=Math.max(7,Math.min(TW*0.13,10));
-    ctx.font=lf+&#x27;px &quot;Share Tech Mono&quot;&#x27;;ctx.textBaseline=&#x27;top&#x27;;
-    const lbl=&#x27;MICROGRID &#x27;+cap.firm.toFixed(1)+&#x27; MW&#x27;;
-    const lw=ctx.measureText(lbl).width;
-    ctx.fillStyle=&#x27;rgba(4,10,22,0.8)&#x27;;ctx.fillRect(mgP.x-lw/2-3,mgP.y+rr*0.55+3,lw+6,lf+4);
-    ctx.fillStyle=&#x27;#4db88a&#x27;;ctx.fillText(lbl,mgP.x,mgP.y+rr*0.55+5);
+    labels.push({x:mgP.x, y:mgP.y+rr*0.55+4, text:&#x27;MICROGRID &#x27;+cap.firm.toFixed(1)+&#x27; MW&#x27;,
+                 pri:-1, col:&#x27;#4db88a&#x27;});
     iso.hits.push({x1:mgP.x-rr,x2:mgP.x+rr,y1:mgP.y-rr,y2:mgP.y+rr*0.7,kind:&#x27;mg&#x27;});
   }
 
-  const BC={std:{t:&#x27;#8a7a5a&#x27;,R:&#x27;#5a5038&#x27;,L:&#x27;#3a3428&#x27;,F:&#x27;#4a4230&#x27;},
-            critical:{t:&#x27;#c0404a&#x27;,R:&#x27;#802838&#x27;,L:&#x27;#601828&#x27;,F:&#x27;#702030&#x27;},
-            vulnerable:{t:&#x27;#c07828&#x27;,R:&#x27;#804818&#x27;,L:&#x27;#602808&#x27;,F:&#x27;#703818&#x27;}};
-  const DARKC={t:&#x27;#2a3038&#x27;,R:&#x27;#1c2028&#x27;,L:&#x27;#141820&#x27;,F:&#x27;#181c24&#x27;};
-
-  const order=L.buildings.slice().sort((x,y)=&gt;(x.c+x.r)-(y.c+y.r));
+  /* buildings, painter&#x27;s order by depth of footprint centre */
+  /* Depth is the projected y of the footprint centre, so the order stays right
+     at any yaw. Sorting on raw c+r only worked while the camera never moved. */
+  const order=L.buildings.slice().sort(function(x,y){
+    return ts(x.c+x.w/2,x.r+x.d/2).y - ts(y.c+y.w/2,y.r+y.d/2).y;
+  });
   order.forEach(function(b){
     const fac=b.fi&gt;=0?s.facs[b.fi]:null;
     const unpowered=fac&amp;&amp;!fac.powered;
-    const bc=unpowered?DARKC:(BC[b.type]||BC.std);
-    const p0=ts(b.c,b.r),p1=ts(b.c+1,b.r),p2=ts(b.c+1,b.r+1),p3=ts(b.c,b.r+1);
-    const hv=-b.h*iso.zoom*0.85;
+    const support=b.type===&#x27;support&#x27;;
+    const bc=unpowered?DARKC:(BC[b.type]||BC.standard);
+    const q=quad(b.c,b.r,b.w,b.d);
+    const p0=q[0],p1=q[1],p2=q[2],p3=q[3];
+    const hv=-b.h*iso.zoom*0.85*(TW/48)*HSC;
 
-    /* microgrid tether */
+    // service tie lands on the near corner at mid-wall height, the way a feeder
+    // actually enters a building, rather than on the ground at the footprint centre
     if(LAYERS.mg&amp;&amp;fac&amp;&amp;fac.onMicrogrid){
       ctx.save();ctx.setLineDash([3,3]);ctx.strokeStyle=&#x27;rgba(77,184,138,0.75)&#x27;;ctx.lineWidth=1.4;
       ctx.beginPath();ctx.moveTo(mgP.x,mgP.y);
-      const cx0=(p0.x+p2.x)/2,cy0=(p0.y+p2.y)/2;
-      ctx.lineTo(cx0,cy0);ctx.stroke();ctx.restore();
+      ctx.lineTo(p2.x,p2.y+hv*0.5);ctx.stroke();ctx.restore();
+      ctx.beginPath();ctx.arc(p2.x,p2.y+hv*0.5,Math.max(1.8,TW*0.026),0,Math.PI*2);
+      ctx.fillStyle=&#x27;rgba(77,184,138,0.9)&#x27;;ctx.fill();
     }
 
-    if(!unpowered&amp;&amp;(b.type===&#x27;critical&#x27;||b.type===&#x27;vulnerable&#x27;)){
-      ctx.save();ctx.shadowColor=b.type===&#x27;critical&#x27;?&#x27;rgba(224,85,85,0.65)&#x27;:&#x27;rgba(212,160,90,0.55)&#x27;;
-      ctx.shadowBlur=10*iso.zoom;
+    const glow=!unpowered&amp;&amp;!support&amp;&amp;(b.type===&#x27;critical&#x27;||b.type===&#x27;vulnerable&#x27;);
+    if(glow){ctx.save();
+      ctx.shadowColor=b.type===&#x27;critical&#x27;?&#x27;rgba(224,85,85,0.6)&#x27;:&#x27;rgba(212,160,90,0.5)&#x27;;
+      ctx.shadowBlur=10*iso.zoom;}
+    /* Which two walls face the camera changes as it orbits, so the walls are
+       picked and ordered from the projected footprint rather than hard-coded.
+       A wall whose midpoint sits behind the footprint centre is hidden by the
+       box itself and is skipped; the near pair draws back-to-front, roof last. */
+    const FP=[p0,p1,p2,p3];
+    const fcx=(p0.x+p1.x+p2.x+p3.x)/4, fcy=(p0.y+p1.y+p2.y+p3.y)/4;
+    const walls=[];
+    for(let wi=0;wi&lt;4;wi++){
+      const wa=FP[wi], wb=FP[(wi+1)%4];
+      walls.push({a:wa,b:wb,mx:(wa.x+wb.x)/2,my:(wa.y+wb.y)/2});
     }
-    ctx.beginPath();ctx.moveTo(p0.x,p0.y+hv);ctx.lineTo(p1.x,p1.y+hv);ctx.lineTo(p2.x,p2.y+hv);ctx.lineTo(p3.x,p3.y+hv);
-    ctx.closePath();ctx.fillStyle=bc.t;ctx.fill();ctx.strokeStyle=&#x27;rgba(255,255,255,0.14)&#x27;;ctx.lineWidth=0.5;ctx.stroke();
-    ctx.beginPath();ctx.moveTo(p1.x,p1.y+hv);ctx.lineTo(p2.x,p2.y+hv);ctx.lineTo(p2.x,p2.y);ctx.lineTo(p1.x,p1.y);
-    ctx.closePath();ctx.fillStyle=bc.R;ctx.fill();
-    ctx.beginPath();ctx.moveTo(p2.x,p2.y+hv);ctx.lineTo(p3.x,p3.y+hv);ctx.lineTo(p3.x,p3.y);ctx.lineTo(p2.x,p2.y);
-    ctx.closePath();ctx.fillStyle=bc.L;ctx.fill();
-    ctx.beginPath();ctx.moveTo(p0.x,p0.y+hv);ctx.lineTo(p1.x,p1.y+hv);ctx.lineTo(p1.x,p1.y);ctx.lineTo(p0.x,p0.y);
-    ctx.closePath();ctx.fillStyle=bc.F;ctx.fill();
-    if(!unpowered&amp;&amp;(b.type===&#x27;critical&#x27;||b.type===&#x27;vulnerable&#x27;))ctx.restore();
+    walls.sort(function(u,v){return u.my-v.my;});
+    walls.forEach(function(wl){
+      if(wl.my&lt;=fcy)return;
+      ctx.beginPath();ctx.moveTo(wl.a.x,wl.a.y+hv);ctx.lineTo(wl.b.x,wl.b.y+hv);
+      ctx.lineTo(wl.b.x,wl.b.y);ctx.lineTo(wl.a.x,wl.a.y);ctx.closePath();
+      ctx.fillStyle=wl.mx&gt;=fcx?bc.R:bc.L;ctx.fill();
+    });
+    ctx.beginPath();ctx.moveTo(p0.x,p0.y+hv);ctx.lineTo(p1.x,p1.y+hv);
+    ctx.lineTo(p2.x,p2.y+hv);ctx.lineTo(p3.x,p3.y+hv);ctx.closePath();
+    ctx.fillStyle=bc.t;ctx.fill();
+    ctx.strokeStyle=&#x27;rgba(255,255,255,0.13)&#x27;;ctx.lineWidth=0.5;ctx.stroke();
+    if(glow)ctx.restore();
 
     const cx=(p0.x+p1.x+p2.x+p3.x)/4, cy=(p0.y+p1.y+p2.y+p3.y)/4+hv;
     if(b.icon){
-      const isz=Math.max(11,TW*0.28);
-      ctx.save();ctx.shadowBlur=0;ctx.font=&#x27;bold &#x27;+isz+&#x27;px sans-serif&#x27;;ctx.textAlign=&#x27;center&#x27;;ctx.textBaseline=&#x27;middle&#x27;;
-      ctx.globalAlpha=unpowered?0.32:1;
-      ctx.fillStyle=unpowered?&#x27;#7a8894&#x27;:(b.type===&#x27;critical&#x27;?&#x27;#ffaaaa&#x27;:b.type===&#x27;vulnerable&#x27;?&#x27;#ffcc88&#x27;:&#x27;#ccddee&#x27;);
+      const isz=Math.max(10,Math.min(TW*0.30*Math.min(b.w,b.d)+6,30));
+      ctx.save();ctx.shadowBlur=0;ctx.font=&#x27;bold &#x27;+isz+&#x27;px sans-serif&#x27;;
+      ctx.textAlign=&#x27;center&#x27;;ctx.textBaseline=&#x27;middle&#x27;;
+      ctx.globalAlpha=unpowered?0.3:(support?0.55:1);
+      ctx.fillStyle=unpowered?&#x27;#7a8894&#x27;:(b.type===&#x27;critical&#x27;?&#x27;#ffaaaa&#x27;:
+        b.type===&#x27;vulnerable&#x27;?&#x27;#ffcc88&#x27;:support?&#x27;#93a3b4&#x27;:&#x27;#ccddee&#x27;);
       ctx.fillText(b.icon,cx,cy);ctx.restore();
     }
     if(fac&amp;&amp;fac.onMicrogrid&amp;&amp;!unpowered){
-      ctx.save();ctx.strokeStyle=&#x27;rgba(77,184,138,0.9)&#x27;;ctx.lineWidth=1.6;ctx.shadowColor=&#x27;rgba(77,184,138,0.8)&#x27;;ctx.shadowBlur=8;
-      ctx.beginPath();ctx.moveTo(p0.x,p0.y+hv);ctx.lineTo(p1.x,p1.y+hv);ctx.lineTo(p2.x,p2.y+hv);ctx.lineTo(p3.x,p3.y+hv);
-      ctx.closePath();ctx.stroke();ctx.restore();
+      ctx.save();ctx.strokeStyle=&#x27;rgba(77,184,138,0.9)&#x27;;ctx.lineWidth=1.6;
+      ctx.shadowColor=&#x27;rgba(77,184,138,0.8)&#x27;;ctx.shadowBlur=8;
+      ctx.beginPath();ctx.moveTo(p0.x,p0.y+hv);ctx.lineTo(p1.x,p1.y+hv);
+      ctx.lineTo(p2.x,p2.y+hv);ctx.lineTo(p3.x,p3.y+hv);ctx.closePath();ctx.stroke();ctx.restore();
     }
 
-    /* AMI meter nodes along the front edge */
+    /* AMI meters spread along the building&#x27;s front edge */
     if(LAYERS.ami&amp;&amp;fac){
-      const mn=fac.meters.length, span=Math.min(0.86,0.16*mn);
-      fac.meters.forEach(function(m,mi){
-        const t=mn===1?0.5:0.5-span/2+span*(mi/(mn-1));
-        const mp=ts(b.c+t,b.r+1.06);
-        const rr=Math.max(2.4,TW*0.055);
+      const mine=fac.meters.filter(function(m,mi){return (mi%(b.parts||1))===(b.part||0);});
+      const mn=mine.length;
+      mine.forEach(function(m,mi){
+        const t=mn===1?0.5:0.14+0.72*(mi/(mn-1));
+        // on the near wall at half height, where a meter is actually mounted
+        const mp=ts(b.c+b.w*t, b.r+b.d);
+        mp.y+=hv*0.5;
+        const rr=Math.max(2.3,TW*0.040);
         const off=m.status===&#x27;dark&#x27;||unpowered;
         const col=off?&#x27;#e05555&#x27;:m.status===&#x27;stale&#x27;?&#x27;#d4a05a&#x27;:&#x27;#18d4f8&#x27;;
         ctx.save();
@@ -12731,50 +13248,70 @@ function drawIso(){
       });
     }
 
-    /* FRCS marker on buildings carrying a controller with findings */
-    if(LAYERS.frcs&amp;&amp;fac&amp;&amp;b.fi&gt;=0){
-      const sys=s.frcs[b.fi%Math.max(1,s.frcs.length)];
+    /* FRCS controller marker */
+    if(LAYERS.frcs&amp;&amp;fac&amp;&amp;b.fi&gt;=0&amp;&amp;s.frcs.length&amp;&amp;(b.part||0)===0){
+      const sys=s.frcs[b.fi%s.frcs.length];
       if(sys&amp;&amp;sys.findings.length){
         const worst=Math.min.apply(null,sys.findings.map(f=&gt;FIND[f]?FIND[f].cat:3));
-        const dx=p1.x, dy=p1.y+hv-Math.max(6,TW*0.13);
-        const dr=Math.max(3.4,TW*0.075);
+        const dx=(p1.x+p2.x)/2, dy=(p1.y+p2.y)/2+hv*0.5;
+        const dr=Math.max(3.3,TW*0.055);
         ctx.save();
         if(worst===1){ctx.shadowColor=&#x27;rgba(224,85,85,0.9)&#x27;;ctx.shadowBlur=10+6*Math.sin(Date.now()/320);}
         else{ctx.shadowColor=&#x27;rgba(160,124,240,0.7)&#x27;;ctx.shadowBlur=6;}
-        ctx.beginPath();ctx.moveTo(dx,dy-dr);ctx.lineTo(dx+dr*0.8,dy);ctx.lineTo(dx,dy+dr);ctx.lineTo(dx-dr*0.8,dy);
-        ctx.closePath();ctx.fillStyle=worst===1?&#x27;#e05555&#x27;:&#x27;#a07cf0&#x27;;ctx.fill();
+        ctx.beginPath();ctx.moveTo(dx,dy-dr);ctx.lineTo(dx+dr*0.8,dy);
+        ctx.lineTo(dx,dy+dr);ctx.lineTo(dx-dr*0.8,dy);ctx.closePath();
+        ctx.fillStyle=worst===1?&#x27;#e05555&#x27;:&#x27;#a07cf0&#x27;;ctx.fill();
         ctx.strokeStyle=&#x27;rgba(255,255,255,0.5)&#x27;;ctx.lineWidth=0.7;ctx.stroke();ctx.restore();
         iso.hits.push({x1:dx-dr-3,x2:dx+dr+3,y1:dy-dr-3,y2:dy+dr+3,kind:&#x27;frcs&#x27;,sys:sys,fac:fac});
       }
     }
 
-    if(LAYERS.lbl&amp;&amp;b.name&amp;&amp;iso.zoom&gt;=0.45){
-      const bc2=ts(b.c+0.5,b.r+0.5), tagY=bc2.y+TH*0.72;
-      const fs=Math.max(7,Math.min(TW*0.125,10));
-      ctx.font=fs+&#x27;px &quot;Share Tech Mono&quot;&#x27;;ctx.textAlign=&#x27;center&#x27;;ctx.textBaseline=&#x27;top&#x27;;
-      const sn=b.name.length&gt;17?b.name.slice(0,16)+&#x27;\u2026&#x27;:b.name;
-      const w=ctx.measureText(sn).width;
-      ctx.fillStyle=&#x27;rgba(4,10,22,0.78)&#x27;;ctx.fillRect(bc2.x-w/2-3,tagY-1,w+6,fs+4);
-      ctx.fillStyle=unpowered?&#x27;#8a99a8&#x27;:(b.type===&#x27;critical&#x27;?&#x27;#ffaaaa&#x27;:b.type===&#x27;vulnerable&#x27;?&#x27;#ffcc88&#x27;:&#x27;#ccddee&#x27;);
-      ctx.fillText(sn,bc2.x,tagY+1);
+    if(LAYERS.lbl&amp;&amp;b.name&amp;&amp;(b.part||0)===0){
+      const bc2=ts(b.c+b.w/2,b.r+b.d/2);
+      labels.push({x:bc2.x, y:bc2.y+TH*0.40*Math.max(b.w,b.d), text:b.name, support:support,
+        pri:unpowered?1:(b.type===&#x27;critical&#x27;?0:b.type===&#x27;vulnerable&#x27;?1:support?4:2),
+        col:unpowered?&#x27;#8a99a8&#x27;:(b.type===&#x27;critical&#x27;?&#x27;#ffaaaa&#x27;:b.type===&#x27;vulnerable&#x27;?&#x27;#ffcc88&#x27;:
+            support?&#x27;#7b8896&#x27;:&#x27;#ccddee&#x27;)});
     }
 
     const xs=[p0.x,p1.x,p2.x,p3.x], ys=[p0.y+hv,p1.y+hv,p2.y+hv,p3.y+hv,p0.y,p1.y,p2.y,p3.y];
-    if(b.fi&gt;=0) iso.hits.push({x1:Math.min.apply(null,xs)-2,x2:Math.max.apply(null,xs)+2,
-      y1:Math.min.apply(null,ys)-2,y2:Math.max.apply(null,ys)+2,kind:&#x27;fac&#x27;,fac:fac,bt:b.type});
+    iso.hits.push({x1:Math.min.apply(null,xs)-2,x2:Math.max.apply(null,xs)+2,
+      y1:Math.min.apply(null,ys)-2,y2:Math.max.apply(null,ys)+2,
+      kind:b.fi&gt;=0?&#x27;fac&#x27;:&#x27;support&#x27;,fac:fac,bt:b.type,sname:b.name});
   });
+
+  /* label pass — highest priority first, skip anything that would collide */
+  if(LAYERS.lbl){
+    const placed=[];
+    labels.sort((a,b)=&gt;a.pri-b.pri).forEach(function(l){
+      if(l.support&amp;&amp;iso.zoom&lt;0.8)return;
+      const fs=l.zone?Math.max(7,Math.min(TW*0.16,11)):Math.max(6.5,Math.min(TW*0.125,10))*(l.support?0.88:1);
+      ctx.font=(l.zone?&#x27;bold &#x27;:&#x27;&#x27;)+fs+&#x27;px &quot;Share Tech Mono&quot;&#x27;;
+      const txt=l.text.length&gt;18?l.text.slice(0,17)+&#x27;\u2026&#x27;:l.text;
+      const w=ctx.measureText(txt).width;
+      const box={x1:l.x-w/2-3,x2:l.x+w/2+3,y1:l.y-2,y2:l.y+fs+3};
+      for(let i=0;i&lt;placed.length;i++){const p=placed[i];
+        if(box.x1&lt;p.x2&amp;&amp;box.x2&gt;p.x1&amp;&amp;box.y1&lt;p.y2&amp;&amp;box.y2&gt;p.y1)return;}
+      placed.push(box);
+      ctx.textAlign=&#x27;center&#x27;;ctx.textBaseline=&#x27;top&#x27;;
+      ctx.fillStyle=l.zone?&#x27;rgba(4,10,22,0.55)&#x27;:&#x27;rgba(4,10,22,0.80)&#x27;;
+      ctx.fillRect(box.x1,box.y1,box.x2-box.x1,box.y2-box.y1);
+      ctx.fillStyle=l.col;ctx.fillText(txt,l.x,l.y);
+    });
+  }
 
   if(s.outage){
     ctx.save();
-    ctx.font=&#x27;bold &#x27;+Math.max(13,W*0.021)+&#x27;px &quot;Orbitron&quot;&#x27;;ctx.textAlign=&#x27;center&#x27;;ctx.textBaseline=&#x27;middle&#x27;;
+    // left-aligned under the HUD cards; centring ran it under the toast stack
+    ctx.font=&#x27;bold &#x27;+Math.max(12,Math.min(W*0.019,17))+&#x27;px &quot;Orbitron&quot;&#x27;;
+    ctx.textAlign=&#x27;left&#x27;;ctx.textBaseline=&#x27;middle&#x27;;
     const pulse=0.55+0.35*Math.sin(Date.now()/380);
-    ctx.fillStyle=&#x27;rgba(224,85,85,&#x27;+pulse.toFixed(2)+&#x27;)&#x27;;
     const txt=&#x27;UTILITY FEED LOST \u2014 &#x27;+(s.islanded?&#x27;ISLANDED ON MICROGRID&#x27;:&#x27;NO ISLANDING&#x27;);
     const bw=ctx.measureText(txt).width;
-    ctx.fillStyle=&#x27;rgba(6,12,22,0.9)&#x27;;ctx.fillRect(W/2-bw/2-14,76,bw+28,30);
-    ctx.strokeStyle=&#x27;rgba(224,85,85,0.5)&#x27;;ctx.lineWidth=1;ctx.strokeRect(W/2-bw/2-14,76,bw+28,30);
+    ctx.fillStyle=&#x27;rgba(6,12,22,0.92)&#x27;;ctx.fillRect(10,70,bw+24,28);
+    ctx.strokeStyle=&#x27;rgba(224,85,85,0.5)&#x27;;ctx.lineWidth=1;ctx.strokeRect(10,70,bw+24,28);
     ctx.fillStyle=&#x27;rgba(224,85,85,&#x27;+pulse.toFixed(2)+&#x27;)&#x27;;
-    ctx.fillText(txt,W/2,92);
+    ctx.fillText(txt,22,85);
     ctx.restore();
   }
 }
@@ -12888,6 +13425,7 @@ function paintAlerts(){
     (mine.length?mine.map(a=&gt;alertCard(a,true)).join(&#x27;&#x27;):&#x27;&lt;div class=&quot;empty&quot;&gt;Nothing open for this installation.&lt;/div&gt;&#x27;)+&#x27;&lt;/div&gt;&#x27;+
     &#x27;&lt;div class=&quot;blk&quot;&gt;&lt;div class=&quot;blk-h&quot;&gt;Enterprise&lt;span&gt;&#x27;+open.length+&#x27; open&lt;/span&gt;&lt;/div&gt;&#x27;+
     (open.filter(a=&gt;a.site!==site.id).slice(0,8).map(a=&gt;alertCard(a,false)).join(&#x27;&#x27;)||&#x27;&lt;div class=&quot;empty&quot;&gt;No other sites reporting.&lt;/div&gt;&#x27;)+&#x27;&lt;/div&gt;&#x27;;
+  if(typeof wireBlocks===&#x27;function&#x27;) wireBlocks(document.getElementById(&#x27;pane-alerts&#x27;));
 }
 
 /* ══════════════════════════════════════════
@@ -13051,6 +13589,61 @@ function paintRail(){
   const s=iso.site;
   if(TAB===&#x27;posture&#x27;)paintPosture(s); else if(TAB===&#x27;grid&#x27;)paintGrid(s);
   else if(TAB===&#x27;frcs&#x27;)paintFrcs(s); else if(TAB===&#x27;mg&#x27;)paintMg(s); else paintAlerts();
+  wireBlocks(document.getElementById(&#x27;pane-&#x27;+TAB));
+}
+
+/* ── COLLAPSIBLE RAIL SECTIONS ──
+   The panes are rebuilt wholesale on every refresh, so collapse state cannot live
+   in the DOM. It is keyed by pane and heading text and re-applied after each
+   render, which also means a section stays shut when you move between sites. */
+const BLK_CLOSED=new Set(), BLK_SEEN=new Set();
+const BLK_DEFAULT_CLOSED=true;   // panes open as a table of contents
+function wireBlocks(pane){
+  if(!pane)return;
+  const pid=pane.id;
+  pane.querySelectorAll(&#x27;.blk&#x27;).forEach(function(blk,idx){
+    const h=blk.querySelector(&#x27;.blk-h&#x27;);
+    if(!h||h.dataset.wired)return;
+    let title=&#x27;&#x27;;
+    h.childNodes.forEach(function(n){ if(n.nodeType===3) title+=n.textContent; });
+    title=title.trim()||(&#x27;section-&#x27;+idx);
+    const key=pid+&#x27;|&#x27;+title;
+    if(!BLK_SEEN.has(key)){BLK_SEEN.add(key); if(BLK_DEFAULT_CLOSED) BLK_CLOSED.add(key);}
+    const body=document.createElement(&#x27;div&#x27;);
+    body.className=&#x27;blk-b&#x27;;
+    let n=h.nextSibling;
+    while(n){ const nx=n.nextSibling; body.appendChild(n); n=nx; }
+    blk.appendChild(body);
+    const cx=document.createElement(&#x27;span&#x27;);
+    cx.className=&#x27;blk-cx&#x27;;
+    h.appendChild(cx);
+    h.dataset.wired=&#x27;1&#x27;; h.dataset.key=key;
+    h.onclick=function(){ toggleBlk(key,blk); };
+    blk.classList.toggle(&#x27;closed&#x27;,BLK_CLOSED.has(key));
+  });
+  // paintAlerts wires its own pane outside the tab flow, so only the pane the
+  // user is actually looking at may write the counter
+  const lbl=(pane.id===&#x27;pane-&#x27;+TAB)?document.getElementById(&#x27;rail-ctl-lbl&#x27;):null;
+  if(lbl){
+    const n=pane.querySelectorAll(&#x27;.blk&#x27;).length;
+    const c=pane.querySelectorAll(&#x27;.blk.closed&#x27;).length;
+    lbl.textContent=n?(c?(n-c)+&#x27; OF &#x27;+n+&#x27; OPEN&#x27;:n+&#x27; SECTIONS&#x27;):&#x27;SECTIONS&#x27;;
+  }
+}
+function toggleBlk(key,blk){
+  if(BLK_CLOSED.has(key))BLK_CLOSED.delete(key); else BLK_CLOSED.add(key);
+  blk.classList.toggle(&#x27;closed&#x27;,BLK_CLOSED.has(key));
+  wireBlocks(document.getElementById(&#x27;pane-&#x27;+TAB));
+}
+function setAllBlocks(open){
+  const pane=document.getElementById(&#x27;pane-&#x27;+TAB);
+  if(!pane)return;
+  pane.querySelectorAll(&#x27;.blk&#x27;).forEach(function(blk){
+    const h=blk.querySelector(&#x27;.blk-h&#x27;); if(!h||!h.dataset.key)return;
+    if(open)BLK_CLOSED.delete(h.dataset.key); else BLK_CLOSED.add(h.dataset.key);
+    blk.classList.toggle(&#x27;closed&#x27;,!open);
+  });
+  wireBlocks(pane);
 }
 function paintSidebar(){
   const rows=SITES.map(function(s){
@@ -13160,6 +13753,7 @@ function setView(v){
     setTimeout(paintProfile,60);
     if(gmap)setTimeout(function(){
       gmap.invalidateSize();refreshMap();bindHeat();
+      // enterprise scope stays on the world view; site scope flies to the selection
       if(HEAT.on&amp;&amp;HEAT.scope===&#x27;site&#x27;)focusHeat();
       drawHeat();
     },60);
@@ -13297,9 +13891,29 @@ function tick(){
 }
 
 /* ══ INTERACTIONS ══ */
-function isoZoom(f){iso.zoom=Math.max(0.4,Math.min(2.6,iso.zoom*f));drawIso();}
-function isoRot(d){iso.angle+=d;drawIso();}
-function isoReset(){iso.zoom=1;iso.angle=0;iso.pan={x:0,y:0};drawIso();}
+const PITCH_MIN=0.20, PITCH_MAX=0.86;
+/* Zoom about an arbitrary screen point. Tile size is linear in iso.zoom and the
+   plate is re-centred every frame, so holding a point still is just a matching
+   correction to the pan offset — no re-projection needed. */
+function isoZoomAt(f,mx,my){
+  const wrap=document.getElementById(&#x27;iso-wrap&#x27;); if(!wrap)return;
+  const W=wrap.clientWidth||900, H=wrap.clientHeight||520;
+  const z=iso.zoom, z2=Math.max(0.4,Math.min(2.6,z*f));
+  if(z2===z)return;
+  const ax=mx-W/2-iso.pan.x, ay=my-H*0.53-iso.pan.y, kk=1-z2/z;
+  iso.pan.x+=ax*kk; iso.pan.y+=ay*kk;
+  iso.zoom=z2; drawIso();
+}
+function isoZoom(f){
+  const wrap=document.getElementById(&#x27;iso-wrap&#x27;);
+  const W=wrap?(wrap.clientWidth||900):900, H=wrap?(wrap.clientHeight||520):520;
+  isoZoomAt(f,W/2,H*0.53);
+}
+function isoRot(d){if(iso.stop)iso.stop();iso.angle+=d;drawIso();}
+function isoTilt(d){if(iso.stop)iso.stop();
+  iso.pitch=Math.max(PITCH_MIN,Math.min(PITCH_MAX,iso.pitch+d));drawIso();}
+function isoReset(){if(iso.stop)iso.stop();
+  iso.zoom=1;iso.angle=0;iso.pitch=0.5;iso.pan={x:0,y:0};drawIso();}
 function toggleLayer(k){
   LAYERS[k]=!LAYERS[k];
   const map={ami:&#x27;tg-ami&#x27;,frcs:&#x27;tg-frcs&#x27;,mg:&#x27;tg-mg&#x27;,lbl:&#x27;tg-lbl&#x27;,sat:&#x27;tg-sat&#x27;};
@@ -13308,7 +13922,8 @@ function toggleLayer(k){
 }
 function selectSite(id){
   const s=SITE[id];if(!s)return;
-  iso.site=s;iso.sat=null;iso.pan={x:0,y:0};iso.zoom=1;iso.angle=0;
+  iso.site=s;iso.sat=null;iso.pan={x:0,y:0};iso.zoom=1;iso.angle=0;iso.pitch=0.5;
+  if(iso.stop)iso.stop();
   document.getElementById(&#x27;stage-name&#x27;).textContent=s.name;
   document.getElementById(&#x27;stage-sub&#x27;).textContent=s.uic+&#x27; \u00b7 &#x27;+s.type+&#x27; \u00b7 &#x27;+s.regionName;
   loadSat(s,function(oc){if(iso.site&amp;&amp;iso.site.id===s.id){iso.sat=oc;drawIso();}});
@@ -13326,6 +13941,144 @@ function refreshAll(){
   if(VIEW===&#x27;iso&#x27;)drawIso(); else if(VIEW===&#x27;map&#x27;)refreshMap(); else paintTable();
 }
 function closeModal(id){document.getElementById(id).classList.remove(&#x27;open&#x27;);}
+
+/* ── PANEL OPEN / CLOSE ──
+   Both side panels stow to zero width to hand the full stage to the map. The
+   canvas and the Leaflet container are both sized from their container, so each
+   has to be told to remeasure once the width transition has finished. */
+const PANEL={left:false,right:false};
+
+/* Shared relayout. The iso canvas and the Leaflet container are both sized from
+   their parent, so each has to be told to remeasure after any width change. */
+function relayoutStage(){
+  if(VIEW===&#x27;iso&#x27;)drawIso();
+  else if(VIEW===&#x27;map&#x27;&amp;&amp;gmap){gmap.invalidateSize();drawHeat();paintProfile();}
+}
+
+function togglePanel(side){
+  PANEL[side]=!PANEL[side];
+  const el=document.querySelector(side===&#x27;left&#x27;?&#x27;.sidebar&#x27;:&#x27;.rail&#x27;);
+  const btn=document.getElementById(&#x27;tog-&#x27;+side);
+  if(el)el.classList.toggle(&#x27;stowed&#x27;,PANEL[side]);
+  if(btn){
+    btn.classList.toggle(&#x27;out&#x27;,PANEL[side]);
+    btn.title=(PANEL[side]?&#x27;Show &#x27;:&#x27;Hide &#x27;)+(side===&#x27;left&#x27;?&#x27;installations panel&#x27;:&#x27;detail panel&#x27;);
+  }
+  const sp=document.getElementById(&#x27;split-&#x27;+side);
+  if(sp)sp.classList.toggle(&#x27;off&#x27;,PANEL[side]);
+  setTimeout(relayoutStage,260);
+}
+
+/* ══════════════════════════════════════════
+   PANEL SPLITTERS — custom stretch
+   Width lives in a CSS custom property on the panel itself, so the
+   `.stowed` rule still wins on specificity and collapse keeps working.
+   ══════════════════════════════════════════ */
+const SPLIT={
+  left :{sel:&#x27;.sidebar&#x27;,prop:&#x27;--sb-w&#x27;  ,def:236,min:170,max:560,key:&#x27;iesra.sys03.sbW&#x27;  ,dir: 1},
+  right:{sel:&#x27;.rail&#x27;   ,prop:&#x27;--rail-w&#x27;,def:330,min:240,max:680,key:&#x27;iesra.sys03.railW&#x27;,dir:-1}
+};
+const STAGE_MIN=340;
+
+function panelWidth(side){
+  const c=SPLIT[side],el=document.querySelector(c.sel);
+  if(!el)return c.def;
+  const v=parseFloat(getComputedStyle(el).getPropertyValue(c.prop));
+  return isNaN(v)?c.def:v;
+}
+
+function clampPanel(side,w){
+  const c=SPLIT[side];
+  const ws=document.querySelector(&#x27;.workspace&#x27;);
+  let hi=c.max;
+  if(ws){
+    const other=side===&#x27;left&#x27;?(PANEL.right?0:panelWidth(&#x27;right&#x27;)):(PANEL.left?0:panelWidth(&#x27;left&#x27;));
+    hi=Math.min(hi,ws.clientWidth-other-STAGE_MIN-10);
+  }
+  if(hi&lt;c.min)hi=c.min;
+  return Math.max(c.min,Math.min(hi,Math.round(w)));
+}
+
+function setPanelWidth(side,w,persist){
+  const c=SPLIT[side],el=document.querySelector(c.sel);
+  if(!el)return;
+  const val=clampPanel(side,w);
+  el.style.setProperty(c.prop,val+&#x27;px&#x27;);
+  if(persist){try{localStorage.setItem(c.key,String(val));}catch(err){}}
+  return val;
+}
+
+function initSplitters(){
+  Object.keys(SPLIT).forEach(function(side){
+    const c=SPLIT[side];
+    let saved=null;
+    try{saved=localStorage.getItem(c.key);}catch(err){}
+    if(saved!==null&amp;&amp;!isNaN(parseFloat(saved)))setPanelWidth(side,parseFloat(saved),false);
+
+    const bar=document.getElementById(&#x27;split-&#x27;+side);
+    if(!bar)return;
+    let dragging=false,startX=0,startW=0,pending=false;
+
+    function frame(){
+      pending=false;
+      relayoutStage();
+    }
+    function onMove(ev){
+      if(!dragging)return;
+      const dx=(ev.clientX-startX)*c.dir;
+      setPanelWidth(side,startW+dx,false);
+      if(!pending){pending=true;requestAnimationFrame(frame);}
+      ev.preventDefault();
+    }
+    function onUp(ev){
+      if(!dragging)return;
+      dragging=false;
+      bar.classList.remove(&#x27;dragging&#x27;);
+      document.body.classList.remove(&#x27;resizing&#x27;);
+      try{bar.releasePointerCapture(ev.pointerId);}catch(err){}
+      window.removeEventListener(&#x27;pointermove&#x27;,onMove);
+      window.removeEventListener(&#x27;pointerup&#x27;,onUp);
+      window.removeEventListener(&#x27;pointercancel&#x27;,onUp);
+      setPanelWidth(side,panelWidth(side),true);
+      relayoutStage();
+    }
+
+    bar.addEventListener(&#x27;pointerdown&#x27;,function(ev){
+      if(PANEL[side])return;
+      dragging=true;startX=ev.clientX;startW=panelWidth(side);
+      bar.classList.add(&#x27;dragging&#x27;);
+      document.body.classList.add(&#x27;resizing&#x27;);
+      try{bar.setPointerCapture(ev.pointerId);}catch(err){}
+      window.addEventListener(&#x27;pointermove&#x27;,onMove);
+      window.addEventListener(&#x27;pointerup&#x27;,onUp);
+      window.addEventListener(&#x27;pointercancel&#x27;,onUp);
+      ev.preventDefault();
+    });
+
+    bar.addEventListener(&#x27;dblclick&#x27;,function(){
+      setPanelWidth(side,c.def,true);
+      relayoutStage();
+    });
+
+    bar.addEventListener(&#x27;keydown&#x27;,function(ev){
+      let w=null;
+      if(ev.key===&#x27;ArrowLeft&#x27;)w=panelWidth(side)-(c.dir===1?16:-16);
+      else if(ev.key===&#x27;ArrowRight&#x27;)w=panelWidth(side)+(c.dir===1?16:-16);
+      else if(ev.key===&#x27;Home&#x27;)w=c.def;
+      if(w===null)return;
+      setPanelWidth(side,w,true);
+      relayoutStage();
+      ev.preventDefault();
+    });
+  });
+
+  /* Keep both panels legal when the viewport itself changes. */
+  window.addEventListener(&#x27;resize&#x27;,function(){
+    Object.keys(SPLIT).forEach(function(side){
+      if(!PANEL[side])setPanelWidth(side,panelWidth(side),false);
+    });
+  });
+}
 
 /* ══════════════════════════════════════════
    REPORT COMPOSER
@@ -13369,7 +14122,7 @@ function buildReport(){
   const s=iso.site, m=score(s);
   const open=ALERTS.filter(a=&gt;!a.ack);
   let subj=&#x27;&#x27;;
-  let h=&#x27;&lt;div class=&quot;meta&quot;&gt;&#x27;+cls+&#x27; \u00b7 GENERATED &#x27;+stamp+&#x27; \u00b7 ie-SRA SYS-05 BLACKSTART \u00b7 SAMPLE DATA&lt;/div&gt;&#x27;;
+  let h=&#x27;&lt;div class=&quot;meta&quot;&gt;&#x27;+cls+&#x27; \u00b7 GENERATED &#x27;+stamp+&#x27; \u00b7 ie-SRA SYS-03 BLACKSTART \u00b7 SAMPLE DATA&lt;/div&gt;&#x27;;
 
   if(scope===&#x27;enterprise&#x27;){
     subj=&#x27;[&#x27;+cls+&#x27;] Enterprise energy resilience roll-up — &#x27;+stamp;
@@ -13495,7 +14248,7 @@ function buildReport(){
   }
   if(note) h+=&#x27;&lt;h2&gt;Analyst note&lt;/h2&gt;&lt;p&gt;&#x27;+esc(note)+&#x27;&lt;/p&gt;&#x27;;
   h+=&#x27;&lt;h2&gt;Handling&lt;/h2&gt;&lt;p style=&quot;color:#6e90b0;font-size:9px&quot;&gt;&#x27;+cls+
-    &#x27;. Generated by ie-SRA SYS-05 BLACKSTART, a decision-support prototype. Every value in this report is synthetic sample data and is not suitable for operational or programming decisions.&lt;/p&gt;&#x27;;
+    &#x27;. Generated by ie-SRA SYS-03 BLACKSTART, a decision-support prototype. Every value in this report is synthetic sample data and is not suitable for operational or programming decisions.&lt;/p&gt;&#x27;;
   document.getElementById(&#x27;rep-preview&#x27;).innerHTML=h;
   const si=document.getElementById(&#x27;rep-subj&#x27;);
   if(!si.dataset.touched) si.value=subj;
@@ -13620,7 +14373,7 @@ const METRICS={
   peak :{label:&#x27;Peak demand&#x27;,unit:&#x27;kW&#x27;},
   total:{label:&#x27;Energy consumed&#x27;,unit:&#x27;kWh&#x27;}
 };
-let HEAT={on:true,win:&#x27;7d&#x27;,metric:&#x27;avg&#x27;,scope:&#x27;site&#x27;,intensity:1,radiusM:340};
+let HEAT={on:true,win:&#x27;7d&#x27;,metric:&#x27;avg&#x27;,scope:&#x27;enterprise&#x27;,intensity:1,radiusM:340};
 const _agg={};
 /* Per-meter aggregates plus, when full detail is asked for, the site load curve.
    `light` skips the curve and coarsens sampling — used for the heat surface, which
@@ -13911,13 +14664,107 @@ function paintHeatControls(){
       if(h.kind===&#x27;fac&#x27;&amp;&amp;x&gt;=h.x1&amp;&amp;x&lt;=h.x2&amp;&amp;y&gt;=h.y1&amp;&amp;y&lt;=h.y2)return h;}
     return null;
   }
-  cv.addEventListener(&#x27;mousedown&#x27;,function(e){iso.drag=true;iso.lx=e.clientX;iso.ly=e.clientY;cv.classList.add(&#x27;drag&#x27;);});
-  window.addEventListener(&#x27;mouseup&#x27;,function(){iso.drag=false;cv.classList.remove(&#x27;drag&#x27;);});
-  cv.addEventListener(&#x27;mouseleave&#x27;,function(){tip.style.display=&#x27;none&#x27;;});
-  cv.addEventListener(&#x27;mousemove&#x27;,function(e){
-    if(iso.drag){iso.pan.x+=e.clientX-iso.lx;iso.pan.y+=e.clientY-iso.ly;
-      iso.lx=e.clientX;iso.ly=e.clientY;tip.style.display=&#x27;none&#x27;;drawIso();return;}
-    const r=cv.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+  /* ══ ORBITAL CAMERA INPUT ══
+     Left drag orbits — horizontal is yaw, vertical is pitch. Shift-drag, middle
+     drag or right drag pans. Wheel zooms toward the cursor. Two fingers pinch to
+     zoom and slide to pan. A flick keeps turning briefly and damps out, and a
+     drag never counts as a click on a building. */
+  const YAW_K=0.0062, PITCH_K=0.0021, DAMP=0.88, CLICK_SLOP=5;
+  /* Release velocity is damped and capped so a flick glides to a stop in about
+     a third of a radian instead of spinning the site half way round. */
+  const FLING=0.6, SPIN_CAP=0.045, TILT_CAP=0.012;
+  const pts=new Map();
+  let mode=null,lx=0,ly=0,moved=0,spin=0,tilt=0,raf=0,pinD=0,pinX=0,pinY=0;
+
+  function stopSpin(){if(raf){cancelAnimationFrame(raf);raf=0;}spin=0;tilt=0;}
+  iso.stop=stopSpin;
+
+  function coast(){
+    raf=0;
+    if(mode){spin=0;tilt=0;return;}
+    spin*=DAMP; tilt*=DAMP;
+    if(Math.abs(spin)&lt;0.0004&amp;&amp;Math.abs(tilt)&lt;0.00025){spin=0;tilt=0;return;}
+    iso.angle+=spin;
+    iso.pitch=Math.max(PITCH_MIN,Math.min(PITCH_MAX,iso.pitch+tilt));
+    drawIso();
+    raf=requestAnimationFrame(coast);
+  }
+
+  function setCursor(){
+    cv.classList.toggle(&#x27;drag&#x27;,mode===&#x27;orbit&#x27;);
+    cv.classList.toggle(&#x27;panning&#x27;,mode===&#x27;pan&#x27;);
+  }
+
+  function localXY(e){const r=cv.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};}
+
+  cv.addEventListener(&#x27;contextmenu&#x27;,function(e){e.preventDefault();});
+
+  cv.addEventListener(&#x27;pointerdown&#x27;,function(e){
+    stopSpin();
+    pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===2){
+      const v=Array.from(pts.values());
+      pinD=Math.hypot(v[0].x-v[1].x,v[0].y-v[1].y)||1;
+      pinX=(v[0].x+v[1].x)/2; pinY=(v[0].y+v[1].y)/2;
+      mode=&#x27;pinch&#x27;; setCursor(); tip.style.display=&#x27;none&#x27;;
+      return;
+    }
+    mode=(e.shiftKey||e.button===1||e.button===2)?&#x27;pan&#x27;:&#x27;orbit&#x27;;
+    lx=e.clientX; ly=e.clientY; moved=0;
+    setCursor();
+    try{cv.setPointerCapture(e.pointerId);}catch(err){}
+    tip.style.display=&#x27;none&#x27;;
+    e.preventDefault();
+  });
+
+  function endPointer(e){
+    pts.delete(e.pointerId);
+    try{cv.releasePointerCapture(e.pointerId);}catch(err){}
+    if(mode===&#x27;pinch&#x27;&amp;&amp;pts.size&lt;2){mode=null;setCursor();return;}
+    if(mode===&#x27;orbit&#x27;&amp;&amp;(Math.abs(spin)&gt;0.0009||Math.abs(tilt)&gt;0.0006)){
+      spin=Math.max(-SPIN_CAP,Math.min(SPIN_CAP,spin*FLING));
+      tilt=Math.max(-TILT_CAP,Math.min(TILT_CAP,tilt*FLING));
+      mode=null; setCursor();
+      if(!raf)raf=requestAnimationFrame(coast);
+      return;
+    }
+    mode=null; spin=0; tilt=0; setCursor();
+  }
+  cv.addEventListener(&#x27;pointerup&#x27;,endPointer);
+  cv.addEventListener(&#x27;pointercancel&#x27;,endPointer);
+  cv.addEventListener(&#x27;pointerleave&#x27;,function(){if(!mode)tip.style.display=&#x27;none&#x27;;});
+
+  cv.addEventListener(&#x27;pointermove&#x27;,function(e){
+    if(pts.has(e.pointerId))pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+
+    if(mode===&#x27;pinch&#x27;&amp;&amp;pts.size===2){
+      const v=Array.from(pts.values());
+      const d=Math.hypot(v[0].x-v[1].x,v[0].y-v[1].y)||1;
+      const mx=(v[0].x+v[1].x)/2, my=(v[0].y+v[1].y)/2;
+      iso.pan.x+=mx-pinX; iso.pan.y+=my-pinY;
+      const r=cv.getBoundingClientRect();
+      isoZoomAt(d/pinD, mx-r.left, my-r.top);
+      pinD=d; pinX=mx; pinY=my;
+      tip.style.display=&#x27;none&#x27;;
+      e.preventDefault();
+      return;
+    }
+
+    if(mode===&#x27;orbit&#x27;||mode===&#x27;pan&#x27;){
+      const dx=e.clientX-lx, dy=e.clientY-ly;
+      lx=e.clientX; ly=e.clientY;
+      moved+=Math.abs(dx)+Math.abs(dy);
+      if(mode===&#x27;pan&#x27;){iso.pan.x+=dx;iso.pan.y+=dy;}
+      else{
+        spin=dx*YAW_K; tilt=dy*PITCH_K;
+        iso.angle+=spin;
+        iso.pitch=Math.max(PITCH_MIN,Math.min(PITCH_MAX,iso.pitch+tilt));
+      }
+      tip.style.display=&#x27;none&#x27;; drawIso();
+      e.preventDefault();
+      return;
+    }
+    const lp=localXY(e), x=lp.x, y=lp.y;
     const h=hitAt(x,y);
     if(!h){tip.style.display=&#x27;none&#x27;;return;}
     let html=&#x27;&#x27;;
@@ -13944,6 +14791,11 @@ function paintHeatControls(){
         row(&#x27;Black start&#x27;,cap.bs.toFixed(1)+&#x27; MW&#x27;)+row(&#x27;Auto transfer&#x27;,cap.auto.toFixed(1)+&#x27; MW&#x27;)+
         row(&#x27;Stored energy&#x27;,cap.mwh.toFixed(0)+&#x27; MWh&#x27;)+row(&#x27;Endurance&#x27;,fmtH(m2.endHrs))+
         row(&#x27;Assets&#x27;,String(iso.site.mg.length));
+    } else if(h.kind===&#x27;support&#x27;){
+      html=&#x27;&lt;div class=&quot;tt-n&quot; style=&quot;color:#93a3b4&quot;&gt;&#x27;+h.sname+&#x27;&lt;/div&gt;&#x27;+
+        row(&#x27;Type&#x27;,&#x27;support structure&#x27;)+
+        &#x27;&lt;div style=&quot;margin-top:5px;color:var(--txf);line-height:1.5&quot;&gt;Not separately metered. &#x27;+
+        &#x27;Load rolls up to the district feeder, so it is inside the totals but invisible at the meter.&lt;/div&gt;&#x27;;
     } else {
       const f=h.fac, dk=f.meters.filter(x=&gt;x.status===&#x27;dark&#x27;).length;
       const load=f.meters.reduce((a,x)=&gt;a+x.kw,0)/1000;
@@ -13955,17 +14807,22 @@ function paintHeatControls(){
         &#x27;&lt;div style=&quot;margin-top:5px;color:var(--txf)&quot;&gt;Click for detail&lt;/div&gt;&#x27;;
     }
     tip.innerHTML=html;tip.style.display=&#x27;block&#x27;;
-    const tw=tip.offsetWidth, th=tip.offsetHeight;
-    tip.style.left=Math.min(r.width-tw-8,x+14)+&#x27;px&#x27;;
-    tip.style.top=Math.max(6,Math.min(r.height-th-8,y-th/2))+&#x27;px&#x27;;
+    const tw=tip.offsetWidth, th=tip.offsetHeight, cr=cv.getBoundingClientRect();
+    tip.style.left=Math.min(cr.width-tw-8,x+14)+&#x27;px&#x27;;
+    tip.style.top=Math.max(6,Math.min(cr.height-th-8,y-th/2))+&#x27;px&#x27;;
   });
   function row(k,v){return &#x27;&lt;div class=&quot;tt-r&quot;&gt;&lt;span&gt;&#x27;+k+&#x27;&lt;/span&gt;&lt;b&gt;&#x27;+v+&#x27;&lt;/b&gt;&lt;/div&gt;&#x27;;}
   cv.addEventListener(&#x27;click&#x27;,function(e){
-    const r=cv.getBoundingClientRect();
-    const h=hitAt(e.clientX-r.left,e.clientY-r.top);
+    if(moved&gt;CLICK_SLOP)return;          // an orbit or pan is not a click
+    const lp=localXY(e);
+    const h=hitAt(lp.x,lp.y);
     if(h&amp;&amp;h.kind===&#x27;fac&#x27;)openFac(h.fac);
   });
-  cv.addEventListener(&#x27;wheel&#x27;,function(e){e.preventDefault();isoZoom(e.deltaY&lt;0?1.1:0.91);},{passive:false});
+  cv.addEventListener(&#x27;wheel&#x27;,function(e){
+    e.preventDefault(); stopSpin();
+    const lp=localXY(e);
+    isoZoomAt(e.deltaY&lt;0?1.1:0.91, lp.x, lp.y);
+  },{passive:false});
 })();
 
 function openFac(f){
@@ -13997,6 +14854,7 @@ function tickClock(){
   document.getElementById(&#x27;clock&#x27;).textContent=d.toISOString().slice(11,19)+&#x27; Z&#x27;;
 }
 window.addEventListener(&#x27;resize&#x27;,function(){if(VIEW===&#x27;iso&#x27;)drawIso();if(gmap)gmap.invalidateSize();});
+initSplitters();
 document.addEventListener(&#x27;keydown&#x27;,function(e){
   if(e.key===&#x27;Escape&#x27;)document.querySelectorAll(&#x27;.modal.open&#x27;).forEach(m=&gt;m.classList.remove(&#x27;open&#x27;));
 });
@@ -14009,6 +14867,7 @@ if(window.parent!==window){
 (function init(){
   iso.site=SITES[0];
   selectSite(&#x27;jbab&#x27;);
+  setView(&#x27;map&#x27;);          // open on the consumption map rather than the ISO grid
   setInterval(tickClock,1000);tickClock();
   SILENT=true; evaluate(); SILENT=false;
   setInterval(function(){if(VIEW===&#x27;iso&#x27;&amp;&amp;(iso.site.outage||score(iso.site).fr.c1))drawIso();},420);
@@ -14059,7 +14918,7 @@ if(window.parent!==window){
 </div>
 
 <!-- ═══════════════════════════════════════
-     OVERLAY: INTEL ARCHIVE HUB (SYS-03)
+     OVERLAY: INTEL ARCHIVE HUB (SYS-01C)
      ═══════════════════════════════════════ -->
 <div class="app-overlay overlay-duers" id="overlay-intel-hub">
   <div class="overlay-chrome">
@@ -14067,15 +14926,15 @@ if(window.parent!==window){
       <span class="overlay-logo-i">i<span class="overlay-logo-e">e</span></span>
       <span class="overlay-logo-sr">SR</span><span class="overlay-logo-a">A</span>
     </div>
-    <button class="overlay-back" onclick="closeApp('overlay-intel-hub')">&#8592; HUB</button>
-    <span class="overlay-app-name" style="color:#d4855a;">SYS-03 // INTEL ARCHIVE</span>
+    <button class="overlay-back" onclick="closeApp('overlay-intel-hub');setTimeout(function(){openApp('overlay-esim-hub');},420);">&#8592; SYS-01</button>
+    <span class="overlay-app-name" style="color:#d4855a;">SYS-01C // INTEL ARCHIVE</span>
   </div>
   <div style="flex:1;overflow-y:auto;background:radial-gradient(ellipse 70% 55% at 50% 110%,rgba(212,168,80,.13) 0%,transparent 65%),radial-gradient(ellipse 55% 40% at 12% 25%,rgba(158,188,82,.09) 0%,transparent 60%),radial-gradient(ellipse 45% 35% at 88% 18%,rgba(192,112,56,.07) 0%,transparent 55%),radial-gradient(ellipse 100% 100% at 50% 50%,#1e1608 0%,#110e06 100%);display:flex;flex-direction:column;align-items:center;padding:28px 20px 20px;gap:18px;">
 
     <!-- Two sub-cards -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;width:100%;max-width:900px;">
 
-      <!-- SYS-03A: Saved Scenarios -->
+      <!-- SYS-01C-A: Saved Scenarios -->
       <div class="app-card card-intel" style="cursor:pointer;" onclick="closeApp('overlay-intel-hub');setTimeout(function(){renderScenarios();openApp('overlay-saved-scenarios');},420);">
         <div class="card-head">
           <div class="card-icon-wrap">
@@ -14092,7 +14951,7 @@ if(window.parent!==window){
             </svg>
           </div>
           <div class="card-head-text">
-            <div class="card-badge">SYS-03A</div>
+            <div class="card-badge">SYS-01C-A</div>
             <div class="card-title">Saved Scenarios</div>
           </div>
         </div>
@@ -14105,10 +14964,10 @@ if(window.parent!==window){
           <span class="meta-pill">Compare Runs</span>
           <span class="meta-pill">Phase Logs</span>
         </div>
-        <button class="launch-btn" onclick="event.stopPropagation();closeApp('overlay-intel-hub');setTimeout(function(){renderScenarios();openApp('overlay-saved-scenarios');},420);">&#x2B21; &nbsp;LAUNCH SYS-03A</button>
+        <button class="launch-btn" onclick="event.stopPropagation();closeApp('overlay-intel-hub');setTimeout(function(){renderScenarios();openApp('overlay-saved-scenarios');},420);">&#x2B21; &nbsp;LAUNCH SYS-01C-A</button>
       </div>
 
-      <!-- SYS-03B: Recon Sites -->
+      <!-- SYS-01C-B: Recon Sites -->
       <div class="app-card card-intel" style="cursor:pointer;" onclick="closeApp('overlay-intel-hub');setTimeout(function(){renderRecons();openApp('overlay-recon-sites');},420);">
         <div class="card-head">
           <div class="card-icon-wrap">
@@ -14126,7 +14985,7 @@ if(window.parent!==window){
             </svg>
           </div>
           <div class="card-head-text">
-            <div class="card-badge">SYS-03B</div>
+            <div class="card-badge">SYS-01C-B</div>
             <div class="card-title">Recon Sites</div>
           </div>
         </div>
@@ -14139,7 +14998,7 @@ if(window.parent!==window){
           <span class="meta-pill">Site Records</span>
           <span class="meta-pill">Filter &amp; Search</span>
         </div>
-        <button class="launch-btn" onclick="event.stopPropagation();closeApp('overlay-intel-hub');setTimeout(function(){renderRecons();openApp('overlay-recon-sites');},420);">&#x2B21; &nbsp;LAUNCH SYS-03B</button>
+        <button class="launch-btn" onclick="event.stopPropagation();closeApp('overlay-intel-hub');setTimeout(function(){renderRecons();openApp('overlay-recon-sites');},420);">&#x2B21; &nbsp;LAUNCH SYS-01C-B</button>
       </div>
 
     </div>
@@ -14147,7 +15006,7 @@ if(window.parent!==window){
 </div>
 
 <!-- ═══════════════════════════════════════
-     OVERLAY: SAVED SCENARIOS (SYS-03A)
+     OVERLAY: SAVED SCENARIOS (SYS-01C-A)
      ═══════════════════════════════════════ -->
 <div class="app-overlay overlay-duers" id="overlay-saved-scenarios">
   <div class="overlay-chrome">
@@ -14155,8 +15014,8 @@ if(window.parent!==window){
       <span class="overlay-logo-i">i<span class="overlay-logo-e">e</span></span>
       <span class="overlay-logo-sr">SR</span><span class="overlay-logo-a">A</span>
     </div>
-    <button class="overlay-back" onclick="closeApp('overlay-saved-scenarios');setTimeout(function(){openApp('overlay-intel-hub');},420);">&#8592; SYS-03</button>
-    <span class="overlay-app-name" style="color:#d4855a;">SYS-03A // SAVED SCENARIOS</span>
+    <button class="overlay-back" onclick="closeApp('overlay-saved-scenarios');setTimeout(function(){openApp('overlay-intel-hub');},420);">&#8592; SYS-01C</button>
+    <span class="overlay-app-name" style="color:#d4855a;">SYS-01C-A // SAVED SCENARIOS</span>
   </div>
   <div class="arc-body">
     <div class="arc-toolbar">
@@ -14223,7 +15082,7 @@ if(window.parent!==window){
 </div>
 
 <!-- ═══════════════════════════════════════
-     OVERLAY: RECON SITES (SYS-03B)
+     OVERLAY: RECON SITES (SYS-01C-B)
      ═══════════════════════════════════════ -->
 <div class="app-overlay overlay-duers" id="overlay-recon-sites">
   <div class="overlay-chrome">
@@ -14231,8 +15090,8 @@ if(window.parent!==window){
       <span class="overlay-logo-i">i<span class="overlay-logo-e">e</span></span>
       <span class="overlay-logo-sr">SR</span><span class="overlay-logo-a">A</span>
     </div>
-    <button class="overlay-back" onclick="closeApp('overlay-recon-sites');setTimeout(function(){openApp('overlay-intel-hub');},420);">&#8592; SYS-03</button>
-    <span class="overlay-app-name" style="color:#d4855a;">SYS-03B // RECON SITES</span>
+    <button class="overlay-back" onclick="closeApp('overlay-recon-sites');setTimeout(function(){openApp('overlay-intel-hub');},420);">&#8592; SYS-01C</button>
+    <span class="overlay-app-name" style="color:#d4855a;">SYS-01C-B // RECON SITES</span>
   </div>
   <div class="arc-body">
     <div class="arc-toolbar">
@@ -14422,6 +15281,59 @@ function bootScan() {
 }
 
 // ── OPEN / CLOSE ──
+// ── FULL SCREEN VIEW ──
+// Vendor-prefixed because the request/exit calls are still not uniform, and the
+// request can be refused outright (embedded frames without an allowfullscreen
+// grant), so the rejection path has to say so rather than fail silently.
+function fsCurrent() {
+  return document.fullscreenElement || document.webkitFullscreenElement ||
+         document.mozFullScreenElement || document.msFullscreenElement || null;
+}
+function fsBlocked(msg) {
+  var b = document.getElementById('fs-btn');
+  if (!b) return;
+  b.classList.add('blocked');
+  b.title = msg || 'Full screen was refused by the browser. Try F11, or open this page in its own tab.';
+  var l = document.getElementById('fs-lbl');
+  if (l) l.textContent = 'N/A';
+  setTimeout(function() {
+    b.classList.remove('blocked');
+    b.title = 'Full screen view';
+    paintFsBtn();
+  }, 2600);
+}
+function toggleFullscreen() {
+  var el = document.documentElement;
+  if (!fsCurrent()) {
+    var req = el.requestFullscreen || el.webkitRequestFullscreen ||
+              el.mozRequestFullScreen || el.msRequestFullscreen;
+    if (!req) { fsBlocked('This browser does not expose the full screen API.'); return; }
+    try {
+      var p = req.call(el);
+      if (p && typeof p.catch === 'function') p.catch(function() { fsBlocked(); });
+    } catch (e) { fsBlocked(); }
+  } else {
+    var exit = document.exitFullscreen || document.webkitExitFullscreen ||
+               document.mozCancelFullScreen || document.msExitFullscreen;
+    if (exit) { try { exit.call(document); } catch (e) {} }
+  }
+}
+function paintFsBtn() {
+  var on = !!fsCurrent();
+  var b = document.getElementById('fs-btn');
+  var i = document.getElementById('fs-ico-in');
+  var o = document.getElementById('fs-ico-out');
+  var l = document.getElementById('fs-lbl');
+  if (!b) return;
+  b.classList.toggle('active', on);
+  if (i) i.style.display = on ? 'none' : 'block';
+  if (o) o.style.display = on ? 'block' : 'none';
+  if (l) l.textContent = on ? 'EXIT' : 'FULL';
+  b.title = on ? 'Exit full screen' : 'Full screen view';
+}
+['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'msfullscreenchange']
+  .forEach(function(ev) { document.addEventListener(ev, paintFsBtn); });
+
 function openApp(id) {
   document.getElementById('launcher-shell').classList.add('pushed');
   document.getElementById(id).classList.add('visible');
@@ -15269,7 +16181,7 @@ document.addEventListener('keydown', function(e) {
 })();
 
 // ══════════════════════════════════════════
-//  SYS-03 INTEL ARCHIVE — Storage & UI
+//  SYS-01C INTEL ARCHIVE — Storage & UI
 // ══════════════════════════════════════════
 (function() {
 
@@ -15334,7 +16246,7 @@ document.addEventListener('keydown', function(e) {
     setTimeout(function(){ el.style.borderColor=''; el.style.boxShadow=''; }, 1400);
   }
 
-  // ══ SYS-03A: SAVED SCENARIOS ══
+  // ══ SYS-01C-A: SAVED SCENARIOS ══
 
   window.renderScenarios = function() {
     var list = document.getElementById('sc-list');
@@ -15412,7 +16324,7 @@ document.addEventListener('keydown', function(e) {
     renderScenarios();
   };
 
-  // ══ SYS-03B: RECON SITES ══
+  // ══ SYS-01C-B: RECON SITES ══
 
   window.renderRecons = function() {
     var list = document.getElementById('rc-list');
@@ -15505,13 +16417,21 @@ document.addEventListener('keydown', function(e) {
     'NB San Diego (utility outage) or NS Norfolk (hurricane). Drag-and-drop assets onto drop zones.\n' +
     '  - SYS-01B: Site Recon Map — live TomTom map of NS Norfolk with grid-status overlays, ' +
     'sensor telemetry feeds, and asset health across monitored nodes.\n' +
+    '  - SYS-01C: Intel Archive — persistent intelligence store nested under SimRecon.\n' +
+    '    - SYS-01C-A: Saved Scenarios — replay completed wargame sessions; browse phase logs, ' +
+    'asset deployments, and AI-generated assessments. (Under construction.)\n' +
+    '    - SYS-01C-B: Recon Sites — geo-tagged installation intelligence catalog; filter by region, ' +
+    'installation type, or readiness status. (Under construction.)\n' +
     '  - SYS-04: Data Drop Zone — secure upload portal for XLSX, CSV, and JSON datasets ' +
     '(sensor exports, NOAA weather archives, DoD logistics files) with auto-classification on ingest.\n' +
-    '- SYS-03: Intel Archive Hub — persistent intelligence store.\n' +
-    '  - SYS-03A: Saved Scenarios — replay completed wargame sessions; browse phase logs, ' +
-    'asset deployments, and AI-generated assessments. (Under construction.)\n' +
-    '  - SYS-03B: Recon Sites — geo-tagged installation intelligence catalog; filter by region, ' +
-    'installation type, or readiness status. (Under construction.)\n' +
+    '- SYS-02: Intelligent Analytics (DUERS Executive Intelligence) — executive decision-support layer over DUERS utility data: cost, consumption, unit cost, readiness posture, policy screening, audit-log signals and leadership report narratives. Seven views: Command, Drill-Down, Simulation, Report Builder, Audit Log, Mind Map, Requirements.\n' +
+    '  - Command: enterprise summary — cost trend, cost concentration, active signals, installation roster.\n' +
+    '  - Drill-Down: region comparison by cost, anomalies and anomaly history, risk decomposition, policy compliance scorecard, mission readiness board.\n' +
+    '  - Simulation: site assessment, reference precedent, technology fit snapshot, deployment simulation.\n' +
+    '  - Report Builder: scoped leadership report narratives. Audit Log: DUERS audit-log ingest with data-quality signal detection and a 20-row data preview.\n' +
+    '  - It carries its own embedded AI analyst sidecar. Primary provider is CAPRA Ask Sage (curated 21-model catalog: Flagship, Standard, Lightweight, Economy), with Gemini and direct Claude as alternates. The hub relays the API key to this module on entry via SET_CREDENTIALS. The sidecar receives computed summaries for the current scope only — totals, year-over-year movement, concentration, anomalies, readiness, compliance and report context — never raw DUERS record dumps.\n' +
+    '  - Posture: a decision-support prototype, not a Navy system of record. Sponsor-facing claims still require validated source data, policy review and human approval.\n' +
+    '- SYS-03: Security & Resiliency (BLACKSTART) — integrated grid posture across 16 Navy installations: AMI smart metering, FRCS control-system exposure, microgrid and DER capacity, per-installation isometric site maps, Resilience Readiness scoring, consumption heat mapping (24h to 12 months), scenario modelling under feed loss, alerting and emailable reporting.\n' +
     '- SYS-04: Data Drop Zone — direct hub shortcut to SYS-04.\n' +
     '- AI-01: ARIA — this AI assistant.\n\n' +
 
@@ -15813,7 +16733,7 @@ document.addEventListener('keydown', function(e) {
         var q = 'Analyse my saved scenario: '+esc(sc.name||'')+' at '+(sc.installation||'unknown installation')+', score '+(sc.score||'?')+'. What does this tell us about resilience posture and what would you recommend next?';
         var card = makeCard(sc.id, 'scenario', sc, function(c) {
           var head = document.createElement('div'); head.className = 'rpt-card-head';
-          head.innerHTML = '<div class="rpt-card-name">'+esc(sc.name||'Unnamed')+'</div><div class="rpt-card-tag">SYS-03A</div>';
+          head.innerHTML = '<div class="rpt-card-name">'+esc(sc.name||'Unnamed')+'</div><div class="rpt-card-tag">SYS-01C-A</div>';
           c.appendChild(head);
           var row1 = document.createElement('div'); row1.className = 'rpt-card-row';
           row1.innerHTML = 'Installation: <span>'+esc(sc.installation||'—')+'</span>' +
@@ -15842,7 +16762,7 @@ document.addEventListener('keydown', function(e) {
 
     if (!recons.length) {
       var emp2 = document.createElement('div'); emp2.className = 'rpt-empty';
-      emp2.innerHTML = '<div class="rpt-empty-lbl">NO RECORDS</div><div class="rpt-empty-sub">Add entries in SYS-03B<br>to populate this section.</div>';
+      emp2.innerHTML = '<div class="rpt-empty-lbl">NO RECORDS</div><div class="rpt-empty-sub">Add entries in SYS-01C-B<br>to populate this section.</div>';
       rcSec.appendChild(emp2);
     } else {
       var sColors = {NOMINAL:'#4db88a',DEGRADED:'#d4a05a',CRITICAL:'#e05555',OFFLINE:'#e05555'};
@@ -15851,7 +16771,7 @@ document.addEventListener('keydown', function(e) {
         var q = 'Analyse this recon record: '+esc(rc.site||'unknown site')+' in '+(rc.region||'unknown region')+'. Grid status: '+(rc.gridStatus||'unknown')+', resilience index: '+(rc.resilience||'?')+'%, threat level: '+(rc.threat||'unknown')+'. What are the key vulnerabilities and recommended actions?';
         var card = makeCard(rc.id, 'recon', rc, function(c) {
           var head = document.createElement('div'); head.className = 'rpt-card-head';
-          head.innerHTML = '<div class="rpt-card-name">'+esc(rc.site||'Unknown Site')+'</div><div class="rpt-card-tag">SYS-03B</div>';
+          head.innerHTML = '<div class="rpt-card-name">'+esc(rc.site||'Unknown Site')+'</div><div class="rpt-card-tag">SYS-01C-B</div>';
           c.appendChild(head);
           var row1 = document.createElement('div'); row1.className = 'rpt-card-row';
           row1.innerHTML = 'Region: <span>'+esc(rc.region||'—')+'</span> · Date: <span>'+fmtDate(rc.date)+'</span>';
@@ -16969,7 +17889,7 @@ nav.tabs button.on{box-shadow:0 0 22px var(--glow),inset 0 -3px 0 var(--gold-dim
   box-shadow: 0 0 12px rgba(176,184,196,.2);
 }
 
-/* ── CARD: Intel Archive (SYS-03) ── */
+/* ── CARD: Intel Archive (SYS-01C) ── */
 #nes-card-overlay .card-intel::before {
   background: linear-gradient(90deg, transparent, #d4855a, transparent);
   opacity: .65;
