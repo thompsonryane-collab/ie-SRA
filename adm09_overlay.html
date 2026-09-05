@@ -1,0 +1,35 @@
+
+<style>
+.card-adm-comms::before{background:linear-gradient(90deg,transparent,#29d3c8,transparent);opacity:.6;}
+.card-adm-comms:hover{border-color:rgba(41,211,200,.45);box-shadow:var(--card-bevel),0 0 20px rgba(41,211,200,.14);}
+.card-adm-comms .card-badge{color:#29d3c8;} .card-adm-comms .card-desc em{color:#8fe6df;}
+.card-adm-comms .meta-pill{border-color:rgba(41,211,200,.5);color:#8fe6df;background:rgba(41,211,200,.1);}
+.card-adm-comms .launch-btn{background:rgba(41,211,200,.12);color:#29d3c8;border:1px solid rgba(41,211,200,.45);border-radius:10px;}
+.card-adm-comms .launch-btn:hover{background:rgba(41,211,200,.22);}
+</style>
+<!-- ═══ OVERLAY: ADM-09 COMMS LOG ═══ -->
+<div class="app-overlay overlay-duers" id="overlay-adm-comms">
+  <div class="overlay-chrome">
+    <div class="overlay-logo"><span class="overlay-logo-i">i<span class="overlay-logo-e">e</span></span><span class="overlay-logo-sr">SR</span><span class="overlay-logo-a">A</span></div>
+    <button class="overlay-back" onclick="closeApp('overlay-adm-comms')">&#8592; ADMIN</button>
+    <span class="overlay-app-name" style="color:#29d3c8;">ADM-09 // COMMS LOG</span>
+  </div>
+  <div class="adm-body">
+    <div class="adm-toolbar">
+      <input class="adm-in" id="cm-q" placeholder="filter site / peer / code / payload" oninput="admPaintComms()">
+      <select class="adm-sel" id="cm-dir" onchange="admPaintComms()"><option value="">IN + OUT</option><option value="IN">INBOUND</option><option value="OUT">OUTBOUND</option></select>
+      <select class="adm-sel" id="cm-type" onchange="admPaintComms()"><option value="">ALL TYPES</option><option>WARNORD</option><option>ACK</option><option>MSG</option><option>STATUS</option><option>HELLO</option></select>
+      <select class="adm-sel" id="cm-site" onchange="admPaintComms()"><option value="">ALL SITES</option></select>
+      <select class="adm-sel" id="cm-win" onchange="admPaintComms()"><option value="">ALL TIME</option><option value="1h">LAST HOUR</option><option value="24h" selected>LAST 24H</option><option value="7d">LAST 7 DAYS</option></select>
+      <span class="sp"></span>
+      <button class="adm-b" onclick="admExportComms('csv')">EXPORT CSV</button>
+      <button class="adm-b" onclick="admExportComms('json')">EXPORT JSON</button>
+      <button class="adm-b" onclick="admPushComms()">PUSH TO REPO</button>
+      <button class="adm-b danger" onclick="admClearComms()">CLEAR</button>
+    </div>
+    <div class="adm-scroll">
+      <div class="adm-strip2" id="cm-strip"></div>
+      <table class="adm-tbl"><thead id="cm-head"></thead><tbody id="cm-body"></tbody></table>
+    </div>
+  </div>
+</div>
