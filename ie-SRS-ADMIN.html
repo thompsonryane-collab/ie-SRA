@@ -12610,7 +12610,7 @@ window.SRABus=(function(){
   var NODE='admin';
   var CFG_KEY='sra_bus_cfg_'+NODE, LOG_KEY='sra_bus_log', SEEN_KEY='sra_bus_seen_'+NODE;
   var CH_NAME='ie-sra-bus';
-  var DEF={transport:'broadcast', node:NODE, site:'nb-sd', repo:'thompsonryane-collab/ie-SRS', branch:'main', path:'data/bus.json', token:'', poll:5};
+  var DEF={transport:NODE==='cmdr'?'github':'broadcast', node:NODE, site:'nb-sd', repo:'thompsonryane-collab/ie-SRS', branch:'main', path:'data/bus.json', token:'', poll:5};
   function ls(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
   function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
   var cfg=Object.assign({},DEF,ls(CFG_KEY,{}));
@@ -12842,6 +12842,7 @@ window.SRABus=(function(){
   var _logWO=C.logWO;
   C.logWO=function(rec){
     var r=_logWO.apply(this,arguments);
+    if(rec&&rec.origin==='cmdr')return r;   // came in over the bus — don't echo
     try{
       var p={code:rec.code,site:rec.site,siteName:rec.siteName,msg:rec.msg,test:!!rec.test,channels:rec.channels,kind:rec.kind||(rec.test?'TEST':'LIVE'),ts:rec.ts,title:rec.title||null};
       bus.publish('WARNORD',p,{site:rec.site||'*'});ev('WARNORD '+rec.code+' → '+(rec.siteName||'*'));
@@ -12863,7 +12864,7 @@ window.SRABus=(function(){
     var sum=C.summary(), h=C.health(s);
     function inst(i){return {status:i.status,version:i.version,lastSyncMin:i.lastSyncMin,uptime:i.uptime,cpu:i.cpu};}
     function usr(u){return {name:u.name,role:u.role,status:u.status,device:u.device,lastSeenMin:u.lastSeenMin};}
-    return {site:s.id,siteName:s.name,region:s.region,regionName:s.regionName,uic:s.uic,health:h,healthColor:C.healthColor(h),
+    return {site:s.id,siteName:s.name,region:s.region,regionName:s.regionName,uic:s.uic,lat:s.lat,lon:s.lon,health:h,healthColor:C.healthColor(h),
       primary:s.primary.status,secondary:s.secondary.status,primaryInst:inst(s.primary),secondaryInst:inst(s.secondary),
       fm:usr(s.fm),backup:usr(s.backup),openWO:(s.openWO||0)+wos.filter(function(w){return !w.ack&&!w.test;}).length,outage:!!s.outage||wos.some(function(w){return !w.ack&&!w.test;}),
       usersOnline:[s.fm,s.backup].filter(function(u){return u.status==='online';}).length,
@@ -12885,6 +12886,13 @@ window.SRABus=(function(){
         if(typeof admPaintRouting==='function'&&$('overlay-adm-routing')&&$('overlay-adm-routing').classList.contains('visible'))try{admPaintRouting();}catch(e){}
         if(typeof admPaintAudit==='function'&&$('overlay-adm-audit')&&$('overlay-adm-audit').classList.contains('visible'))try{admPaintAudit();}catch(e){}
         if(typeof admPaintStrip==='function')try{admPaintStrip();}catch(e){}}
+    }else if(env.type==='WARNORD'&&env.from==='cmdr'){
+      if(replay)return;
+      var s0=C.SITE[p.site]||{}; var rec={ts:p.ts||env.ts,site:p.site,siteName:p.siteName||s0.name,code:p.code,test:!!p.test,kind:p.kind||'CMDR',sev:p.sev,msg:'['+(p.sev||'')+' '+(p.title||'SONAR')+'] '+(p.msg||''),channels:p.channels,by:p.by,role:p.role,origin:'cmdr',ack:{by:p.by,ts:env.ts,via:'released by CO'}};
+      C.logWO(rec);C.audit('CMDR_SONAR',rec.siteName||p.site,p.code+' '+(p.sev||'')+' '+(p.title||'')+' — released by '+p.by+(p.test?' (exercise)':'')+' → '+p.channels);
+      toast('SONAR '+p.code+' released by '+p.by+' — '+(rec.siteName||p.site),'warn');ev('SONAR '+p.code+' ← '+p.by);
+      if(typeof admPaintRouting==='function'&&$('overlay-adm-routing')&&$('overlay-adm-routing').classList.contains('visible'))try{admPaintRouting();}catch(e){}
+      if(typeof admPaintStrip==='function')try{admPaintStrip();}catch(e){}
     }else if(env.type==='MSG'){
       if(replay)return;
       var ch=p.ch==='all'?'all':(p.ch&&p.ch.indexOf('site:')===0?p.ch:('site:'+(env.site||'nb-sd')));
@@ -12940,7 +12948,7 @@ window.SRABus=(function(){
   function cmdrUrl(){return new URL('cmdr/',location.href).href;}
   window.admCmdrGh=function(){var gh=$('cx-transport').value==='github';document.querySelectorAll('#overlay-adm-cmdr .cx-gh').forEach(function(e){e.style.display=gh?'':'none';});
     $('cx-note').textContent=gh?'Both ADMIN and the phone need the same token.':$('cx-transport').value==='off'?'Bus disabled.':'Works between tabs of this browser (e.g. Open in new window).';};
-  function unacked(){return C.listWO().filter(function(w){return !w.ack&&(w.site&&C.SITE[w.site]);}).slice(0,12);}
+  function unacked(){return C.listWO().filter(function(w){return !w.ack&&w.origin!=='cmdr'&&(w.site&&C.SITE[w.site]);}).slice(0,12);}
   function acked(){return C.listWO().filter(function(w){return w.ack;}).slice(0,8);}
   function fmtMs(ms){return ms==null?'—':ms<1000?ms+' ms':ms<60000?(ms/1000).toFixed(1)+' s':Math.round(ms/60000)+' min';}
   window.admPaintCmdr=function(){

@@ -73,3 +73,18 @@ Every message now carries its channel end to end. An ADMIN #all-hands broadcast 
 
 ## Phone defaults
 A fresh install of `cmdr/` starts on **GitHub repo · thompsonryane-collab/ie-SRS · main · data/bus.json · site nb-sd** with an empty token; it opens the Link tab and focuses the token field, so the commander only pastes the token and taps Save. ADMIN still defaults to same-browser.
+
+## SONAR composer on CMDR (v0.5)
+Quick action **SONAR** opens an iOS-style grouped-form sheet: severity segment (P1/P2/P3), event type, location, missions affected, ETR, message, route-to checklist (NAVFAC EOC, Region Commander, FM + Backup, Tenant commands, Utility), exercise flag. Release publishes a WARNORD envelope with `origin:'cmdr'` and code `CO-nnnn`; ADMIN logs it to the ADM-03 dispatch log (pre-acknowledged by the releasing CO), writes `CMDR_SONAR` to audit, toasts, and does not echo it back. The phone lists it under Outages → *Released by you* and counts it as an active outage unless flagged exercise.
+
+## Notifications (CMDR)
+Header pill **Ping / Off** (also the Alerts toggle on the Link tab — same flag). Ping = two-tone chime via Web Audio (alert vs message patterns), vibration, and a system notification when the app is backgrounded; the first tap primes iOS audio and asks notification permission. Default Off. The **Message** quick-action tile carries a blinking red count light for unread messages; it clears when Messages is opened.
+
+## Live power map (CMDR)
+Quick action **Live map** (replaces Generators) opens a full-screen Leaflet map on the same Esri World Imagery tiles as SYS-03, centred on the site's lat/lon from the ADM-04 snapshot (NBSD fallback). Layers: outage zones (pulsing P1/P2/P3 markers with popups — pending SONAR alerts can be acknowledged from the popup), feeders (red dashed = de-energized, amber = backup, green = energized) with the microgrid island, generators, optional place labels. Live SONAR alerts are plotted as they arrive; demo zones use offset geometry around the base centre (labelled "demo geometry"). If the Leaflet CDN is unreachable the view falls back to a schematic SVG with the same features. The tile shows a count light for pending alerts.
+
+## CMDR navigation (v0.6)
+The bottom tab bar is gone. A sticky 5×2 quick-action bar under the header is the navigation on every screen (Sys health · Mission impact · Microgrid · Black start · Live map · Call EOC · Message · Outages · SONAR · Link); the active screen's tile is outlined. Tapping the ie-SRS CMDR title returns to the Dashboard, which is the default screen on open.
+
+## Mission impact (CMDR) — SYS-01A outage replay
+The **Mission impact** tile opens a landscape screen that ports the SYS-01A wargame map: San Diego focal area with NB San Diego / NASNI Coronado / MCAS Miramar markers, 50-mi inter-service ring, SDG&E Mission Bay substation feed, outage flash + glow, pulse ring, microgrid and BESS overlays, fuel bar, truck resupply paths, and the resilience clock — stepped through the seven phases (auto-play, Prev/Next, Pause). The right panel lists the six mission systems with their state per phase (TAGGED → DOWN → ON GEN/UNSERVED → BESS → RESTORED) and pins any live pending SONAR alerts at the top. Portrait shows a rotate prompt with "View anyway"; in landscape the app spans the full width.

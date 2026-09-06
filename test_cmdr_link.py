@@ -147,6 +147,58 @@ def tier1(b):
     admin.reload(wait_until='domcontentloaded'); admin.wait_for_timeout(2500)
     assert admin.evaluate("window.ADM_COMMS.stats().total") >= len(led), 'ledger lost on reload'
 
+    # live map (CDN blocked in sandbox → schematic fallback must render with outage zones)
+    cmdr.evaluate("openMap()"); cmdr.wait_for_timeout(1200)
+    wait_for(lambda: cmdr.evaluate("document.getElementById('map-fallback').classList.contains('on')||!!window.L"), timeout=10, msg='map init')
+    if cmdr.evaluate("document.getElementById('map-fallback').classList.contains('on')"):
+        assert cmdr.evaluate("document.querySelectorAll('#map-fallback circle').length")>=4
+        assert 'WO-LIVE-1' in cmdr.evaluate("document.getElementById('map-fallback').textContent")
+    assert cmdr.evaluate("window.CMDR.state().status.lat")>30
+    # late-arriving Leaflet must replace the schematic (stub L)
+    cmdr.evaluate("""window.L={map:()=>({setView(){return this},invalidateSize(){},hasLayer(){return false},removeLayer(){},addLayer(){}}),tileLayer:()=>({addTo(){return this}}),control:{zoom:()=>({addTo(){}})},layerGroup:()=>({addTo(){return this},clearLayers(){}}),polyline:()=>({bindPopup(){return this},addTo(){}}),circle:()=>({bindPopup(){return this},addTo(){}}),divIcon:()=>({}),marker:()=>({bindPopup(){return this},addTo(){}})};retryMap();""")
+    cmdr.wait_for_timeout(300)
+    assert not cmdr.evaluate("document.getElementById('map-fallback').classList.contains('on')"), 'fallback stayed on top of the map'
+    cmdr.screenshot(path='qa_cmdr_map.png'); cmdr.evaluate("closeMap()")
+
+    # mission impact replay: 7 phases, outage state flips the primary node to rose and starts the clock
+    cmdr.evaluate("openImpact()"); cmdr.wait_for_timeout(300)
+    assert cmdr.evaluate("document.getElementById('p-impact').classList.contains('on') && document.querySelectorAll('#im-ribbon i').length===7")
+    cmdr.evaluate("imToggle()")  # pause
+    cmdr.evaluate("imStep(1);imStep(1)"); cmdr.wait_for_timeout(500)
+    assert cmdr.evaluate("document.getElementById('im-d-A').getAttribute('fill')")=='#9e4d4d'
+    assert cmdr.evaluate("document.getElementById('im-p-A').style.display")=='' and cmdr.evaluate("document.getElementById('im-clock').textContent").startswith('RESILIENCE')
+    assert cmdr.evaluate("[...document.querySelectorAll('#im-list .st')].filter(e=>e.textContent==='DOWN').length")>=4
+    cmdr.evaluate("imStep(1);imStep(1);imStep(1);imStep(1)"); cmdr.wait_for_timeout(300)
+    assert cmdr.evaluate("document.getElementById('im-d-A').getAttribute('fill')")=='#4d9e7a' and cmdr.evaluate("document.getElementById('im-bess').getAttribute('opacity')")=='1'
+    cmdr.set_viewport_size({'width':852,'height':393}); cmdr.wait_for_timeout(300); cmdr.evaluate("imStep(-4)"); cmdr.wait_for_timeout(400)
+    cmdr.screenshot(path='qa_cmdr_impact.png'); cmdr.set_viewport_size({'width':393,'height':852}); cmdr.evaluate("closeImpact()")
+
+    # notification light on Message tile + ping toggle
+    cmdr.evaluate("go('dash')")
+    assert cmdr.evaluate("document.querySelectorAll('#qabar .qa button').length")==10 and cmdr.evaluate("document.querySelector('.tabs')===null")
+    assert cmdr.evaluate("document.getElementById('p-dash').classList.contains('on')") and cmdr.evaluate("document.getElementById('p-dash').getBoundingClientRect().top>150")
+    assert cmdr.evaluate("document.getElementById('nl-out').classList.contains('on')")
+    admin.evaluate("window.ADMIN_CORE.sendMsg('site:nb-sd','Light test','sysadmin')")
+    wait_for(lambda: cmdr.evaluate("document.getElementById('nl-msg').classList.contains('on')&&document.getElementById('nl-msg').textContent==='1'"), msg='message light')
+    cmdr.screenshot(path='qa_cmdr_light.png', clip={'x':0,'y':0,'width':393,'height':852})
+    cmdr.evaluate("go('msgs')"); cmdr.wait_for_timeout(200)
+    assert not cmdr.evaluate("document.getElementById('nl-msg').classList.contains('on')"), 'light did not clear'
+    assert cmdr.evaluate("document.getElementById('pingtxt').textContent")=='Off'
+    cmdr.evaluate("togglePing()"); assert cmdr.evaluate("document.getElementById('pingtxt').textContent")=='Ping' and cmdr.evaluate("window.CMDR.state().notify")
+    cmdr.evaluate("togglePing()"); assert cmdr.evaluate("document.getElementById('pingtxt').textContent")=='Off'
+    cmdr.evaluate("go('dash')")
+
+    # CMDR-released SONAR → ADMIN WO log + audit, no echo back
+    cmdr.evaluate("openSonar();document.getElementById('so-loc').value='Pier 8 · Feeder 8A';document.getElementById('so-msg').value='Shore power lost to DDG berth. Microgrid carrying load.';document.getElementById('so-missions').value='2';window.confirm=()=>true;sendSonar();")
+    wait_for(lambda: admin.evaluate("window.ADMIN_CORE.listWO().some(w=>w.origin==='cmdr'&&/^CO-/.test(w.code))"), msg='admin logged CO SONAR')
+    co = admin.evaluate("window.ADMIN_CORE.listWO().find(w=>w.origin==='cmdr')")
+    assert co['sev']=='P1' and 'Pier 8' in co['msg'] and co['ack']['by'], co
+    assert admin.evaluate("window.ADMIN_CORE.listAudit().some(a=>a.action==='CMDR_SONAR')")
+    n_before = cmdr.evaluate("Object.keys(window.CMDR.state().warnords).length"); admin.wait_for_timeout(800)
+    assert cmdr.evaluate("Object.keys(window.CMDR.state().warnords).length")==n_before, 'CO SONAR echoed back to phone'
+    assert cmdr.evaluate("document.querySelectorAll('#so-mine .warn').length")==1
+    cmdr.evaluate("openSonar()"); cmdr.wait_for_timeout(300); cmdr.screenshot(path='qa_cmdr_sonar.png'); cmdr.evaluate("closeSonar()")
+
     # reload CMDR: replay restores state
     cmdr.reload(wait_until='domcontentloaded'); cmdr.wait_for_timeout(900)
     assert cmdr.evaluate(f"window.CMDR.state().warnords['{code}'].ack.by"), 'ack lost on reload'
@@ -206,8 +258,8 @@ def tier_norm(b):
     ctx = b.new_context(); p = ctx.new_page(); p.goto(BASE + '/cmdr/index.html', wait_until='domcontentloaded'); p.wait_for_timeout(800)
     d = p.evaluate("window.SRABus.cfg()")
     assert d['transport']=='github' and d['repo']=='thompsonryane-collab/ie-SRS' and d['branch']=='main' and d['path']=='data/bus.json' and d['token']=='' and d['site']=='nb-sd', d
-    assert p.evaluate("document.getElementById('p-link').classList.contains('on')") and p.evaluate("document.getElementById('f-transport').value")=='github'
-    print('fresh-install defaults: github / ie-SRS / main / data/bus.json, token empty, Link tab opened')
+    assert p.evaluate("document.getElementById('p-dash').classList.contains('on')"); p.evaluate("go('link')"); assert p.evaluate("document.getElementById('f-transport').value")=='github'
+    print('fresh-install defaults: github / ie-SRS / main / data/bus.json, token empty, dashboard opened')
     c = p.evaluate("window.SRABus.configure({transport:'off',repo:' Thompsonryane-collab/ie-SRS ',branch:'main ',path:'data/bus. Json',token:' ghp_x '}).cfg()")
     assert c['repo']=='Thompsonryane-collab/ie-SRS' and c['branch']=='main' and c['path']=='data/bus.json' and c['token']=='ghp_x', c
     ctx.close(); print('config normalization: PASS')
