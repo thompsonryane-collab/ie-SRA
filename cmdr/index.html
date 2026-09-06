@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0c1a2c">
-<title>ie-SRA CMDR</title>
+<title>ie-SRS CMDR</title>
 <link rel="icon" href="../favicon.ico">
 <style>
 :root{
@@ -20,6 +20,7 @@ html,body{height:100%;background:#000}
 body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;color:var(--ink);overscroll-behavior:none}
 #app{position:fixed;inset:0;margin:0 auto;max-width:480px;background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 40%);overflow:hidden}
 @media (min-width:520px){#app{border-left:1px solid #1e2633;border-right:1px solid #1e2633}}
+@media (orientation:landscape) and (max-height:520px){#app{max-width:none;border:0}}
 button,input,select,textarea{font:inherit;color:inherit}
 button{background:none;border:0;cursor:pointer}
 a{color:var(--cyan);text-decoration:none}
@@ -35,9 +36,25 @@ a{color:var(--cyan);text-decoration:none}
 .link i{width:8px;height:8px;border-radius:50%;background:var(--red);flex:none}
 .link.on i{background:var(--green);box-shadow:0 0 0 3px rgba(79,217,138,.2)}
 .link.warn i{background:var(--amber)}
+.link.ping{color:var(--amber);border-color:rgba(255,179,64,.45)}
+.link.ping svg{color:var(--amber)}
+.link.off svg{opacity:.45}
+.qa button{position:relative}
+.qa .nl{position:absolute;top:-4px;right:calc(50% - 32px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#ff3b30;color:#fff;font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center;box-shadow:0 0 0 2px var(--bg),0 0 10px rgba(255,59,48,.6)}
+.qa .nl.on{display:flex;animation:blink 1.4s ease-in-out infinite}
+.qa .nl.amber{background:var(--amber);color:#111;box-shadow:0 0 0 2px var(--bg),0 0 10px rgba(255,179,64,.6)}
+@keyframes blink{0%,100%{box-shadow:0 0 0 2px var(--bg),0 0 10px rgba(255,59,48,.6)}50%{box-shadow:0 0 0 2px var(--bg),0 0 2px rgba(255,59,48,.2)}}
 
 /* pages */
-.page{position:absolute;top:calc(var(--sat) + 62px);bottom:calc(var(--sab) + 62px);left:0;right:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 20px;display:none;flex-direction:column;gap:14px;scrollbar-width:none}
+.qabar{position:absolute;top:calc(var(--sat) + 62px);left:0;right:0;z-index:5;padding:10px 12px 8px;background:rgba(7,17,31,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--line)}
+.qabar .qa{gap:8px 4px}
+.qabar .qa .ic{width:44px;height:44px;border-radius:12px}
+.qabar .qa .ic svg{width:23px;height:23px}
+.qabar .qa .l{font-size:9.5px}
+.qabar .qa button.on .l{color:var(--cyan);font-weight:600}
+.qabar .qa button.on .ic{box-shadow:0 0 0 2px var(--cyan),0 6px 14px rgba(0,0,0,.35)}
+.qabar .qa .nl{right:calc(50% - 28px);top:-3px}
+.page{position:absolute;top:calc(var(--sat) + 62px + var(--qah,168px));bottom:0;left:0;right:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px calc(var(--sab) + 20px);display:none;flex-direction:column;gap:14px;scrollbar-width:none}
 .page::-webkit-scrollbar{display:none}
 .page.on{display:flex}
 .page>*{flex:none}
@@ -113,11 +130,11 @@ a{color:var(--cyan);text-decoration:none}
 .row .etr svg{width:14px;height:14px;fill:none;stroke:var(--ink3);stroke-width:2.2;stroke-linecap:round}
 
 /* quick actions */
-.qa{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 8px}
+.qa{display:grid;grid-template-columns:repeat(5,1fr);gap:12px 6px}
 .qa button{display:flex;flex-direction:column;align-items:center;gap:6px;color:#fff}
-.qa .ic{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 6px 14px rgba(0,0,0,.35)}
+.qa .ic{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 6px 14px rgba(0,0,0,.35)}
 .qa .ic svg{width:27px;height:27px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.qa .l{font-size:11px;font-weight:500;white-space:nowrap}
+.qa .l{font-size:10.5px;font-weight:500;white-space:nowrap}
 .c-red{background:linear-gradient(160deg,#ff6b5e,#c93b32)} .c-amber{background:linear-gradient(160deg,#ffbf5c,#d4861c)}
 .c-green{background:linear-gradient(160deg,#5fd98a,#2f8f5b)} .c-cyan{background:linear-gradient(160deg,#3fe0ff,#0f9ccc)}
 .c-violet{background:linear-gradient(160deg,#b9a3ff,#7a5cd6)} .c-slate{background:linear-gradient(160deg,#8aa9c8,#4a6a8c)}
@@ -132,11 +149,16 @@ a{color:var(--cyan);text-decoration:none}
 .msg.mine .who{color:rgba(255,255,255,.75)}
 .msg .when{font-size:10.5px;color:var(--ink3);margin-top:3px;text-align:right}
 .msg.mine .when{color:rgba(255,255,255,.7)}
-.compose{position:absolute;left:0;right:0;bottom:calc(var(--sab) + 62px);padding:8px 12px;background:rgba(7,17,31,.95);border-top:1px solid var(--line);display:none;gap:8px;align-items:flex-end}
+.compose{position:absolute;left:0;right:0;bottom:0;padding-bottom:calc(var(--sab) + 8px);padding:8px 12px;background:rgba(7,17,31,.95);border-top:1px solid var(--line);display:none;gap:8px;align-items:flex-end}
 .compose.on{display:flex}
-.compose textarea{flex:1;min-height:38px;max-height:110px;resize:none;border-radius:19px;border:1px solid var(--line);background:var(--card);padding:9px 14px;font-size:15px;outline:none}
-.compose button{flex:none;width:38px;height:38px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center}
-.compose button svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.compose .chpill{flex:0 0 auto;height:38px;padding:0 12px;max-width:130px;overflow:hidden;text-overflow:ellipsis;border-radius:19px;font-size:12px;font-weight:600;color:var(--cyan);background:rgba(63,214,255,.1);border:1px solid rgba(63,214,255,.35);white-space:nowrap}
+.compose .chpill.site{color:var(--amber);background:rgba(255,179,64,.1);border-color:rgba(255,179,64,.35)}
+.msg .ch{font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:2px}
+.msg.mine .ch{color:rgba(255,255,255,.85)}
+.msg .ch.site{color:var(--amber)}
+.compose textarea{flex:1 1 0;min-width:0;min-height:38px;max-height:110px;resize:none;border-radius:19px;border:1px solid var(--line);background:var(--card);padding:9px 14px;font-size:15px;outline:none}
+.compose button.send{flex:none;width:38px;height:38px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center}
+.compose button.send svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 2px}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;font-size:12px;padding:6px 11px;border-radius:14px;background:var(--card);border:1px solid var(--line);color:var(--ink2)}
@@ -178,7 +200,94 @@ a{color:var(--cyan);text-decoration:none}
 .toast .tb{font-size:12px;color:var(--ink2)}
 .sheet{position:absolute;inset:0;z-index:30;background:rgba(0,0,0,.55);display:none;align-items:flex-end}
 .sheet.on{display:flex}
-.sheet .panel{width:100%;max-height:80%;overflow:auto;background:#101c2c;border-radius:22px 22px 0 0;padding:14px 16px calc(var(--sab) + 18px);display:flex;flex-direction:column;gap:12px}
+.sheet .panel{width:100%;max-height:80%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;background:#101c2c;border-radius:22px 22px 0 0;padding:14px 16px calc(var(--sab) + 18px);display:flex;flex-direction:column;gap:12px}
+.sheet .panel.full{max-height:94%;height:94%;background:#0c1626;display:flex;flex-direction:column;padding-bottom:0}
+.sheet .panel.full>*{flex:none}
+.sheet .panel.full .so-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;display:flex;flex-direction:column;gap:12px;margin:0 -16px;padding:0 16px 12px}
+.sheet .panel.full .so-scroll>*{flex:none}
+.sheet .panel.full .so-foot{padding:10px 0 calc(var(--sab) + 14px);border-top:1px solid var(--line);background:#0c1626}
+.ios-form{border-radius:14px;background:rgba(255,255,255,.07);border:1px solid var(--line);overflow:hidden}
+.ios-row{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 14px;border-bottom:1px solid var(--line);font-size:15px}
+.ios-row:last-child{border-bottom:0}
+.ios-row label{flex:none;width:96px;color:var(--ink2);font-size:14px}
+.ios-row input,.ios-row select,.ios-row textarea{flex:1;background:transparent;border:0;outline:none;font-size:15px;text-align:right;color:#fff;min-width:0}
+.ios-row select{appearance:none;-webkit-appearance:none;padding-right:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%23999' stroke-width='1.5'/%3E%3C/svg%3E") right center/12px no-repeat}
+.ios-row textarea{text-align:left;resize:none;min-height:88px;padding:12px 0;line-height:1.35}
+.ios-row.col{flex-direction:column;align-items:stretch;padding:10px 14px}
+.ios-row.col label{width:auto;margin-bottom:4px}
+.ios-hdr{font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;padding:0 14px;margin:6px 0 -4px}
+.seg{display:flex;background:rgba(255,255,255,.08);border-radius:10px;padding:2px}
+.seg button{flex:1;height:32px;border-radius:8px;font-size:14px;font-weight:600;color:var(--ink2)}
+.seg button.on{background:rgba(255,255,255,.18);color:#fff}
+.seg button.on.p1{color:var(--red)} .seg button.on.p2{color:var(--amber)} .seg button.on.p3{color:var(--blue)}
+.chk{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:0 14px;border-bottom:1px solid var(--line);font-size:15px}
+.chk:last-child{border-bottom:0}
+.chk i{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--ink3);display:flex;align-items:center;justify-content:center}
+.chk.on i{background:var(--blue);border-color:var(--blue)}
+.chk.on i::after{content:"";width:6px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);margin-top:-2px}
+.btn.danger{background:var(--red);border-color:var(--red);color:#fff}
+#p-map{position:absolute;inset:0;z-index:25;background:#07111f;display:none;flex-direction:column}
+#p-map.on{display:flex}
+#p-map .mhead{padding:calc(var(--sat) + 10px) 14px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(7,17,31,.92);border-bottom:1px solid var(--line);z-index:2}
+#p-map .mhead .t{font-size:16px;font-weight:700}
+#p-map .mhead .s{font-size:11.5px;color:var(--ink2)}
+.livechip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.6px;color:#fff;background:rgba(255,90,78,.2);border:1px solid rgba(255,90,78,.5);border-radius:12px;padding:4px 9px}
+.livechip i{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1.2s infinite}
+#map{flex:1;min-height:0;background:#0a1a2a;position:relative}
+#map-fallback{position:absolute;inset:0;display:none}
+#map-fallback.on{display:block}
+#map-fallback svg{width:100%;height:100%}
+.mlegend{position:absolute;left:10px;bottom:calc(var(--sab) + 10px);z-index:500;background:rgba(7,17,31,.9);border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-size:11px;color:var(--ink2);display:flex;flex-direction:column;gap:5px;backdrop-filter:blur(8px)}
+.mlegend span{display:flex;align-items:center;gap:7px}
+.mlegend i{width:12px;height:12px;border-radius:50%;flex:none}
+.mlayers{position:absolute;right:10px;top:10px;z-index:500;display:flex;flex-direction:column;gap:6px}
+.mlayers button{font-size:11px;font-weight:600;color:var(--ink2);background:rgba(7,17,31,.9);border:1px solid var(--line);border-radius:10px;padding:6px 10px;backdrop-filter:blur(8px)}
+.mlayers button.on{color:#fff;border-color:var(--cyan)}
+.pulse{width:26px;height:26px;border-radius:50%;background:rgba(255,90,78,.35);border:2px solid var(--red);box-shadow:0 0 0 0 rgba(255,90,78,.6);animation:pulsar 1.6s ease-out infinite;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff}
+.pulse.p2{background:rgba(255,179,64,.35);border-color:var(--amber);box-shadow:0 0 0 0 rgba(255,179,64,.6)}
+.pulse.p3{background:rgba(74,163,255,.35);border-color:var(--blue);box-shadow:0 0 0 0 rgba(74,163,255,.6);animation:none}
+.pulse.ok{background:rgba(79,217,138,.3);border-color:var(--green);box-shadow:none;animation:none}
+@keyframes pulsar{0%{box-shadow:0 0 0 0 rgba(255,90,78,.6)}100%{box-shadow:0 0 0 18px rgba(255,90,78,0)}}
+.leaflet-popup-content-wrapper{background:#101c2c;color:#fff;border-radius:12px;font-family:inherit}
+.leaflet-popup-tip{background:#101c2c}
+.leaflet-popup-content{margin:10px 12px;font-size:13px;line-height:1.35}
+.leaflet-popup-content b{display:block;font-size:14px}
+.leaflet-container{font-family:inherit}
+#p-impact{position:absolute;inset:0;z-index:26;background:#070d16;display:none;flex-direction:column;font-family:-apple-system,"SF Pro Text",Helvetica,Arial,sans-serif}
+#p-impact.on{display:flex}
+#p-impact .ihead{padding:calc(var(--sat) + 8px) 14px 8px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(7,13,22,.95);border-bottom:1px solid var(--line)}
+#p-impact .ihead .t{font-size:15px;font-weight:700}
+#p-impact .ihead .s{font-size:11px;color:var(--ink2);font-family:"SF Mono",Menlo,monospace;letter-spacing:.5px}
+#p-impact .ibody{flex:1;min-height:0;display:flex}
+#p-impact .imap{flex:1;min-width:0;position:relative;background:#0a1220}
+#p-impact .imap svg{position:absolute;inset:0;width:100%;height:100%}
+#p-impact .ipanel{width:38%;max-width:360px;min-width:250px;border-left:1px solid var(--line);background:#0b1422;display:flex;flex-direction:column;overflow:hidden}
+#p-impact .iphase{padding:10px 12px;border-bottom:1px solid var(--line)}
+#p-impact .iphase .k{font-family:"SF Mono",Menlo,monospace;font-size:10px;letter-spacing:1.5px;color:#b8894a}
+#p-impact .iphase .v{font-size:14px;font-weight:700;margin-top:2px;line-height:1.2}
+#p-impact .iphase .d{font-size:11.5px;color:var(--ink2);margin-top:4px;line-height:1.35}
+#p-impact .ilist{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 12px}
+#p-impact .im{display:grid;grid-template-columns:8px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px}
+#p-impact .im i{width:8px;height:8px;border-radius:50%}
+#p-impact .im .n{font-weight:600}
+#p-impact .im .m{font-size:10.5px;color:var(--ink2)}
+#p-impact .im .st{font-family:"SF Mono",Menlo,monospace;font-size:10px;letter-spacing:.5px}
+#p-impact .ifoot{padding:8px 12px calc(var(--sab) + 8px);border-top:1px solid var(--line);display:flex;gap:6px;align-items:center}
+#p-impact .ifoot button{flex:1;height:34px;border-radius:9px;background:rgba(255,255,255,.1);border:1px solid var(--line);font-size:12px;font-weight:600;color:#fff}
+#p-impact .ifoot button.pri{background:#b8894a;border-color:#b8894a;color:#1a0f00}
+#p-impact .ribbon{position:absolute;left:10px;top:8px;display:flex;gap:4px;z-index:2}
+#p-impact .ribbon i{width:22px;height:4px;border-radius:2px;background:rgba(255,255,255,.15)}
+#p-impact .ribbon i.done{background:#4d9e7a}#p-impact .ribbon i.cur{background:#b8894a}
+#p-impact .clock{position:absolute;right:10px;bottom:8px;font-family:"SF Mono",Menlo,monospace;font-size:11px;color:#9e4d4d;letter-spacing:1px;z-index:2}
+#p-impact .rotate{position:absolute;inset:0;z-index:5;background:rgba(7,13,22,.96);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center;padding:30px;color:var(--ink2);font-size:14px}
+#p-impact .rotate svg{width:44px;height:44px;stroke:var(--cyan);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;animation:rot 2.4s ease-in-out infinite}
+@keyframes rot{0%,100%{transform:rotate(0)}50%{transform:rotate(-90deg)}}
+@media (orientation:portrait){#p-impact .rotate.arm{display:flex}}
+.ilbl{font-family:"SF Mono",Menlo,monospace;font-size:9px;fill:#cce0f2;letter-spacing:.6px}
+.ilbl-sub{font-family:"SF Mono",Menlo,monospace;font-size:7px;fill:#6e90b0}
+.pring{fill:none;stroke-width:1.2;animation:pring 1.6s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pring{0%{transform:scale(.3);opacity:.9}100%{transform:scale(2.4);opacity:0}}
+.trkg{animation:none}
 .sheet .grab{width:38px;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin:0 auto 4px}
 .sheet h3{font-size:17px;font-weight:700}
 .sheet p{font-size:13.5px;color:var(--ink2);line-height:1.45}
@@ -189,36 +298,44 @@ a{color:var(--cyan);text-decoration:none}
 <body>
 <div id="app">
   <div class="nav">
-    <div class="brand">
+    <div class="brand" onclick="go('dash')" role="button" aria-label="Dashboard" style="cursor:pointer">
       <div class="mark"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div>
-      <div style="min-width:0"><div class="t1">ie-SRA CMDR</div><div class="t2" id="nav-sub">Naval Base San Diego · CO view</div></div>
+      <div style="min-width:0"><div class="t1">ie-SRS CMDR</div><div class="t2" id="nav-sub">Naval Base San Diego · CO view</div></div>
     </div>
-    <button class="link" id="linkpill" onclick="go('link')"><i></i><span id="linktxt">Offline</span></button>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="link" id="pingpill" onclick="togglePing()" aria-label="Notifications"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg><span id="pingtxt">Ping</span></button>
+      <button class="link" id="linkpill" onclick="go('link')"><i></i><span id="linktxt">Offline</span></button>
+    </div>
+  </div>
+
+  <!-- STICKY QUICK ACTIONS (app navigation) -->
+  <div class="qabar" id="qabar">
+    <div class="qa">
+        <button onclick="go('health')"><div class="ic c-green"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 3 10 2-7 1.5 2H21"/></svg></div><div class="l">Sys health</div></button>
+        <button onclick="openImpact()"><div class="ic c-violet"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></div><div class="l">Mission impact</div></button>
+        <button onclick="stub('Microgrid')"><div class="ic c-cyan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M13 7l-4 6h6l-4 6"/></svg></div><div class="l">Microgrid</div></button>
+        <button onclick="stub('Black start')"><div class="ic c-ink"><svg viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M7 6.5a8 8 0 1 0 10 0"/></svg></div><div class="l">Black start</div></button>
+        <button onclick="openMap()"><span class="nl" id="nl-map"></span><div class="ic c-green" style="background:linear-gradient(160deg,#5fd98a,#1f7a4c)"><svg viewBox="0 0 24 24"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg></div><div class="l">Live map</div></button>
+        <button onclick="callEOC()"><div class="ic c-red"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></div><div class="l">Call EOC</div></button>
+        <button onclick="go('msgs')"><span class="nl" id="nl-msg"></span><div class="ic c-teal"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></div><div class="l">Message</div></button>
+        <button onclick="go('outages')"><span class="nl" id="nl-out"></span><div class="ic c-red"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/><path d="M3 3l18 18"/></svg></div><div class="l">Outages</div></button>
+        <button onclick="openSonar()"><div class="ic" style="background:linear-gradient(160deg,#ff8a5c,#d9442f)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M6.5 6.5a7.8 7.8 0 0 0 0 11M17.5 6.5a7.8 7.8 0 0 1 0 11"/><path d="M3.5 3.5a12 12 0 0 0 0 17M20.5 3.5a12 12 0 0 1 0 17"/></svg></div><div class="l">SONAR</div></button>
+        <button onclick="go('link')"><span class="nl amber" id="nl-link"></span><div class="ic c-amber"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></div><div class="l">Link</div></button>
+      </div>
   </div>
 
   <!-- DASHBOARD -->
   <div class="page on" id="p-dash">
     <div class="hero" id="hero"></div>
     <div class="kpis" id="kpis"></div>
-    <div class="sec"><h2>Warning orders <button onclick="go('outages')">All</button></h2><div id="wo-pending"></div></div>
+    <div class="sec"><h2>SONAR alerts <button onclick="go('outages')">All</button></h2><div id="wo-pending"></div></div>
     <div class="sec"><h2>Active outages <button onclick="go('outages')" id="see-all">See all</button></h2><div class="list" id="outage-list"></div></div>
-    <div class="sec"><h2>Quick actions</h2>
-      <div class="qa">
-        <button onclick="go('health')"><div class="ic c-green"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 3 10 2-7 1.5 2H21"/></svg></div><div class="l">Sys health</div></button>
-        <button onclick="stub('Mission impact')"><div class="ic c-violet"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></div><div class="l">Mission impact</div></button>
-        <button onclick="stub('Microgrid')"><div class="ic c-cyan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M13 7l-4 6h6l-4 6"/></svg></div><div class="l">Microgrid</div></button>
-        <button onclick="stub('Black start')"><div class="ic c-ink"><svg viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M7 6.5a8 8 0 1 0 10 0"/></svg></div><div class="l">Black start</div></button>
-        <button onclick="stub('Generators')"><div class="ic c-slate"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="10" height="18" rx="1.5"/><path d="M7 7h4M14 9h2a2 2 0 0 1 2 2v6a2 2 0 0 0 4 0V9l-3-3"/></svg></div><div class="l">Generators</div></button>
-        <button onclick="callEOC()"><div class="ic c-red"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></div><div class="l">Call EOC</div></button>
-        <button onclick="go('msgs')"><div class="ic c-teal"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></div><div class="l">Message</div></button>
-        <button onclick="go('link')"><div class="ic c-amber"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></div><div class="l">Link</div></button>
-      </div>
-    </div>
   </div>
 
-  <!-- OUTAGES / WARNORDS -->
+  <!-- OUTAGES / SONAR ALERTS -->
   <div class="page" id="p-outages">
-    <div class="sec"><h2>Warning orders <span style="font-size:12px;color:var(--ink3)" id="wo-count"></span></h2><div id="wo-all" style="display:flex;flex-direction:column;gap:8px"></div></div>
+    <div class="sec"><h2>SONAR alerts <span style="font-size:12px;color:var(--ink3)" id="wo-count"></span></h2><div id="wo-all" style="display:flex;flex-direction:column;gap:8px"></div></div>
+    <div class="sec"><h2>Released by you <button onclick="openSonar()">+ New SONAR</button></h2><div id="so-mine" style="display:flex;flex-direction:column;gap:8px"></div></div>
     <div class="sec"><h2>Outages</h2><div class="list" id="outage-list-full"></div></div>
   </div>
 
@@ -232,7 +349,7 @@ a{color:var(--cyan);text-decoration:none}
   </div>
 
   <!-- MESSAGES -->
-  <div class="page" id="p-msgs">
+  <div class="page" id="p-msgs" style="padding-bottom:calc(var(--sab) + 72px)">
     <div class="chips">
       <button class="chip" onclick="quick('Acknowledged. Standing by for update.')">Acknowledged</button>
       <button class="chip" onclick="quick('Request ETR update on Pier 8 feeder.')">Request ETR</button>
@@ -243,20 +360,93 @@ a{color:var(--cyan);text-decoration:none}
     <div style="height:8px"></div>
   </div>
   <div class="compose" id="compose">
+    <button class="chpill" id="chpill" onclick="toggleCh()" title="Reply channel">#all-hands</button>
     <textarea id="mtext" rows="1" placeholder="Message NAVFAC / EOC" oninput="autosize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
-    <button onclick="sendMsg()" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+    <button class="send" onclick="sendMsg()" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+  </div>
+
+  <!-- LIVE MAP -->
+  <div id="p-map">
+    <div class="mhead">
+      <button style="color:var(--cyan);font-size:16px" onclick="closeMap()">‹ Back</button>
+      <div style="text-align:center;min-width:0"><div class="t" id="map-title">Live power map</div><div class="s" id="map-sub">—</div></div>
+      <span class="livechip"><i></i>LIVE</span>
+    </div>
+    <div id="map">
+      <div id="map-fallback"></div>
+      <div class="mlayers"><button class="on" data-l="outages" onclick="mapLayer(this)">Outages</button><button class="on" data-l="feeders" onclick="mapLayer(this)">Feeders</button><button class="on" data-l="gens" onclick="mapLayer(this)">Generators</button><button data-l="sat" onclick="mapLayer(this)">Labels</button></div>
+      <div class="mlegend"><span><i style="background:var(--red)"></i>Loss of power · P1</span><span><i style="background:var(--amber)"></i>Degraded · backup / P2</span><span><i style="background:var(--blue)"></i>Minor · P3</span><span><i style="background:var(--green)"></i>Energized / microgrid island</span></div>
+    </div>
+  </div>
+
+  <!-- MISSION IMPACT (SYS-01A outage map replay) -->
+  <div id="p-impact">
+    <div class="ihead">
+      <button style="color:var(--cyan);font-size:15px" onclick="closeImpact()">‹ Back</button>
+      <div style="text-align:center;min-width:0"><div class="t" id="im-title">Mission impact</div><div class="s" id="im-sub">SYS-01A · OUTAGE REPLAY · NB SAN DIEGO</div></div>
+      <span class="livechip"><i></i>LIVE</span>
+    </div>
+    <div class="ibody">
+      <div class="imap">
+        <div class="ribbon" id="im-ribbon"></div><div class="clock" id="im-clock"></div>
+        <svg viewBox="0 0 520 300" preserveAspectRatio="xMidYMid meet" id="im-svg">
+          <defs>
+            <radialGradient id="ig-out" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#9e4d4d" stop-opacity=".55"/><stop offset="100%" stop-color="#9e4d4d" stop-opacity="0"/></radialGradient>
+            <radialGradient id="ig-ok" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#4d9e7a" stop-opacity=".5"/><stop offset="100%" stop-color="#4d9e7a" stop-opacity="0"/></radialGradient>
+            <filter id="iblur"><feGaussianBlur stdDeviation="6"/></filter>
+            <pattern id="igrid" width="26" height="26" patternUnits="userSpaceOnUse"><path d="M26 0H0V26" fill="none" stroke="rgba(110,144,176,.12)"/></pattern>
+          </defs>
+          <rect width="520" height="300" fill="#0a1220"/><rect width="520" height="300" fill="url(#igrid)"/>
+          <!-- coast + bay -->
+          <path d="M0 40 C 60 70, 90 120, 120 160 C 150 200, 140 250, 175 300 L0 300 Z" fill="#0d2438" opacity=".9"/>
+          <path d="M175 300 C 160 250, 190 215, 230 205 C 260 198, 280 215, 262 240 C 245 262, 230 280, 240 300 Z" fill="#0d2438" opacity=".9"/>
+          <text x="40" y="270" class="ilbl-sub" fill="#2f5c7a">PACIFIC OCEAN</text><text x="196" y="252" class="ilbl-sub" fill="#2f5c7a">SAN DIEGO BAY</text>
+          <!-- 50-mi inter-service ring -->
+          <circle cx="300" cy="185" r="120" fill="none" stroke="#4a6fa5" stroke-width=".8" stroke-dasharray="4 4" opacity=".55"/>
+          <text x="300" y="58" text-anchor="middle" class="ilbl-sub" fill="#5a7a9a">← 50-MI INTER-SERVICE RING →</text>
+          <!-- glows -->
+          <ellipse id="im-glow-out" cx="300" cy="185" rx="70" ry="52" fill="url(#ig-out)" opacity="0" filter="url(#iblur)" style="transition:opacity .6s"/>
+          <ellipse id="im-glow-ok" cx="300" cy="185" rx="70" ry="52" fill="url(#ig-ok)" opacity="0" filter="url(#iblur)" style="transition:opacity .6s"/>
+          <!-- utility sub (severed ph3) -->
+          <g id="im-substation"><rect x="352" y="132" width="14" height="10" rx="1" fill="rgba(184,137,74,.15)" stroke="#b8894a"/><text x="370" y="140" class="ilbl-sub" fill="#b88a50">SDG&amp;E SUB · MISSION BAY</text><path id="im-feed" d="M359 142 L 300 185" stroke="#b8894a" stroke-width="1.5" stroke-dasharray="3 3"/></g>
+          <!-- truck resupply paths -->
+          <path id="im-tp1" d="M 120 262 Q 200 240 300 185" fill="none" stroke="#b8894a" stroke-width="1" stroke-dasharray="2 3" opacity="0"/>
+          <path id="im-tp2" d="M 470 90 Q 400 130 300 185" fill="none" stroke="#b8894a" stroke-width="1" stroke-dasharray="2 3" opacity="0"/>
+          <g id="im-trk1" opacity="0"><rect x="-8" y="-4" width="16" height="8" rx="1" fill="#b8894a"/><text x="-5" y="2.5" font-family="Menlo,monospace" font-size="6" fill="#1a0f00">TRK</text></g>
+          <g id="im-trk2" opacity="0"><rect x="-8" y="-4" width="16" height="8" rx="1" fill="#b8894a"/><text x="-5" y="2.5" font-family="Menlo,monospace" font-size="6" fill="#1a0f00">TRK</text></g>
+          <!-- asset overlays -->
+          <g id="im-smr" opacity="0"><circle cx="262" cy="212" r="16" fill="rgba(77,158,122,.1)" stroke="#4d9e7a" stroke-dasharray="3 2"/><circle cx="262" cy="212" r="5" fill="rgba(77,158,122,.3)"/><text x="230" y="238" class="ilbl-sub" fill="#4d9e7a">MICROGRID · GEN 6 MW</text></g>
+          <g id="im-bess" opacity="0"><rect x="318" y="204" width="26" height="14" rx="1.5" fill="rgba(74,111,165,.15)" stroke="#4a6fa5"/><text x="322" y="214" class="ilbl-sub" fill="#7fa0d8">BESS</text><text x="320" y="232" class="ilbl-sub" fill="#4a6fa5">40 MWh</text></g>
+          <!-- fuel bar -->
+          <g id="im-fuel" opacity="0"><text x="392" y="228" class="ilbl-sub" fill="#607080">FUEL LEVEL</text><rect x="392" y="232" width="90" height="7" rx="1.5" fill="#1b2538"/><rect id="im-fbfill" x="392" y="232" width="90" height="7" rx="1.5" fill="#4d9e7a"/></g>
+          <!-- installations -->
+          <g id="im-inst-B"><circle class="pring" id="im-p-B" cx="222" cy="228" r="9" stroke="#9e4d4d" style="display:none"/><circle id="im-d-B" cx="222" cy="228" r="5" fill="#3a70e0"/><circle cx="222" cy="228" r="2" fill="rgba(255,255,255,.85)"/><line x1="222" y1="228" x2="180" y2="240" stroke="#4a6fa5" stroke-width=".8" stroke-dasharray="2 2" opacity=".6"/><text class="ilbl" text-anchor="end" x="178" y="238">NASNI CORONADO</text><text class="ilbl-sub" text-anchor="end" x="178" y="247">NAS · 34 MW</text></g>
+          <g id="im-inst-C"><circle class="pring" id="im-p-C" cx="372" cy="96" r="9" stroke="#9e4d4d" style="display:none"/><circle id="im-d-C" cx="372" cy="96" r="5" fill="#3a70e0"/><circle cx="372" cy="96" r="2" fill="rgba(255,255,255,.85)"/><line x1="372" y1="96" x2="396" y2="82" stroke="#4a6fa5" stroke-width=".8" stroke-dasharray="2 2" opacity=".6"/><text class="ilbl" x="398" y="80">MCAS MIRAMAR</text><text class="ilbl-sub" x="398" y="89">USMC · 28 MW</text></g>
+          <g id="im-inst-A"><circle class="pring" id="im-p-A" cx="300" cy="185" r="11" stroke="#9e4d4d" style="display:none"/><circle id="im-d-A" cx="300" cy="185" r="6.5" fill="#3a70e0"/><circle cx="300" cy="185" r="2.5" fill="rgba(255,255,255,.85)"/><line x1="300" y1="185" x2="330" y2="170" stroke="#9e4d4d" stroke-width=".8" stroke-dasharray="2 2" opacity=".6"/><text class="ilbl" x="333" y="168">NB SAN DIEGO</text><text class="ilbl-sub" x="333" y="177">32.71°N 117.17°W · NAVY · 38 MW</text></g>
+          <rect id="im-flash" width="520" height="300" fill="#9e4d4d" opacity="0" style="pointer-events:none;transition:opacity .12s"/>
+          <text x="10" y="292" class="ilbl-sub" fill="#4090c0">FOCAL AREA: SAN DIEGO CA · 32°N 117°W</text>
+        </svg>
+        <div class="rotate arm" id="im-rotate"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2.5"/><path d="M11 18h2"/></svg><div><b>Rotate to landscape</b><br>Mission impact map is designed for landscape iPhone.</div><button class="btn sm" onclick="document.getElementById('im-rotate').classList.remove('arm')">View anyway</button></div>
+      </div>
+      <div class="ipanel">
+        <div class="iphase"><div class="k" id="im-pk">PHASE 1 — GLOBAL MAPPING</div><div class="v" id="im-pv">Strategic mapping</div><div class="d" id="im-pd"></div></div>
+        <div class="ilist" id="im-list"></div>
+        <div class="ifoot"><button onclick="imStep(-1)">‹ Prev</button><button class="pri" id="im-play" onclick="imToggle()">Pause</button><button onclick="imStep(1)">Next ›</button></div>
+      </div>
+    </div>
   </div>
 
   <!-- LINK / SETTINGS -->
   <div class="page" id="p-link">
     <div class="stat" id="linkstat"></div>
+    <div class="note" id="linkerr" style="color:var(--amber)"></div>
     <div class="sec"><h2>Transport</h2>
       <div class="form">
         <div class="field"><label>Mode</label><select id="f-transport" onchange="onTransport()"><option value="broadcast">Same browser (BroadcastChannel)</option><option value="github">GitHub repo (cross-device)</option><option value="off">Off</option></select></div>
-        <div class="field gh"><label>Repo</label><input id="f-repo" placeholder="owner/repo"></div>
-        <div class="field gh"><label>Branch</label><input id="f-branch" placeholder="main"></div>
-        <div class="field gh"><label>File</label><input id="f-path" placeholder="data/bus.json"></div>
-        <div class="field gh"><label>Token</label><input id="f-token" type="password" placeholder="fine-grained PAT, contents: read/write" autocomplete="off"></div>
+        <div class="field gh"><label>Repo</label><input id="f-repo" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="owner/repo"></div>
+        <div class="field gh"><label>Branch</label><input id="f-branch" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="main"></div>
+        <div class="field gh"><label>File</label><input id="f-path" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="data/bus.json"></div>
+        <div class="field gh"><label>Token</label><input id="f-token" autocapitalize="off" autocorrect="off" spellcheck="false" type="password" placeholder="fine-grained PAT, contents: read/write" autocomplete="off"></div>
         <div class="field gh"><label>Poll (s)</label><input id="f-poll" type="number" min="3" max="120" inputmode="numeric"></div>
       </div>
       <div class="note" id="transport-note"></div>
@@ -279,23 +469,48 @@ a{color:var(--cyan);text-decoration:none}
       <button class="btn" onclick="resetLocal()" style="color:var(--red)">Clear local data</button>
     </div>
     <div class="logbox" id="logbox" style="display:none"></div>
-    <div class="note">ie-SRA CMDR · v0.4 · mobile companion to ie-SRA ADMIN (ADM-03 warning order routing). Same envelope on every transport; the ADMIN hub logs acknowledgments to the ADM-05 audit trail.</div>
+    <div class="note">ie-SRS CMDR · v0.5 · mobile companion to ie-SRS ADMIN (ADM-03 SONAR alert routing). SONAR: Shore Outage Notification, Analysis &amp; Response. Same envelope on every transport; the ADMIN hub logs acknowledgments to the ADM-05 audit trail.</div>
   </div>
 
-  <div class="tabs">
-    <button class="tab on" data-p="dash" onclick="go('dash')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg>Dashboard</button>
-    <button class="tab" data-p="outages" onclick="go('outages')"><span class="bd" id="bd-out"></span><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/><path d="M3 3l18 18"/></svg>Outages</button>
-    <button class="tab" data-p="health" onclick="go('health')"><span class="bd" id="bd-health"></span><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 3 10 2-7 1.5 2H21"/></svg>Health</button>
-    <button class="tab" data-p="msgs" onclick="go('msgs')"><span class="bd" id="bd-msg"></span><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Messages</button>
-    <button class="tab" data-p="link" onclick="go('link')"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>Link</button>
-  </div>
+
 
   <div class="toast" id="toast"><i></i><div><div class="tt" id="toast-t"></div><div class="tb" id="toast-b"></div></div></div>
+  <div class="sheet" id="sonar-sheet" onclick="if(event.target===this)closeSonar()"><div class="panel full">
+    <div class="grab"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center"><button style="color:var(--cyan);font-size:16px" onclick="closeSonar()">Cancel</button><h3>Release SONAR</h3><button style="color:var(--cyan);font-size:16px;font-weight:600" onclick="sendSonar()">Send</button></div>
+    <p style="font-size:12.5px;color:var(--ink3)">Shore Outage Notification, Analysis &amp; Response — released by the base commander to NAVFAC and the routing roles below.</p>
+    <div class="so-scroll">
+    <div class="ios-hdr">Severity</div>
+    <div class="seg" id="so-sev"><button class="on p1" onclick="segSel(this)" data-v="P1">P1 · Critical</button><button class="p2" onclick="segSel(this)" data-v="P2">P2 · Major</button><button class="p3" onclick="segSel(this)" data-v="P3">P3 · Minor</button></div>
+    <div class="ios-hdr">Event</div>
+    <div class="ios-form">
+      <div class="ios-row"><label>Type</label><select id="so-type"><option>Power outage</option><option>Feeder loss</option><option>Substation fault</option><option>Generator failure</option><option>Cyber / FRCS event</option><option>Weather</option><option>Fuel</option><option>Exercise / drill</option></select></div>
+      <div class="ios-row"><label>Location</label><input id="so-loc" placeholder="Pier 8 · Feeder 8A" autocapitalize="words"></div>
+      <div class="ios-row"><label>Missions</label><input id="so-missions" type="number" inputmode="numeric" placeholder="0" min="0"></div>
+      <div class="ios-row"><label>ETR</label><select id="so-etr"><option>Unknown</option><option>30 min</option><option>1 hr</option><option>2 hr</option><option>4 hr</option><option>8 hr</option><option>24 hr</option></select></div>
+      <div class="ios-row col"><label>Message</label><textarea id="so-msg" placeholder="Situation, actions taken, support requested…"></textarea></div>
+    </div>
+    <div class="ios-hdr">Route to</div>
+    <div class="ios-form" id="so-route">
+      <div class="chk on" onclick="this.classList.toggle('on')" data-v="NAVFAC EOC"><span>NAVFAC Regional EOC</span><i></i></div>
+      <div class="chk on" onclick="this.classList.toggle('on')" data-v="Region Commander"><span>Region Commander</span><i></i></div>
+      <div class="chk on" onclick="this.classList.toggle('on')" data-v="Facility Manager"><span>Facility Manager + Backup</span><i></i></div>
+      <div class="chk" onclick="this.classList.toggle('on')" data-v="Tenant Commands"><span>Tenant commands</span><i></i></div>
+      <div class="chk" onclick="this.classList.toggle('on')" data-v="Utility"><span>Utility provider</span><i></i></div>
+    </div>
+    <div class="ios-hdr">Options</div>
+    <div class="ios-form">
+      <div class="chk" id="so-test" onclick="this.classList.toggle('on')"><span>Mark as exercise (no operational outage)</span><i></i></div>
+    </div>
+    </div>
+    <div class="so-foot"><button class="btn danger" style="height:48px;font-size:16px;width:100%" onclick="sendSonar()">Release SONAR</button>
+    <div style="font-size:11.5px;color:var(--ink3);text-align:center;margin-top:8px">Logged to ADM-03 routing, ADM-05 audit and ADM-09 comms on release.</div></div>
+  </div></div>
   <div class="sheet" id="sheet" onclick="if(event.target===this)this.classList.remove('on')"><div class="panel"><div class="grab"></div><h3 id="sheet-t"></h3><p id="sheet-b"></p><button class="btn pri" onclick="document.getElementById('sheet').classList.remove('on')">Close</button></div></div>
 </div>
 
 <script>
-/* ie-SRA bus — one envelope, three transports.
+/* ie-SRS bus — one envelope, three transports.
    Envelope: {id, type, ts, from, to, site, payload}
    type: WARNORD | ACK | MSG | STATUS | HELLO
    Transports: 'broadcast' (BroadcastChannel + localStorage, same origin)
@@ -306,12 +521,13 @@ window.SRABus=(function(){
   var NODE='cmdr';
   var CFG_KEY='sra_bus_cfg_'+NODE, LOG_KEY='sra_bus_log', SEEN_KEY='sra_bus_seen_'+NODE;
   var CH_NAME='ie-sra-bus';
-  var DEF={transport:'broadcast', node:NODE, site:'nb-sd', repo:'thompsonryane-collab/ie-SRA', branch:'main', path:'data/bus.json', token:'', poll:5};
+  var DEF={transport:NODE==='cmdr'?'github':'broadcast', node:NODE, site:'nb-sd', repo:'thompsonryane-collab/ie-SRS', branch:'main', path:'data/bus.json', token:'', poll:5};
   function ls(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
   function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
   var cfg=Object.assign({},DEF,ls(CFG_KEY,{}));
+  if(typeof cfg.path==='string')cfg.path=cfg.path.replace(/\s+/g,'').toLowerCase()||DEF.path;if(typeof cfg.repo==='string')cfg.repo=cfg.repo.replace(/\s+/g,'')||DEF.repo;if(typeof cfg.branch==='string')cfg.branch=cfg.branch.replace(/\s+/g,'')||DEF.branch;
   var subs=[], statusSubs=[], seen=ls(SEEN_KEY,{}), adapter=null;
-  var st={transport:cfg.transport, connected:false, lastSync:0, error:'', pending:0};
+  var st={transport:cfg.transport, connected:false, lastSync:0, error:'', pending:0, read:'', write:''};
   function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
   function setStatus(p){Object.assign(st,p);statusSubs.forEach(function(f){try{f(st);}catch(e){}});}
   function remember(id){seen[id]=Date.now();var ks=Object.keys(seen);if(ks.length>600){ks.sort(function(a,b){return seen[a]-seen[b];}).slice(0,200).forEach(function(k){delete seen[k];});}lsSet(SEEN_KEY,seen);}
@@ -355,7 +571,7 @@ window.SRABus=(function(){
     function read(){
       return fetch(url(),{headers:hdr(),cache:'no-store'}).then(function(r){
         if(r.status===404)return {sha:null,doc:{v:1,messages:[]}};
-        if(!r.ok)throw new Error('GitHub read '+r.status);
+        if(!r.ok){var er=new Error('read '+r.status);er.status=r.status;er.op='read';throw er;}
         return r.json().then(function(j){var doc;try{doc=JSON.parse(b64dec(j.content));}catch(e){doc={v:1,messages:[]};}return {sha:j.sha,doc:doc};});
       });
     }
@@ -363,12 +579,13 @@ window.SRABus=(function(){
       var body={message:'bus: '+cfg.node+' '+new Date().toISOString(),content:b64enc(JSON.stringify(doc)),branch:cfg.branch};
       if(curSha)body.sha=curSha;
       return fetch('https://api.github.com/repos/'+cfg.repo+'/contents/'+cfg.path,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},hdr()),body:JSON.stringify(body)})
-        .then(function(r){if(r.status===409||r.status===422)return {conflict:true};if(!r.ok)throw new Error('GitHub write '+r.status);return r.json().then(function(j){return {sha:j.content&&j.content.sha};});});
+        .then(function(r){if(r.status===409||r.status===422)return {conflict:true};if(!r.ok){var er=new Error('write '+r.status);er.status=r.status;er.op='write';throw er;}return r.json().then(function(j){return {sha:j.content&&j.content.sha};});});
     }
+    function describe(e){var m=String(e&&e.message||e);var c=e&&e.status;if(c===401)return m+' — token invalid or expired';if(c===403)return m+' — token cannot write this repo: check Resource owner = thompsonryane-collab and Contents = Read and write';if(c===404)return m+' — repo/branch/file path not found';if(!c&&/fetch/i.test(m))return 'network — no route to api.github.com';return m;}
     function poll(){
       if(busy)return;busy=true;
-      read().then(function(res){sha=res.sha;(res.doc.messages||[]).forEach(function(m){_recv(m);});setStatus({connected:true,error:'',lastSync:Date.now()});})
-        .catch(function(e){setStatus({connected:false,error:String(e.message||e)});})
+      read().then(function(res){sha=res.sha;(res.doc.messages||[]).forEach(function(m){_recv(m);});setStatus({read:'ok',connected:st.write!=='error',error:st.write==='error'?st.error:'',lastSync:Date.now()});})
+        .catch(function(e){setStatus({read:'error',connected:false,error:'GitHub read '+describe(e)});})
         .then(function(){busy=false;flush();});
     }
     function flush(){
@@ -382,12 +599,12 @@ window.SRABus=(function(){
           return write(doc,res.sha);
         }).then(function(w){
           if(w.conflict){if(++attempt<4)return setTimeout(tryWrite,300*attempt);throw new Error('GitHub write conflict');}
-          sha=w.sha;setStatus({connected:true,error:'',lastSync:Date.now(),pending:queue.length});busy=false;if(queue.length)flush();
-        }).catch(function(e){setStatus({connected:false,error:String(e.message||e),pending:queue.length});busy=false;queue=batch.concat(queue);});
+          sha=w.sha;setStatus({write:'ok',connected:true,error:'',lastSync:Date.now(),pending:queue.length});busy=false;if(queue.length)flush();
+        }).catch(function(e){setStatus({write:'error',connected:false,error:describe(e),pending:queue.length+batch.length});busy=false;queue=batch.concat(queue);});
       })();
     }
     return {
-      start:function(){if(!cfg.token)setStatus({connected:false,error:'No GitHub token'});poll();timer=setInterval(poll,Math.max(3,cfg.poll|0)*1000);},
+      start:function(){setStatus({read:'',write:'',error:cfg.token?'':'No GitHub token'});poll();timer=setInterval(poll,Math.max(3,cfg.poll|0)*1000);},
       stop:function(){clearInterval(timer);timer=null;},
       send:function(env){appendLog(env);queue.push(env);setStatus({pending:queue.length});flush();return Promise.resolve(true);}
     };
@@ -398,7 +615,7 @@ window.SRABus=(function(){
   function build(){return cfg.transport==='github'?GitHub():cfg.transport==='off'?Off():Broadcast();}
   var api={
     cfg:function(){return Object.assign({},cfg);},
-    configure:function(o){Object.assign(cfg,o||{});lsSet(CFG_KEY,cfg);if(adapter){adapter.stop();adapter=build();setStatus({transport:cfg.transport,connected:false,error:'',pending:0});adapter.start();}return api;},
+    configure:function(o){o=Object.assign({},o||{});['repo','branch','path'].forEach(function(k){if(typeof o[k]==='string')o[k]=o[k].replace(/\s+/g,'').replace(/^\/+|\/+$/g,'');});if(o.path)o.path=o.path.toLowerCase();if(o.repo)o.repo=o.repo.replace(/^https?:\/\/github\.com\//,'').replace(/\.git$/,'');if(typeof o.token==='string')o.token=o.token.trim();Object.assign(cfg,o);lsSet(CFG_KEY,cfg);if(adapter){adapter.stop();adapter=build();setStatus({transport:cfg.transport,connected:false,error:'',pending:0});adapter.start();}return api;},
     start:function(){if(!adapter){adapter=build();setStatus({transport:cfg.transport});adapter.start();}return api;},
     stop:function(){if(adapter){adapter.stop();adapter=null;}setStatus({connected:false});},
     publish:function(type,payload,extra){
@@ -441,7 +658,7 @@ window.SRABus=(function(){
     {id:'d2',p:'P2',name:'Feeder 3C · Bldg 3223 ops',meta:'<b>3 missions</b> · gen 3C-1 carrying load · since 06:10',etr:'2 hr',demo:true},
     {id:'d3',p:'P3',name:'Substation 12 · housing area',meta:'<b>1 mission</b> · 214 residents · since 08:30',etr:'1 hr',demo:true}
   ];
-  var S=Object.assign({name:'CAPT R. Thompson',siteName:'Naval Base San Diego',demo:true,notify:false,warnords:{},msgs:[],status:null,unreadMsg:0,unreadWO:0},ls(STATE_KEY,{}));
+  var S=Object.assign({name:'CAPT R. Thompson',siteName:'Naval Base San Diego',demo:true,notify:false,warnords:{},msgs:[],status:null,unreadMsg:0,unreadWO:0,replyCh:''},ls(STATE_KEY,{}));
   function save(){lsSet(STATE_KEY,S);}
   var bus=window.SRABus; if(!bus){console.error('bus missing');return;}
   var cfg=bus.cfg(); if(cfg.node!=='cmdr'){bus.configure({node:'cmdr'});cfg=bus.cfg();}
@@ -449,7 +666,7 @@ window.SRABus=(function(){
   /* ── navigation ── */
   window.go=function(p){
     document.querySelectorAll('.page').forEach(function(e){e.classList.toggle('on',e.id==='p-'+p);});
-    document.querySelectorAll('.tab').forEach(function(e){e.classList.toggle('on',e.dataset.p===p);});
+    document.querySelectorAll('.qabar .qa button').forEach(function(b){var m=(b.getAttribute('onclick')||'').match(/go\('(\w+)'\)/);b.classList.toggle('on',!!m&&m[1]===p);});
     $('compose').classList.toggle('on',p==='msgs');
     if(p==='msgs'){S.unreadMsg=0;save();renderMsgs();setTimeout(function(){var t=$('p-msgs');t.scrollTop=t.scrollHeight;},30);}
     if(p==='outages'){S.unreadWO=0;save();renderOutages();}
@@ -458,20 +675,32 @@ window.SRABus=(function(){
     renderBadges();
   };
   window.stub=function(n){sheet(n,'This module opens the '+n+' view. In this build it is a placeholder; the live data path is the ADMIN hub → CMDR bus.');};
-  window.callEOC=function(){sheet('Call EOC','Dials the installation Emergency Operations Center. On a phone this uses tel:; in the browser it is logged to the bus as a MSG.');bus.publish('MSG',{text:'[CMDR initiated call to EOC]',ch:'site:'+cfg.site,by:S.name,sys:true});};
+  window.callEOC=function(){sheet('Call EOC','Dials the installation Emergency Operations Center. On a phone this uses tel:; in the browser it is logged to the bus as a MSG.');bus.publish('MSG',{text:'[CMDR initiated call to EOC]',ch:'site:'+cfg.site,by:S.name,sys:true},{site:cfg.site});};
   function sheet(t,b){$('sheet-t').textContent=t;$('sheet-b').textContent=b;$('sheet').classList.add('on');}
   var toastT=null;
   function toast(t,b,color){var e=$('toast');e.className='toast on '+(color||'');$('toast-t').textContent=t;$('toast-b').textContent=b||'';clearTimeout(toastT);toastT=setTimeout(function(){e.classList.remove('on');},4200);}
   function buzz(){try{if(S.notify&&navigator.vibrate)navigator.vibrate([120,60,120]);}catch(e){}}
   function notify(t,b){buzz();try{if(S.notify&&'Notification'in window&&Notification.permission==='granted'&&document.hidden)new Notification(t,{body:b});}catch(e){}}
-  window.toggleNotify=function(el){el.classList.toggle('on');if(el.classList.contains('on')&&'Notification'in window&&Notification.permission==='default')Notification.requestPermission();};
+  var actx=null;
+  function ping(kind){
+    if(!S.notify)return;
+    try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();
+      var t=actx.currentTime,notes=kind==='alert'?[880,660,880]:[1040,780];
+      notes.forEach(function(f,i){var o=actx.createOscillator(),g=actx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,t+i*.16);g.gain.exponentialRampToValueAtTime(.35,t+i*.16+.02);g.gain.exponentialRampToValueAtTime(.0001,t+i*.16+.15);o.connect(g).connect(actx.destination);o.start(t+i*.16);o.stop(t+i*.16+.16);});
+    }catch(e){}
+  }
+  function renderPing(){var p=$('pingpill');if(!p)return;p.className='link '+(S.notify?'ping':'off');$('pingtxt').textContent=S.notify?'Ping':'Off';var f=$('f-notify');if(f)f.classList.toggle('on',!!S.notify);}
+  window.togglePing=function(){S.notify=!S.notify;save();renderPing();
+    if(S.notify){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume();}catch(e){}if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();ping('msg');toast('Notifications on','Sound + vibration for SONAR alerts and messages','amber');}
+    else toast('Notifications off','','');};
+  window.toggleNotify=function(el){togglePing();};
   window.autosize=function(t){t.style.height='auto';t.style.height=Math.min(110,t.scrollHeight)+'px';};
 
   /* ── derived state ── */
   function woList(){return Object.keys(S.warnords).map(function(k){return S.warnords[k];}).sort(function(a,b){return (a.ack?1:0)-(b.ack?1:0)||b.ts-a.ts;});}
   function pendingWO(){return woList().filter(function(w){return !w.ack;});}
   function outages(){
-    var live=woList().filter(function(w){return !w.test&&!w.ack;}).map(function(w){return {id:w.code,p:'P1',name:w.code+' · '+(w.title||'warning order'),meta:'<b>'+esc(w.siteName||S.siteName)+'</b> · '+esc((w.msg||'').slice(0,60)),etr:'—',live:true};});
+    var live=woList().filter(function(w){return !w.test&&(!w.ack||w.mine);}).map(function(w){return {id:w.code,p:w.sev||'P1',name:w.code+' · '+(w.title||'SONAR alert'),meta:'<b>'+esc(w.siteName||S.siteName)+'</b> · '+esc((w.msg||'').slice(0,60)),etr:w.etr||'—',live:!w.mine,mine:w.mine};});
     return live.concat(S.demo?DEMO_OUT:[]);
   }
 
@@ -479,7 +708,7 @@ window.SRABus=(function(){
   function renderHero(){
     var st=S.status||{}; var pend=pendingWO().length; var out=outages().length;
     var cls=pend||st.outage?'bad':out?'':'ok';
-    var head=pend?'Warning order pending':st.outage||out?'Degraded':'Normal';
+    var head=pend?'SONAR alert pending':st.outage||out?'Degraded':'Normal';
     var pct=st.pct!=null?st.pct:(out?94:100);
     var sub=st.sub||(S.demo?'2 of 14 feeders down · SDG&E utility feed normal · microgrid islanded at Pier 8':'No live outage data');
     if(st.primary){sub=(st.health?'ADM-04: '+st.health.toLowerCase()+' · ':'')+'primary '+st.primary+' · secondary '+st.secondary+(st.usersOnline!=null?' · '+st.usersOnline+' field users online':'');}
@@ -489,7 +718,7 @@ window.SRABus=(function(){
       '<div class="bar"><i style="width:'+pct+'%"></i></div><div class="barlbl"><span><b>'+pct+'%</b> critical load served</span><span><b>'+(100-pct)+'%</b> on backup / unserved</span></div>';
     $('kpis').innerHTML=
       '<div class="kpi red"><div class="n">'+outages().length+'</div><div class="l">Active outages</div></div>'+
-      '<div class="kpi amber"><div class="n">'+pend+'</div><div class="l">Pending WARNORD</div></div>'+
+      '<div class="kpi amber"><div class="n">'+pend+'</div><div class="l">Pending SONAR</div></div>'+
       '<div class="kpi green"><div class="n">'+(st.gens||(S.demo?'11/12':'—'))+'</div><div class="l">Generators online</div></div>'+
       '<div class="kpi cyan"><div class="n">'+(st.missions!=null?st.missions:(S.demo?6:'—'))+'</div><div class="l">Missions affected</div></div>';
     $('nav-sub').textContent=S.siteName+' · CO view';
@@ -497,7 +726,7 @@ window.SRABus=(function(){
   function woCard(w){
     var cls=w.ack?'acked':w.test?'test':'';
     return '<div class="warn '+cls+'" data-code="'+esc(w.code)+'"><div class="ic"><svg viewBox="0 0 24 24">'+(w.ack?'<path d="M5 12.5l4 4L19 7"/>':'<path d="M12 3 2.5 20h19z"/><path d="M12 9v5M12 17h.01"/>')+'</svg></div>'+
-      '<div class="ttl"><span>'+esc(w.code)+'</span> · '+esc(w.title||(w.test?'Test warning order':'Warning order'))+'</div>'+
+      '<div class="ttl"><span>'+esc(w.code)+'</span> · '+esc(w.title||(w.test?'Test SONAR alert':'SONAR alert'))+'</div>'+
       '<div class="body">'+esc(w.msg||'')+'</div>'+
       '<div class="meta">'+esc(w.siteName||S.siteName)+' · released '+hhmm(w.ts)+(w.channels?' · '+esc(String(w.channels).split(';')[0]):'')+(w.ack?' · <b style="color:var(--green)">acknowledged '+hhmm(w.ack.ts)+'</b>':'')+'</div>'+
       (w.ack?'':'<div class="btns"><button class="btn pri" onclick="ack(\''+esc(w.code)+'\')"><svg viewBox="0 0 24 24"><path d="M5 12.5l4 4L19 7"/></svg>Acknowledge</button><button class="btn" onclick="go(\'msgs\')"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Reply</button></div>')+
@@ -505,24 +734,30 @@ window.SRABus=(function(){
   }
   function renderWO(){
     var pend=pendingWO();
-    $('wo-pending').innerHTML=pend.length?pend.map(woCard).join(''):'<div class="empty">No warning orders pending acknowledgment</div>';
+    $('wo-pending').innerHTML=pend.length?pend.map(woCard).join(''):'<div class="empty">No SONAR alerts pending acknowledgment</div>';
     var all=woList();
-    $('wo-all').innerHTML=all.length?all.map(woCard).join(''):'<div class="empty">No warning orders received on this device yet</div>';
+    $('wo-all').innerHTML=all.length?all.map(woCard).join(''):'<div class="empty">No SONAR alerts received on this device yet</div>';
     $('wo-count').textContent=all.length?pend.length+' pending · '+all.length+' total':'';
   }
-  function rowHtml(o){return '<button class="row" onclick="stub(\'Outage detail\')"><div class="sev '+(o.live?'p1':o.p.toLowerCase())+'">'+(o.live?'WO':o.p)+'</div><div class="name">'+esc(o.name)+'</div><div class="meta">'+o.meta+(o.demo?' · <span style="color:var(--ink3)">demo</span>':'')+'</div><div class="etr"><div><b>'+esc(o.etr)+'</b>ETR</div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div></button>';}
+  function rowHtml(o){return '<button class="row" onclick="stub(\'Outage detail\')"><div class="sev '+(o.p||'P1').toLowerCase()+'">'+(o.live?'WO':o.mine?'CO':o.p)+'</div><div class="name">'+esc(o.name)+'</div><div class="meta">'+o.meta+(o.demo?' · <span style="color:var(--ink3)">demo</span>':'')+'</div><div class="etr"><div><b>'+esc(o.etr)+'</b>ETR</div><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div></button>';}
   function renderOutages(){
     var o=outages();
     $('outage-list').innerHTML=o.length?o.slice(0,3).map(rowHtml).join(''):'<div class="empty" style="border:0">No active outages</div>';
     $('outage-list-full').innerHTML=o.length?o.map(rowHtml).join(''):'<div class="empty" style="border:0">No active outages</div>';
     $('see-all').textContent=o.length>3?'See all '+o.length:'';
-    renderWO();
+    renderWO();renderMine();
   }
+  function siteCh(){return 'site:'+cfg.site;}
+  function chLabel(ch){return ch==='all'?'#all-hands':ch===siteCh()?'@'+S.siteName:ch||'';}
+  function curCh(){return S.replyCh||siteCh();}
+  window.toggleCh=function(){S.replyCh=curCh()==='all'?siteCh():'all';save();renderChPill();};
+  function renderChPill(){var p=$('chpill');if(!p)return;var ch=curCh();p.textContent=ch==='all'?'#all-hands':'@'+cfg.site.toUpperCase();p.className='chpill'+(ch==='all'?'':' site');p.title='Sending to '+chLabel(ch)+' · tap to switch';}
   function renderMsgs(){
     $('thread').innerHTML=S.msgs.length?S.msgs.map(function(m){
       if(m.sys)return '<div class="msg sys">'+esc(m.text)+' · '+hhmm(m.ts)+'</div>';
-      return '<div class="msg'+(m.mine?' mine':'')+'"><div class="who">'+esc(m.mine?S.name:m.from)+'</div>'+esc(m.text)+'<div class="when">'+hhmm(m.ts)+'</div></div>';
-    }).join(''):'<div class="empty">No messages yet. Messages here go to the ADMIN message center on channel site:'+esc(cfg.site)+'.</div>';
+      var ch=m.ch||siteCh();return '<div class="msg'+(m.mine?' mine':'')+'"><div class="ch'+(ch==='all'?'':' site')+'">'+esc(chLabel(ch))+'</div><div class="who">'+esc(m.mine?S.name:m.from)+'</div>'+esc(m.text)+'<div class="when">'+hhmm(m.ts)+'</div></div>';
+    }).join(''):'<div class="empty">No messages yet. Replies go to the channel shown on the pill: #all-hands answers land in ADMIN\'s #all-hands, site messages in @'+esc(S.siteName)+'.</div>';
+    renderChPill();
   }
   var STC={online:'var(--green)',degraded:'var(--amber)',offline:'var(--red)',away:'var(--amber)'};
   function renderHealth(){
@@ -530,7 +765,7 @@ window.SRABus=(function(){
     if(!st||!st.primaryInst){h.className='hero';h.innerHTML='<div class="lbl"><span>Instance health</span><span>ADM-04</span></div><div class="st"><span class="dot"></span>Waiting for ADMIN</div><div class="sub">No health snapshot yet. Tap Refresh, or check the Link tab.</div>';$('h-inst').innerHTML='';$('h-users').innerHTML='';$('h-ent').innerHTML='';$('h-note').textContent='';return;}
     var cls=st.health==='HEALTHY'?'ok':st.health==='DEGRADED'?'':'bad';
     h.className='hero '+cls;
-    h.innerHTML='<div class="lbl"><span>'+esc(st.siteName)+' · '+esc(st.uic||'')+'</span><span>Updated '+ago(st.ts)+'</span></div><div class="st"><span class="dot"></span>'+esc(st.health)+'</div><div class="sub">'+esc(st.regionName||st.region||'')+' · '+st.openWO+' open warning order'+(st.openWO===1?'':'s')+(st.outage?' · in outage':'')+' · '+st.usersOnline+' of 2 field users online</div>';
+    h.innerHTML='<div class="lbl"><span>'+esc(st.siteName)+' · '+esc(st.uic||'')+'</span><span>Updated '+ago(st.ts)+'</span></div><div class="st"><span class="dot"></span>'+esc(st.health)+'</div><div class="sub">'+esc(st.regionName||st.region||'')+' · '+st.openWO+' open SONAR alert'+(st.openWO===1?'':'s')+(st.outage?' · in outage':'')+' · '+st.usersOnline+' of 2 field users online</div>';
     function inst(lbl,i){var c=STC[i.status]||'var(--ink2)';return '<div class="irow"><div class="dotc" style="background:rgba(255,255,255,.08);color:'+c+'">'+lbl+'</div><div class="name" style="color:'+c+';text-transform:capitalize">'+esc(i.status)+'</div><div class="meta">v'+esc(i.version)+' · last sync <b>'+i.lastSyncMin+' min</b> · CPU '+i.cpu+'%</div><div class="right"><b>'+esc(i.uptime)+'%</b>uptime</div></div>';}
     $('h-inst').innerHTML=inst('PRI',st.primaryInst)+inst('SEC',st.secondaryInst);
     function usr(u,lbl){var c=STC[u.status]||'var(--ink2)';return '<div class="irow"><div class="dotc" style="background:rgba(255,255,255,.08);color:'+c+'">'+lbl+'</div><div class="name">'+esc(u.name)+'</div><div class="meta">'+esc(u.role)+' · device <b>'+esc(u.device)+'</b></div><div class="right"><b style="color:'+c+';text-transform:capitalize">'+esc(u.status)+'</b>'+(u.status==='online'?'now':u.lastSeenMin+' min ago')+'</div></div>';}
@@ -538,11 +773,15 @@ window.SRABus=(function(){
     var e=st.enterprise||{};
     $('h-ent').innerHTML='<div class="kpi green"><div class="n">'+(e.online||0)+'</div><div class="l">Online of '+(e.instances||0)+'</div></div><div class="kpi amber"><div class="n">'+(e.degraded||0)+'</div><div class="l">Degraded</div></div><div class="kpi red"><div class="n">'+(e.offline||0)+'</div><div class="l">Offline</div></div><div class="kpi cyan"><div class="n">'+(e.openWO||0)+'</div><div class="l">Open WO · '+(e.sites||0)+' sites</div></div>';
     $('h-note').textContent='Mirrors ADM-04 Instance Health on the ADMIN hub. ADMIN pushes a snapshot on link and every 60 s; Refresh requests one now.';
-    $('bd-health').classList.toggle('on',st.health!=='HEALTHY');$('bd-health').textContent=st.health==='HEALTHY'?'':'!';
+    var bh=$('bd-health');if(bh){bh.classList.toggle('on',st.health!=='HEALTHY');bh.textContent=st.health==='HEALTHY'?'':'!';}
   }
   function renderBadges(){
-    $('bd-out').textContent=S.unreadWO;$('bd-out').classList.toggle('on',S.unreadWO>0);
-    $('bd-msg').textContent=S.unreadMsg;$('bd-msg').classList.toggle('on',S.unreadMsg>0);
+    var nl=$('nl-msg');if(nl){nl.textContent=S.unreadMsg;nl.classList.toggle('on',S.unreadMsg>0);}
+    var pw=pendingWO().length;['nl-map','nl-out'].forEach(function(id){var e=$(id);if(e){e.textContent=pw;e.classList.toggle('on',pw>0);}});
+    var nlk=$('nl-link');if(nlk){var st=bus.status();nlk.textContent='!';nlk.classList.toggle('on',!st.connected&&st.transport!=='off');}
+    if($('p-map').classList.contains('on'))try{drawMap();}catch(e){}
+    renderPing();
+    ['bd-out','bd-msg'].forEach(function(id){var e=$(id);if(!e)return;var n=id==='bd-out'?S.unreadWO:S.unreadMsg;e.textContent=n;e.classList.toggle('on',n>0);});
   }
   function renderLink(){
     var c=bus.cfg(), st=bus.status();
@@ -552,10 +791,12 @@ window.SRABus=(function(){
     onTransport();renderStat(st);
   }
   function renderStat(st){
-    $('linkstat').innerHTML='<div><div class="k">Transport</div><div class="v">'+esc(st.transport)+'</div></div><div><div class="k">State</div><div class="v" style="color:'+(st.connected?'var(--green)':'var(--red)')+'">'+(st.connected?'Connected':'Not connected')+'</div></div>'+
-      '<div><div class="k">Last sync</div><div class="v">'+ago(st.lastSync)+'</div></div><div><div class="k">'+(st.error?'Error':'Queued')+'</div><div class="v" style="'+(st.error?'color:var(--amber)':'')+'">'+esc(st.error||st.pending||0)+'</div></div>';
-    var pill=$('linkpill');pill.className='link '+(st.connected?(st.pending?'warn':'on'):'');
-    $('linktxt').textContent=st.transport==='off'?'Off':st.connected?(st.transport==='github'?'GitHub':'Linked'):(st.error?'Error':'Offline');
+    var gh=st.transport==='github';var state=gh?((st.read==='ok'?'Read ✓':st.read==='error'?'Read ✗':'Read …')+' · '+(st.write==='ok'?'Write ✓':st.write==='error'?'Write ✗':st.pending?'Write …':'Write —')):(st.connected?'Connected':'Not connected');
+    $('linkstat').innerHTML='<div><div class="k">Transport</div><div class="v">'+esc(st.transport)+'</div></div><div><div class="k">State</div><div class="v" style="color:'+(st.connected?'var(--green)':st.read==='ok'?'var(--amber)':'var(--red)')+'">'+esc(state)+'</div></div>'+
+      '<div><div class="k">Last sync</div><div class="v">'+ago(st.lastSync)+'</div></div><div><div class="k">'+(st.error?'Error':'Queued')+'</div><div class="v" style="'+(st.error?'color:var(--amber)':'')+'">'+esc(st.error?String(st.error).split(' — ')[0]:(st.pending||0))+'</div></div>';
+    $('linkerr').textContent=st.error&&st.error.indexOf(' — ')>0?st.error.split(' — ')[1]:'';
+    var pill=$('linkpill');pill.className='link '+(st.connected?(st.pending?'warn':'on'):(st.read==='ok'?'warn':''));
+    $('linktxt').textContent=st.transport==='off'?'Off':st.connected?(gh?'GitHub':'Linked'):gh&&st.read==='ok'?'Write '+(String(st.error).match(/\d{3}/)||['failed'])[0]:(st.error?'Error':'Offline');
   }
   window.onTransport=function(){var gh=$('f-transport').value==='github';document.querySelectorAll('.field.gh').forEach(function(e){e.style.display=gh?'':'none';});
     $('transport-note').textContent=gh?'Cross-device demo: both ADMIN and CMDR read/write data/bus.json through api.github.com. Use a fine-grained PAT scoped to this repo with Contents read/write. Demo-only — the token lives in this browser.':$('f-transport').value==='off'?'Bus disabled.':'Zero-infra: works between tabs of the same browser (e.g. ADMIN in one tab, CMDR in another, or this app inside the ADMIN iframe preview).';};
@@ -564,7 +805,7 @@ window.SRABus=(function(){
     bus.configure({transport:$('f-transport').value,repo:$('f-repo').value.trim(),branch:$('f-branch').value.trim()||'main',path:$('f-path').value.trim()||'data/bus.json',token:$('f-token').value.trim(),poll:parseInt($('f-poll').value,10)||5,site:$('f-site').value.trim()||'nb-sd',node:'cmdr'});
     cfg=bus.cfg();toast('Settings saved','Reconnecting on '+cfg.transport,'green');hello();renderAll();
   };
-  window.hello=function(){bus.publish('HELLO',{node:'cmdr',commander:S.name,siteName:S.siteName,app:'ie-SRA CMDR v0.4'});toast('HELLO sent','Waiting for ADMIN status snapshot');};
+  window.hello=function(){bus.publish('HELLO',{node:'cmdr',commander:S.name,siteName:S.siteName,app:'ie-SRS CMDR v0.5'});toast('HELLO sent','Waiting for ADMIN status snapshot');};
   window.toggleLog=function(){var b=$('logbox');b.style.display=b.style.display==='none'?'':'none';b.textContent=bus.log().slice(-40).reverse().map(function(e){return hhmm(e.ts)+' '+e.from+' → '+e.type+' '+JSON.stringify(e.payload).slice(0,110);}).join('\n')||'(empty)';};
   window.resetLocal=function(){if(!confirm('Clear all CMDR data on this device?'))return;S.warnords={};S.msgs=[];S.status=null;S.unreadMsg=S.unreadWO=0;save();bus.reset();renderAll();toast('Local data cleared','','amber');};
   function renderAll(){renderHero();renderOutages();renderMsgs();renderHealth();renderBadges();renderStat(bus.status());}
@@ -573,16 +814,183 @@ window.SRABus=(function(){
   window.ack=function(code){
     var w=S.warnords[code];if(!w||w.ack)return;
     w.ack={by:S.name,ts:Date.now()};S.lastEvent=Date.now();save();
-    bus.publish('ACK',{code:code,woId:w.id,site:cfg.site,siteName:w.siteName||S.siteName,by:S.name,role:'Base Commander',via:'ie-SRA CMDR'});
+    bus.publish('ACK',{code:code,woId:w.id,site:cfg.site,siteName:w.siteName||S.siteName,by:S.name,role:'Base Commander',via:'ie-SRS CMDR'});
     toast('Acknowledged '+code,'Sent to ADMIN · logged to audit trail','green');buzz();renderAll();
   };
   window.sendMsg=function(){
     var t=$('mtext').value.trim();if(!t)return;$('mtext').value='';autosize($('mtext'));
-    S.msgs.push({ts:Date.now(),text:t,mine:true});save();
-    bus.publish('MSG',{text:t,ch:'site:'+cfg.site,by:S.name,role:'Base Commander'});
+    var ch=curCh();S.msgs.push({ts:Date.now(),text:t,mine:true,ch:ch});save();
+    bus.publish('MSG',{text:t,ch:ch,by:S.name,role:'Base Commander',site:cfg.site,siteName:S.siteName},{site:ch==='all'?'*':cfg.site});
     renderMsgs();var p=$('p-msgs');p.scrollTop=p.scrollHeight;
   };
   window.quick=function(t){$('mtext').value=t;autosize($('mtext'));$('mtext').focus();};
+
+  /* ── MISSION IMPACT — SYS-01A outage replay (landscape) ── */
+  var IM={ph:0,timer:null,playing:false,clock:null,t0:0,fuel:null};
+  var IM_MISSIONS=[
+    {n:'Pier electrical · berths 1-14',m:'42 vessels · shore power',c:'critical'},
+    {n:'Command centers · Bldg 3223',m:'Ops complex · C2',c:'critical'},
+    {n:'Communications arrays',m:'Waterfront comms',c:'critical'},
+    {n:'Ship berthing systems',m:'Cold-iron support',c:'critical'},
+    {n:'Fuel depot & pumps',m:'Harbor Drive',c:'important'},
+    {n:'Housing area · Substation 12',m:'214 residents',c:'routine'}
+  ];
+  var IM_PH=[
+    {k:'PHASE 1 — GLOBAL MAPPING',v:'Strategic digital twin online',d:'NB San Diego · 42 berthed vessels · 38 MW peak. Installation markers populate across the San Diego focal area.',st:'mapped'},
+    {k:'PHASE 2 — CRITICALITY IDENTIFICATION',v:'Tagging mission-critical infrastructure',d:'Command centers, pier electrical, comms arrays and berthing tagged critical. SDG&E is the single utility feed — single point of failure.',st:'tagged'},
+    {k:'PHASE 3 — TRIGGER EVENT',v:'Grid failure — utility service outage',d:'Transformer failure at Mission Bay substation severs grid power to the NB San Diego waterfront. All pier electrical down. Resilience clock running.',st:'down'},
+    {k:'PHASE 4 — ASSET ACTIVATION',v:'Backup power systems engaging',d:'Diesel generators and the pier microgrid spin up. Critical loads restored on backup; fuel clock starts.',st:'backup'},
+    {k:'PHASE 5 — LOGISTICS CHALLENGE',v:'Fuel resupply convoys dispatched',d:'Two convoys en route via Harbor Drive and I-15. Diesel reserves draw down under 38 MW critical demand.',st:'backup'},
+    {k:'PHASE 6 — RESOURCE DEPLETION',v:'BESS bridging the gap',d:'40 MWh battery energy storage online. Critical pier systems at 100% coverage; bridge duration ~8 h until convoy arrival.',st:'bess'},
+    {k:'PHASE 7 — POST-MORTEM',v:'Installation held the line',d:'All SONAR alerts issued and acknowledged. Recommended: 6 MW microgrid expansion + 40 MWh BESS + fuel pre-positioning ($17M) → 72 h grid-independent.',st:'restored'}
+  ];
+  function imSet(id,attr,v){var e=$(id);if(e)e.setAttribute(attr,v);}
+  function imDot(id,c){var C={sage:'#4d9e7a',amber:'#b8894a',rose:'#9e4d4d',slate:'#4a6fa5',blue:'#3a70e0'};imSet('im-d-'+id,'fill',C[c]||c);}
+  function imPulse(id,on,c){var p=$('im-p-'+id);if(!p)return;p.style.display=on?'':'none';if(c)p.setAttribute('stroke',c);}
+  function imFlash(){var f=$('im-flash');f.setAttribute('opacity','.14');setTimeout(function(){f.setAttribute('opacity','0');},270);}
+  function imClockStart(){IM.t0=Date.now();clearInterval(IM.clock);IM.clock=setInterval(function(){var s=Math.floor((Date.now()-IM.t0)/1000)*37;var h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;$('im-clock').textContent='RESILIENCE CLOCK  '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');},250);}
+  function imClockStop(){clearInterval(IM.clock);IM.clock=null;}
+  function imFuel(from,to,ms){clearInterval(IM.fuel);var t0=Date.now();IM.fuel=setInterval(function(){var k=Math.min(1,(Date.now()-t0)/ms);var w=90*(from+(to-from)*k);imSet('im-fbfill','width',w.toFixed(1));imSet('im-fbfill','fill',w<25?'#9e4d4d':w<45?'#b8894a':'#4d9e7a');if(k>=1)clearInterval(IM.fuel);},120);}
+  function imTruck(id,pathId,ms){var g=$(id),p=$(pathId);if(!g||!p)return;g.setAttribute('opacity','1');p.setAttribute('opacity','.8');var L=p.getTotalLength(),t0=Date.now();(function f(){var k=Math.min(1,(Date.now()-t0)/ms);var pt=p.getPointAtLength(L*k);g.setAttribute('transform','translate('+pt.x+','+pt.y+')');if(k<1&&IM.ph>=4)requestAnimationFrame(f);})();}
+  function imRender(){
+    var ph=IM_PH[IM.ph];$('im-pk').textContent=ph.k;$('im-pv').textContent=ph.v;$('im-pd').textContent=ph.d;
+    $('im-ribbon').innerHTML=IM_PH.map(function(_,i){return '<i class="'+(i<IM.ph?'done':i===IM.ph?'cur':'')+'"></i>';}).join('');
+    var live=pendingWO().length;
+    $('im-list').innerHTML=(live?'<div class="im"><i style="background:#ff5a4e"></i><div><div class="n">'+live+' live SONAR alert'+(live>1?'s':'')+' pending</div><div class="m">from ADMIN · tap Outages to acknowledge</div></div><div class="st" style="color:#ff5a4e">LIVE</div></div>':'')+
+      IM_MISSIONS.map(function(m){var st=ph.st,col,lbl;
+        if(IM.ph<2){col='#4a6fa5';lbl=IM.ph?'TAGGED':'—';}
+        else if(st==='down'){col=m.c==='routine'?'#b8894a':'#9e4d4d';lbl=m.c==='routine'?'DEGRADED':'DOWN';}
+        else if(st==='backup'){col=m.c==='critical'?'#b8894a':'#9e4d4d';lbl=m.c==='critical'?'ON GEN':'UNSERVED';}
+        else if(st==='bess'){col=m.c==='routine'?'#b8894a':'#4d9e7a';lbl=m.c==='routine'?'DEGRADED':'BESS';}
+        else {col='#4d9e7a';lbl='RESTORED';}
+        return '<div class="im"><i style="background:'+col+'"></i><div><div class="n">'+esc(m.n)+'</div><div class="m">'+esc(m.m)+' · '+m.c+'</div></div><div class="st" style="color:'+col+'">'+lbl+'</div></div>';}).join('');
+    $('im-play').textContent=IM.playing?'Pause':'Play';
+  }
+  function imApply(){
+    var p=IM.ph;
+    ['A','B','C'].forEach(function(d){imDot(d,p===0?'blue':p===1?'amber':d==='A'?(p===2?'rose':p<=4?'amber':p===5?'sage':'sage'):'amber');imPulse(d,false);});
+    if(p<2){['im-glow-out','im-glow-ok','im-smr','im-bess','im-fuel','im-tp1','im-tp2','im-trk1','im-trk2'].forEach(function(i){imSet(i,'opacity','0');});imSet('im-feed','stroke','#b8894a');imClockStop();$('im-clock').textContent='';clearInterval(IM.fuel);}
+    if(p===2){['im-smr','im-bess','im-fuel','im-tp1','im-tp2','im-trk1','im-trk2'].forEach(function(i){imSet(i,'opacity','0');});imFlash();setTimeout(imFlash,220);setTimeout(imFlash,440);imSet('im-glow-out','opacity','1');imSet('im-glow-ok','opacity','0');imSet('im-feed','stroke','#9e4d4d');imPulse('A',true,'#9e4d4d');if(!IM.clock)imClockStart();}
+    if(p===3){['im-bess','im-tp1','im-tp2','im-trk1','im-trk2'].forEach(function(i){imSet(i,'opacity','0');});imSet('im-glow-out','opacity','1');imPulse('A',true,'#b8894a');imSet('im-smr','opacity','1');imSet('im-fuel','opacity','1');imFuel(1,0.72,9000);if(!IM.clock)imClockStart();}
+    if(p===4){imSet('im-glow-out','opacity','1');imPulse('A',true,'#b8894a');imSet('im-smr','opacity','1');imSet('im-fuel','opacity','1');imFuel(0.72,0.22,12000);imTruck('im-trk1','im-tp1',11000);setTimeout(function(){if(IM.ph===4)imTruck('im-trk2','im-tp2',9000);},1500);if(!IM.clock)imClockStart();}
+    if(p===5){imSet('im-glow-out','opacity','0');imSet('im-glow-ok','opacity','1');imPulse('A',true,'#4d9e7a');imSet('im-bess','opacity','1');imSet('im-smr','opacity','1');imSet('im-fuel','opacity','1');imFuel(0.22,0.55,6000);}
+    if(p===6){imSet('im-glow-out','opacity','0');imSet('im-glow-ok','opacity','1');imPulse('A',false);imSet('im-feed','stroke','#4d9e7a');imSet('im-bess','opacity','1');imSet('im-smr','opacity','1');['im-trk1','im-trk2','im-tp1','im-tp2'].forEach(function(i){imSet(i,'opacity','0');});imClockStop();}
+    imRender();
+  }
+  var IM_DUR=[4000,4500,6000,8000,12000,7000,0];
+  function imSchedule(){clearTimeout(IM.timer);if(!IM.playing)return;var d=IM_DUR[IM.ph];if(!d){IM.playing=false;imRender();return;}IM.timer=setTimeout(function(){if(IM.ph<IM_PH.length-1){IM.ph++;imApply();imSchedule();}},d);}
+  window.imStep=function(n){IM.ph=Math.max(0,Math.min(IM_PH.length-1,IM.ph+n));imApply();imSchedule();};
+  window.imToggle=function(){IM.playing=!IM.playing;if(IM.playing&&IM.ph===IM_PH.length-1)IM.ph=0;imApply();imSchedule();};
+  window.openImpact=function(){$('p-impact').classList.add('on');$('im-title').textContent='Mission impact · '+S.siteName;$('im-rotate').classList.add('arm');IM.ph=0;IM.playing=true;imApply();imSchedule();};
+  window.closeImpact=function(){$('p-impact').classList.remove('on');IM.playing=false;clearTimeout(IM.timer);imClockStop();clearInterval(IM.fuel);};
+
+  /* ── LIVE MAP ── */
+  var MAP={L:null,map:null,layers:{},on:{outages:true,feeders:true,gens:true,sat:false},loading:false};
+  var BASE_DEF={lat:32.6840,lon:-117.1250};
+  function siteLL(){var st=S.status||{};return (st.lat&&st.lon)?{lat:st.lat,lon:st.lon}:BASE_DEF;}
+  /* demo geometry: offsets (m) from installation center — N/E positive */
+  var GEO={
+    feeders:[{id:'8A',pts:[[-260,-420],[-120,-380],[40,-300],[180,-150]],state:'lost'},{id:'3C',pts:[[60,-60],[220,40],[380,120]],state:'backup'},{id:'12',pts:[[-320,220],[-180,320],[-40,420]],state:'lost'},{id:'1A',pts:[[-100,-200],[-100,100],[100,300]],state:'ok'},{id:'5B',pts:[[200,-380],[420,-260],[520,-40]],state:'ok'}],
+    zones:{d1:{c:[-140,-330],r:170,p:'p1',name:'Pier 8 · Feeder 8A'},d2:{c:[300,90],r:140,p:'p2',name:'Bldg 3223 · Feeder 3C'},d3:{c:[-190,330],r:150,p:'p3',name:'Substation 12 · housing'}},
+    gens:[{c:[290,60],name:'Gen 3C-1',state:'on'},{c:[-160,-300],name:'Microgrid · Pier 8',state:'island'},{c:[-80,180],name:'Gen 12-2',state:'standby'}],
+    island:{c:[-140,-330],r:230}
+  };
+  function off2ll(base,dx,dy){return [base.lat+dy/111320,base.lon+dx/(111320*Math.cos(base.lat*Math.PI/180))];}
+  function outageFeatures(){
+    var base=siteLL(), f=[];
+    if(S.demo)DEMO_OUT.forEach(function(o){var z=GEO.zones[o.id];if(z)f.push({ll:off2ll(base,z.c[0],z.c[1]),r:z.r,p:z.p,name:z.name,meta:o.meta.replace(/<[^>]+>/g,''),etr:o.etr,demo:true});});
+    woList().filter(function(w){return !w.test&&(!w.ack||w.mine);}).forEach(function(w,i){var a=i*1.9+0.6,d=180+i*70;f.push({ll:off2ll(base,Math.cos(a)*d,Math.sin(a)*d),r:120,p:(w.sev||'P1').toLowerCase(),name:w.code+' · '+(w.title||'SONAR alert'),meta:w.msg||'',etr:w.etr||'—',code:w.code,pending:!w.ack});});
+    return f;
+  }
+  window.openMap=function(){
+    $('p-map').classList.add('on');$('map-title').textContent=S.siteName+' · power';S.unreadWO=0;save();renderBadges();
+    if(MAP.map){MAP.map.invalidateSize();drawMap();return;}
+    if(window.L){initMap();return;}
+    loadLeaflet();
+  };
+  var CDNS=[['https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'],['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css']];
+  function loadLeaflet(){
+    if(MAP.loading)return;MAP.loading=true;$('map-sub').textContent='Loading satellite map…';
+    var i=0;
+    (function tryNext(){
+      if(i>=CDNS.length){MAP.loading=false;fallbackMap('Map library unreachable — schematic view');return;}
+      var src=CDNS[i][0],cssHref=CDNS[i][1];i++;
+      var css=document.createElement('link');css.rel='stylesheet';css.href=cssHref;document.head.appendChild(css);
+      var js=document.createElement('script');js.src=src;var done=false;
+      js.onload=function(){done=true;MAP.loading=false;initMap();};
+      js.onerror=function(){done=true;js.remove();tryNext();};
+      setTimeout(function(){if(!done){done=true;js.onload=function(){MAP.loading=false;initMap();};tryNext();}},12000);
+      document.head.appendChild(js);
+    })();
+  }
+  window.closeMap=function(){$('p-map').classList.remove('on');};
+  window.mapLayer=function(b){var k=b.dataset.l;MAP.on[k]=!MAP.on[k];b.classList.toggle('on',MAP.on[k]);drawMap();};
+  function initMap(){
+    if(!window.L){fallbackMap('Map library unavailable');return;}
+    if(MAP.map)return;
+    $('map-fallback').classList.remove('on');$('map-fallback').innerHTML='';
+    var base=siteLL(); MAP.L=L;
+    MAP.map=L.map('map',{zoomControl:false,attributionControl:false}).setView([base.lat,base.lon],15);
+    MAP.sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19}).addTo(MAP.map);
+    MAP.lbl=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
+    L.control.zoom({position:'bottomright'}).addTo(MAP.map);
+    MAP.layers={outages:L.layerGroup().addTo(MAP.map),feeders:L.layerGroup().addTo(MAP.map),gens:L.layerGroup().addTo(MAP.map)};
+    drawMap();
+  }
+  function drawMap(){
+    var st=S.status||{}; $('map-sub').textContent=(st.health?'ADM-04 '+st.health.toLowerCase()+' · ':'')+outageFeatures().length+' outage zones · updated '+ago(S.lastEvent||Date.now());
+    if(!MAP.map){drawFallback();return;}
+    var L=MAP.L, base=siteLL();
+    Object.keys(MAP.layers).forEach(function(k){MAP.layers[k].clearLayers();});
+    if(MAP.on.sat){if(!MAP.map.hasLayer(MAP.lbl))MAP.lbl.addTo(MAP.map);}else if(MAP.map.hasLayer(MAP.lbl))MAP.map.removeLayer(MAP.lbl);
+    var COL={p1:'#ff5a4e',p2:'#ffb340',p3:'#4aa3ff',ok:'#4fd98a'};
+    if(MAP.on.feeders){GEO.feeders.forEach(function(f){var c=f.state==='lost'?COL.p1:f.state==='backup'?COL.p2:COL.ok;L.polyline(f.pts.map(function(p){return off2ll(base,p[0],p[1]);}),{color:c,weight:4,opacity:.9,dashArray:f.state==='lost'?'8 8':null}).bindPopup('<b>Feeder '+f.id+'</b>'+(f.state==='lost'?'De-energized — loss of power':f.state==='backup'?'On backup generation':'Energized')).addTo(MAP.layers.feeders);});
+      L.circle(off2ll(base,GEO.island.c[0],GEO.island.c[1]),{radius:GEO.island.r,color:COL.ok,weight:2,dashArray:'4 6',fillColor:COL.ok,fillOpacity:.08}).bindPopup('<b>Microgrid island</b>Pier 8 critical load carried by BESS + gen').addTo(MAP.layers.feeders);}
+    if(MAP.on.outages){outageFeatures().forEach(function(o){var c=COL[o.p]||COL.p1;L.circle(o.ll,{radius:o.r,color:c,weight:1.5,fillColor:c,fillOpacity:o.p==='p1'?.28:.18}).addTo(MAP.layers.outages);
+      var ic=L.divIcon({className:'',html:'<div class="pulse '+o.p+'">'+o.p.toUpperCase()+'</div>',iconSize:[26,26],iconAnchor:[13,13]});
+      L.marker(o.ll,{icon:ic}).bindPopup('<b>'+esc(o.name)+'</b>'+esc(o.meta)+'<br>ETR '+esc(o.etr)+(o.pending?'<br><button class="btn pri sm" style="margin-top:8px" onclick="ack(\''+esc(o.code)+'\');closeMap();">Acknowledge</button>':'')+(o.demo?'<br><span style="color:#8fb0d0;font-size:11px">demo geometry</span>':'')).addTo(MAP.layers.outages);});}
+    if(MAP.on.gens){GEO.gens.forEach(function(g){var cls=g.state==='on'?'ok':g.state==='island'?'ok':'p3';var ic=L.divIcon({className:'',html:'<div class="pulse '+cls+'" style="width:20px;height:20px;font-size:8px">G</div>',iconSize:[20,20],iconAnchor:[10,10]});L.marker(off2ll(base,g.c[0],g.c[1]),{icon:ic}).bindPopup('<b>'+esc(g.name)+'</b>'+(g.state==='on'?'Online · carrying load':g.state==='island'?'Islanded · online':'Standby')).addTo(MAP.layers.gens);});}
+  }
+  function fallbackMap(why){if(MAP.map)return;$('map-fallback').classList.add('on');$('map-sub').textContent=why;drawFallback();}
+  window.retryMap=function(){MAP.loading=false;if(window.L){initMap();return;}loadLeaflet();};
+  function drawFallback(){
+    var fb=$('map-fallback');if(!fb.classList.contains('on'))return;
+    var W=393,H=600,sc=0.3,cx=W/2,cy=H/2-20;function P(o){return [cx+o[0]*sc,cy-o[1]*sc];}
+    var COL={p1:'#ff5a4e',p2:'#ffb340',p3:'#4aa3ff',ok:'#4fd98a'};
+    var s='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet"><defs><pattern id="g" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="rgba(255,255,255,.06)"/></pattern></defs><rect width="100%" height="100%" fill="#0a1a2a"/><rect width="100%" height="100%" fill="url(#g)"/>';
+    s+='<path d="M0 '+(H*.62)+' Q'+(W*.3)+' '+(H*.5)+' '+(W*.55)+' '+(H*.7)+' T'+W+' '+(H*.62)+' V'+H+' H0z" fill="#0d2f45" opacity=".8"/>';
+    if(MAP.on.feeders){GEO.feeders.forEach(function(f){var c=f.state==='lost'?COL.p1:f.state==='backup'?COL.p2:COL.ok;s+='<polyline points="'+f.pts.map(function(p){return P(p).join(',');}).join(' ')+'" fill="none" stroke="'+c+'" stroke-width="4" stroke-linecap="round"'+(f.state==='lost'?' stroke-dasharray="8 8"':'')+'/>';var e=P(f.pts[0]);s+='<text x="'+(e[0]+6)+'" y="'+(e[1]-6)+'" fill="'+c+'" font-size="11" font-weight="700">'+f.id+'</text>';});
+      var i=P(GEO.island.c);s+='<circle cx="'+i[0]+'" cy="'+i[1]+'" r="'+GEO.island.r*sc+'" fill="'+COL.ok+'" fill-opacity=".08" stroke="'+COL.ok+'" stroke-dasharray="4 6"/>';}
+    if(MAP.on.outages)outageFeatures().forEach(function(o){var z=GEO.zones[o.demo?Object.keys(GEO.zones).find(function(k){return GEO.zones[k].name===o.name;}):null];var c=COL[o.p]||COL.p1;var q=z?P(z.c):[cx+40,cy+30];s+='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="'+(o.r*sc)+'" fill="'+c+'" fill-opacity=".22" stroke="'+c+'"/><circle cx="'+q[0]+'" cy="'+q[1]+'" r="11" fill="'+c+'" fill-opacity=".5" stroke="'+c+'" stroke-width="2"><animate attributeName="r" values="11;16;11" dur="1.6s" repeatCount="indefinite"/></circle><text x="'+q[0]+'" y="'+(q[1]+4)+'" text-anchor="middle" fill="#fff" font-size="9" font-weight="800">'+o.p.toUpperCase()+'</text><text x="'+q[0]+'" y="'+(q[1]+o.r*sc+14)+'" text-anchor="middle" fill="#fff" font-size="11">'+esc(o.name)+'</text>';});
+    if(MAP.on.gens)GEO.gens.forEach(function(g){var q=P(g.c);var c=g.state==='standby'?COL.p3:COL.ok;s+='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="8" fill="'+c+'" fill-opacity=".4" stroke="'+c+'"/><text x="'+q[0]+'" y="'+(q[1]+3)+'" text-anchor="middle" fill="#fff" font-size="8" font-weight="800">G</text>';});
+    s+='<text x="12" y="20" fill="#8fb0d0" font-size="11">'+esc(S.siteName)+' · schematic (no satellite tiles)</text></svg>';
+    fb.innerHTML=s+'<button class="btn sm" style="position:absolute;left:10px;top:34px;background:rgba(7,17,31,.9)" onclick="retryMap()">Retry satellite map</button>';
+  }
+
+  /* ── SONAR composer ── */
+  window.segSel=function(b){[].forEach.call(b.parentNode.children,function(x){x.classList.remove('on');});b.classList.add('on');};
+  window.openSonar=function(){$('sonar-sheet').classList.add('on');$('sonar-sheet').querySelector('.so-scroll').scrollTop=0;setTimeout(function(){$('so-loc').focus();},250);};
+  window.closeSonar=function(){$('sonar-sheet').classList.remove('on');};
+  window.sendSonar=function(){
+    var sev=$('so-sev').querySelector('.on').dataset.v, type=$('so-type').value, loc=$('so-loc').value.trim(), msg=$('so-msg').value.trim(), test=$('so-test').classList.contains('on');
+    if(!loc&&!msg){toast('Add a location or message','','amber');return;}
+    var routes=[].map.call($('so-route').querySelectorAll('.chk.on'),function(e){return e.dataset.v;});
+    if(!routes.length){toast('Pick at least one recipient','','amber');return;}
+    if(!confirm('Release '+sev+' SONAR for '+S.siteName+(test?' (exercise)':'')+'?\nRouted to: '+routes.join(', ')))return;
+    var code='CO-'+String(Date.now()).slice(-4), ts=Date.now();
+    var title=type+(loc?' · '+loc:''), etr=$('so-etr').value, missions=parseInt($('so-missions').value,10)||0;
+    var body=msg||(sev+' '+type+(loc?' at '+loc:'')+'. ETR '+etr+'.');
+    var p={code:code,site:cfg.site,siteName:S.siteName,msg:body,title:title,sev:sev,type:type,loc:loc,missions:missions,etr:etr,test:test,kind:test?'EXERCISE':'CMDR',ts:ts,channels:routes.join('; '),by:S.name,role:'Base Commander',origin:'cmdr'};
+    S.warnords[code]={id:'cmdr:'+code,code:code,ts:ts,site:cfg.site,siteName:S.siteName,msg:body,title:title,test:test,channels:p.channels,kind:p.kind,mine:true,sev:sev,etr:etr,missions:missions,ack:{by:S.name,ts:ts,self:true}};
+    S.lastEvent=ts;save();
+    bus.publish('WARNORD',p,{site:cfg.site}).then(function(){toast('SONAR '+code+' released',routes.join(' · '),'red');buzz();});
+    closeSonar();$('so-loc').value='';$('so-msg').value='';$('so-missions').value='';$('so-test').classList.remove('on');
+    renderAll();go('outages');
+  };
+  function renderMine(){
+    var mine=woList().filter(function(w){return w.mine;});
+    $('so-mine').innerHTML=mine.length?mine.map(function(w){return '<div class="warn '+(w.test?'test':'')+'" style="background:rgba(255,138,92,.1);border-color:rgba(255,138,92,.4)"><div class="ic" style="background:linear-gradient(160deg,#ff8a5c,#d9442f)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M6.5 6.5a7.8 7.8 0 0 0 0 11M17.5 6.5a7.8 7.8 0 0 1 0 11"/></svg></div><div class="ttl"><span style="color:#ff8a5c">'+esc(w.code)+'</span> · '+esc(w.sev||'')+' '+esc(w.title||'')+'</div><div class="body">'+esc(w.msg||'')+'</div><div class="meta">Released '+hhmm(w.ts)+' · ETR '+esc(w.etr||'—')+' · '+(w.missions||0)+' missions · '+esc(w.channels||'')+(w.test?' · <b style="color:var(--cyan)">exercise</b>':'')+'</div></div>';}).join(''):'<div class="empty">No SONAR alerts released from this device</div>';
+  }
 
   /* ── inbound ── */
   function handle(env,replay){
@@ -592,29 +1000,36 @@ window.SRABus=(function(){
     if(env.type==='WARNORD'){
       if(p.site&&p.site!==cfg.site)return;
       var code=p.code||env.id;
-      if(!S.warnords[code]){S.warnords[code]={id:env.id,code:code,ts:p.ts||env.ts,site:p.site,siteName:p.siteName,msg:p.msg,title:p.title||(p.test?'Test warning order':'Warning order'),test:!!p.test,channels:p.channels,kind:p.kind};if(!replay){S.unreadWO++;notify('WARNORD '+code,p.msg||'');toast('Warning order '+code,(p.siteName||'')+' · tap Outages to acknowledge','red');}}
+      if(!S.warnords[code]){S.warnords[code]={id:env.id,code:code,ts:p.ts||env.ts,site:p.site,siteName:p.siteName,msg:p.msg,title:p.title||(p.test?'Test SONAR alert':'SONAR alert'),test:!!p.test,channels:p.channels,kind:p.kind};if(!replay){S.unreadWO++;ping('alert');notify('SONAR '+code,p.msg||'');toast('SONAR alert '+code,(p.siteName||'')+' · tap Outages to acknowledge','red');}}
     }else if(env.type==='MSG'){
       if(p.ch&&p.ch.indexOf('site:')===0&&p.ch!=='site:'+cfg.site)return;
-      S.msgs.push({ts:env.ts,text:p.text,from:p.from||'ADMIN',sys:!!p.sys});if(S.msgs.length>200)S.msgs.splice(0,S.msgs.length-200);
-      if(!replay&&!document.getElementById('p-msgs').classList.contains('on')){S.unreadMsg++;notify('ADMIN: '+(p.from||''),p.text);toast(p.from||'ADMIN',p.text,'cyan');}
+      var mch=p.ch==='all'?'all':siteCh();S.msgs.push({ts:env.ts,text:p.text,from:p.from||'ADMIN',sys:!!p.sys,ch:mch});if(S.msgs.length>200)S.msgs.splice(0,S.msgs.length-200);if(!replay)S.replyCh=mch;
+      if(!replay&&!document.getElementById('p-msgs').classList.contains('on')){S.unreadMsg++;ping('msg');notify('ADMIN: '+(p.from||''),p.text);toast(p.from||'ADMIN',p.text,'cyan');}
     }else if(env.type==='STATUS'){
       if(p.site&&p.site!==cfg.site)return;
       S.status=Object.assign({ts:env.ts},p);if(p.siteName)S.siteName=p.siteName;
-      (p.wos||[]).forEach(function(w){var code=w.code;if(code&&!S.warnords[code])S.warnords[code]={id:w.id||env.id+':'+code,code:code,ts:w.ts||env.ts,site:w.site,siteName:w.siteName,msg:w.msg,title:w.test?'Test warning order':'Warning order',test:!!w.test,channels:w.channels,kind:w.kind};});
+      (p.wos||[]).forEach(function(w){var code=w.code;if(code&&!S.warnords[code])S.warnords[code]={id:w.id||env.id+':'+code,code:code,ts:w.ts||env.ts,site:w.site,siteName:w.siteName,msg:w.msg,title:w.test?'Test SONAR alert':'SONAR alert',test:!!w.test,channels:w.channels,kind:w.kind};});
       if(!replay)toast('ADMIN status received',(p.siteName||cfg.site)+' · '+(p.openWO||0)+' open WO','green');
     }else if(env.type==='ACK'){return;}
     else if(env.type==='HELLO'){if(!replay)toast('ADMIN hub online',p.app||'','green');}
     S.lastEvent=env.ts;save();renderAll();
   }
 
+  function fitQa(){var q=$('qabar');if(q)document.getElementById('app').style.setProperty('--qah',q.offsetHeight+'px');}
+  window.addEventListener('resize',fitQa);
   /* ── boot ── */
   bus.onStatus(renderStat);
   bus.subscribe(handle);
   bus.start();
   bus.replay(function(env){handle(env,true);});
-  renderAll();
-  setTimeout(function(){bus.publish('HELLO',{node:'cmdr',commander:S.name,siteName:S.siteName,app:'ie-SRA CMDR v0.4'});},400);
+  fitQa();go('dash');renderAll();
+  if(cfg.transport==='github'&&!cfg.token){toast('Enter your GitHub token','Tap Link — repo, branch and file are preset','amber');}
+  setTimeout(function(){bus.publish('HELLO',{node:'cmdr',commander:S.name,siteName:S.siteName,app:'ie-SRS CMDR v0.5'});},400);
   setInterval(function(){renderHero();renderStat(bus.status());},30000);
+  var HB=10*60*1000,lastHB=Date.now();
+  function heartbeat(){if(document.hidden)return;lastHB=Date.now();bus.publish('HELLO',{node:'cmdr',commander:S.name,siteName:S.siteName,app:'ie-SRS CMDR v0.5',heartbeat:true});}
+  setInterval(heartbeat,HB);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden&&Date.now()-lastHB>HB/2)heartbeat();});
   window.CMDR={state:function(){return S;},handle:handle,bus:bus};
 })();
 </script>
