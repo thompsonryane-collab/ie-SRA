@@ -96,11 +96,21 @@ def tier1(b):
     assert admin.evaluate("document.querySelectorAll('#cx-peers .cm-peer').length")>=1
     assert admin.evaluate("document.querySelectorAll('#cx-unacked .cm-peer').length")>=1
     assert admin.evaluate("document.getElementById('cx-url').textContent").endswith('/cmdr/')
-    wait_for(lambda: admin.evaluate("(()=>{try{return !!document.getElementById('cx-frame').contentWindow.CMDR}catch(e){return false}})()"), timeout=10, msg='preview iframe booted')
-    wait_for(lambda: admin.evaluate("Object.keys(window.CMDR_LINK.peers()).length>=1"), msg='preview said hello')
+    assert admin.evaluate("document.getElementById('cx-frame')")==None
+    assert admin.evaluate("document.querySelectorAll('#cx-acked .cm-peer').length")>=1
     admin.evaluate("document.getElementById('card-cmdr-peers')"); assert admin.evaluate("document.getElementById('card-cmdr-unacked').textContent")!='0 unacked'
     admin.screenshot(path='qa_admin_cmdr.png')
     admin.evaluate("closeApp('overlay-adm-cmdr')")
+    # ADM-02 live presence: only this admin + CMDR devices
+    lp = admin.evaluate("window.admLivePresence()")
+    assert lp['admins']==1 and lp['mobile']==1 and lp['total']==2, lp
+    admin.evaluate("enterHub()"); admin.wait_for_timeout(600); admin.evaluate("openApp('overlay-adm-msg')"); admin.wait_for_timeout(500)
+    assert admin.evaluate("document.querySelectorAll('#am-users .adm-usr').length")==2
+    assert admin.evaluate("document.getElementById('am-online-badge').textContent")=='2 ONLINE · LIVE'
+    assert 'CMDR MOBILE' in admin.evaluate("document.getElementById('am-users').textContent")
+    admin.screenshot(path='qa_presence.png', clip={'x':0,'y':0,'width':520,'height':520})
+    admin.evaluate("closeApp('overlay-adm-msg')")
+    assert admin.evaluate("[...document.querySelectorAll('#adm-strip .adm-kpi')].some(k=>/users online/i.test(k.textContent)&&/1 admin/.test(k.textContent))")
     # ADM-09 comms ledger
     st = admin.evaluate("window.ADM_COMMS.stats()")
     assert st['wo'] >= 2 and st['acked'] >= 1 and st['rtt'] is not None and st['unacked'] >= 1, st
@@ -177,6 +187,12 @@ def tier2(b):
     assert not ce, 'cmdr console errors: ' + '\n'.join(ce[:5])
     actx.close(); cctx.close(); print(f'tier2 github (mocked, {store["puts"]} PUTs incl. 1 retried conflict, {store["gets"]} GETs): PASS')
 
+def tier_norm(b):
+    ctx = b.new_context(); p = ctx.new_page(); p.goto(BASE + '/cmdr/index.html', wait_until='domcontentloaded'); p.wait_for_timeout(800)
+    c = p.evaluate("window.SRABus.configure({transport:'off',repo:' Thompsonryane-collab/ie-SRS ',branch:'main ',path:'data/bus. Json',token:' ghp_x '}).cfg()")
+    assert c['repo']=='Thompsonryane-collab/ie-SRS' and c['branch']=='main' and c['path']=='data/bus.json' and c['token']=='ghp_x', c
+    ctx.close(); print('config normalization: PASS')
+
 def tier2b(b):
     """Write-forbidden token: reads OK, writes 403 → stable 'read only' state, no green/red flapping."""
     def handler(route, request):
@@ -203,6 +219,6 @@ if __name__ == '__main__':
     srv = serve()
     with sync_playwright() as p:
         b = p.chromium.launch()
-        tier1(b); tier2(b); tier2b(b)
+        tier1(b); tier2(b); tier2b(b); tier_norm(b)
         b.close()
     srv.shutdown(); print('ALL PASS')

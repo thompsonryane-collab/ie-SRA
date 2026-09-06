@@ -26,6 +26,7 @@ assert adm.count('</body>') == 1, 'expected exactly one hub </body>'
 
 # ── ADM-08 rename: AI Wargame → SONAR (Shore Outage Notification, Analysis & Response) ──
 RENAMES = [
+  ('<em>Users online &amp; secure comms</em> &mdash; see which Facility Managers and Backup personnel are online right now', '<em>Live users &amp; secure comms</em> &mdash; see exactly who is connected right now (System Admin on web, base commanders on CMDR mobile)'),
   ('<!-- ── CARD ADM-08: AI Wargame — Scenario Builder ── -->', '<!-- ── CARD ADM-08: SONAR — Shore Outage Notification, Analysis & Response ── -->'),
   ('<span style="color:#9ebc52;">AI</span> <span style="color:#ffffff;">Wargame</span>', '<span style="color:#9ebc52;">SONAR</span> <span style="color:#ffffff;">Outage Detection</span>'),
   ('<em>Build a cross-service energy resilience scenario with an AI analyst at your side</em> &mdash; queue warning orders',
@@ -49,9 +50,10 @@ card = (ROOT / 'cmdr' / 'adm09_card.html').read_text() + (ROOT / 'cmdr' / 'adm10
 overlay = (ROOT / 'cmdr' / 'adm09_overlay.html').read_text() + (ROOT / 'cmdr' / 'adm10_overlay.html').read_text()
 cmdrjs = (ROOT / 'cmdr' / 'admin_cmdr.js').read_text()
 tiles = (ROOT / 'cmdr' / 'admin_tiles.js').read_text()
+presence = (ROOT / 'cmdr' / 'admin_presence.js').read_text()
 assert adm.count('</div><!-- #card-grid -->') == 1
 adm = adm.replace('</div><!-- #card-grid -->', card + '\n</div><!-- #card-grid -->')
-inject = ('\n<!-- CMDR LINK -->\n' + overlay + '\n<script>\n' + bus.replace("'__NODE__'", "'admin'") + '\n</script>\n<script>\n' + comms + '\n</script>\n<script>\n' + link + '\n</script>\n<script>\n' + cmdrjs + '\n</script>\n<script>\n' + tiles + '\n</script>\n')
+inject = ('\n<!-- CMDR LINK -->\n' + overlay + '\n<script>\n' + bus.replace("'__NODE__'", "'admin'") + '\n</script>\n<script>\n' + comms + '\n</script>\n<script>\n' + link + '\n</script>\n<script>\n' + cmdrjs + '\n</script>\n<script>\n' + tiles + '\n</script>\n<script>\n' + presence + '\n</script>\n')
 adm = adm.replace('</body>', inject + '</body>')
 # ── Brand rename: ie-SRA → ie-SRS (Simulation, Reconnaissance, SONAR) ──
 KEEP_REPO = 'thompsonryane-collab/ie-SRS'          # repo was renamed to ie-SRS
@@ -141,7 +143,7 @@ def js_syntax_ok(js):
     with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False) as f: f.write(js); fn = f.name
     r = subprocess.run(['node', '--check', fn], capture_output=True, text=True)
     return r.returncode == 0, r.stderr.strip()[:400]
-for name, js in [('bus.js', bus), ('admin_link.js', link), ('admin_comms.js', comms), ('admin_cmdr.js', cmdrjs), ('admin_tiles.js', tiles)]:
+for name, js in [('bus.js', bus), ('admin_link.js', link), ('admin_comms.js', comms), ('admin_cmdr.js', cmdrjs), ('admin_tiles.js', tiles), ('admin_presence.js', presence)]:
     ok, err = js_syntax_ok(js); assert ok, f'{name}: {err}'
 for i, m in enumerate(re.finditer(r'<script>([\s\S]*?)</script>', cmdr)):
     ok, err = js_syntax_ok(m.group(1)); assert ok, f'cmdr script {i}: {err}'
@@ -151,5 +153,5 @@ for name, doc in [('cmdr/index.html', cmdr), ('ie-SRS-ADMIN.html', adm)]:
     assert not dup, f'{name} duplicate ids: {dup}'
     assert doc.count('<body') == doc.count('</body>') == 1, f'{name} body tags'
 hub_scripts = len(re.findall(r'<script(?![^>]*srcdoc)', adm))
-print(f'cmdr/index.html {len(cmdr):,} bytes · ie-SRS-ADMIN.html {len(adm):,} bytes · hub <script> tags {hub_scripts} (+5 injected)')
+print(f'cmdr/index.html {len(cmdr):,} bytes · ie-SRS-ADMIN.html {len(adm):,} bytes · hub <script> tags {hub_scripts} (+6 injected)')
 print('OK')

@@ -2973,7 +2973,7 @@ html::after {
             </div>
           </div>
           <div class="card-desc">
-            <em>Users online &amp; secure comms</em> &mdash; see which Facility Managers and Backup personnel are online right now, open channels by region or installation, and broadcast admin notices or maintenance windows to the field.
+            <em>Live users &amp; secure comms</em> &mdash; see exactly who is connected right now (System Admin on web, base commanders on CMDR mobile), open channels by region or installation, and broadcast admin notices or maintenance windows to the field.
           </div>
           <div class="card-meta">
             <span class="meta-pill">Presence</span><span class="meta-pill">Channels</span><span class="meta-pill">Broadcast</span>
@@ -12539,20 +12539,20 @@ document.addEventListener("DOMContentLoaded",function(){
 .card-adm-cmdr .meta-pill{border-color:rgba(77,184,138,.5);color:#9fe0c0;background:rgba(77,184,138,.1);}
 .card-adm-cmdr .launch-btn{background:rgba(77,184,138,.12);color:#4db88a;border:1px solid rgba(77,184,138,.45);border-radius:10px;}
 .card-adm-cmdr .launch-btn:hover{background:rgba(77,184,138,.22);}
-#overlay-adm-cmdr .cm-grid{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:16px;align-items:start}
+#overlay-adm-cmdr .cm-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
 @media (max-width:1100px){#overlay-adm-cmdr .cm-grid{grid-template-columns:1fr}}
 #overlay-adm-cmdr .cm-box{background:rgba(14,24,36,.75);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px}
 #overlay-adm-cmdr .cm-box h4{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1.6px;color:#6e90b0;margin:0 0 10px;display:flex;justify-content:space-between;align-items:center}
 #overlay-adm-cmdr .cm-row{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center;margin-bottom:7px;font-size:12px}
 #overlay-adm-cmdr .cm-row label{color:#6e90b0;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1.2px}
-#overlay-adm-cmdr .cm-phone{width:400px;height:800px;border-radius:44px;background:#000;padding:10px;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 2px #2a2d34 inset;margin:0 auto}
-#overlay-adm-cmdr .cm-phone iframe{width:100%;height:100%;border:0;border-radius:36px;background:#07111f}
 #overlay-adm-cmdr .cm-url{font-family:'Share Tech Mono',monospace;font-size:10px;color:#18d4f8;word-break:break-all;background:rgba(24,212,248,.06);border:1px solid rgba(24,212,248,.25);border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;gap:8px;align-items:center}
 #overlay-adm-cmdr .cm-peer{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(26,45,66,.6);font-size:12px}
 #overlay-adm-cmdr .cm-peer:last-child{border-bottom:0}
 #overlay-adm-cmdr .cm-peer b{color:#fff;font-weight:600}
 #overlay-adm-cmdr .cm-peer .s{font-family:'Share Tech Mono',monospace;font-size:9.5px;color:#6e90b0}
-#overlay-adm-cmdr .cm-log{font-family:'Share Tech Mono',monospace;font-size:9.5px;color:#9ab4cc;line-height:1.6;max-height:180px;overflow:auto}
+#overlay-adm-cmdr .cm-log{font-family:'Share Tech Mono',monospace;font-size:9.5px;color:#9ab4cc;line-height:1.6;max-height:260px;overflow:auto}
+#overlay-adm-cmdr .cm-peer .act{display:flex;gap:6px}
+#overlay-adm-cmdr .cm-peer .act button{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 8px;border-radius:4px;border:1px solid rgba(110,144,176,.4);background:#132640;color:#cce0f2;cursor:pointer}
 </style>
 <!-- ═══ OVERLAY: ADM-10 CMDR MOBILE ═══ -->
 <div class="app-overlay overlay-duers" id="overlay-adm-cmdr">
@@ -12574,27 +12574,24 @@ document.addEventListener("DOMContentLoaded",function(){
       <div class="adm-strip2" id="cx-strip"></div>
       <div class="cm-grid">
         <div>
+          <div class="cm-box"><h4>LINKED COMMANDERS <span id="cx-peer-n"></span></h4><div id="cx-peers"></div></div>
+          <div class="cm-box"><h4>AWAITING ACKNOWLEDGMENT <span id="cx-unacked-n"></span></h4><div id="cx-unacked"></div></div>
+          <div class="cm-box"><h4>RECENTLY ACKNOWLEDGED <span id="cx-acked-n"></span></h4><div id="cx-acked"></div></div>
+        </div>
+        <div>
           <div class="cm-box"><h4>PHONE URL <span style="color:#4db88a;font-size:9px">iPhone: Safari → Share → Add to Home Screen</span></h4>
             <div class="cm-url"><span id="cx-url"></span><button class="adm-b" onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('cx-url').textContent);hubToast('URL copied','ok',2000)">COPY</button></div>
           </div>
-          <div class="cm-box"><h4>LINKED COMMANDERS <span id="cx-peer-n"></span></h4><div id="cx-peers"></div></div>
-          <div class="cm-box"><h4>AWAITING ACKNOWLEDGMENT <span id="cx-unacked-n"></span></h4><div id="cx-unacked"></div></div>
-          <div class="cm-box"><h4>TRANSPORT</h4>
+          <div class="cm-box"><h4>TRANSPORT <span id="cx-state" style="font-size:9px"></span></h4>
             <div class="cm-row"><label>MODE</label><select class="adm-sel" id="cx-transport" onchange="admCmdrGh()"><option value="broadcast">Same browser (BroadcastChannel)</option><option value="github">GitHub repo (cross-device)</option><option value="off">Off</option></select></div>
-            <div class="cm-row cx-gh"><label>REPO</label><input class="adm-in" id="cx-repo"></div>
-            <div class="cm-row cx-gh"><label>BRANCH</label><input class="adm-in" id="cx-branch"></div>
-            <div class="cm-row cx-gh"><label>FILE</label><input class="adm-in" id="cx-path"></div>
-            <div class="cm-row cx-gh"><label>TOKEN</label><input class="adm-in" id="cx-token" type="password" autocomplete="off" placeholder="fine-grained PAT · Contents read/write"></div>
+            <div class="cm-row cx-gh"><label>REPO</label><input class="adm-in" id="cx-repo" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+            <div class="cm-row cx-gh"><label>BRANCH</label><input class="adm-in" id="cx-branch" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+            <div class="cm-row cx-gh"><label>FILE</label><input class="adm-in" id="cx-path" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+            <div class="cm-row cx-gh"><label>TOKEN</label><input class="adm-in" id="cx-token" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="fine-grained PAT · Contents read/write"></div>
             <div class="cm-row cx-gh"><label>POLL (S)</label><input class="adm-in" id="cx-poll" type="number" min="3"></div>
-            <div style="display:flex;gap:8px;margin-top:8px"><button class="adm-b" style="border-color:#18d4f8;color:#18d4f8" onclick="admCmdrSave({transport:document.getElementById('cx-transport').value,repo:document.getElementById('cx-repo').value.trim(),branch:document.getElementById('cx-branch').value.trim()||'main',path:document.getElementById('cx-path').value.trim()||'data/bus.json',token:document.getElementById('cx-token').value.trim(),poll:parseInt(document.getElementById('cx-poll').value,10)||5});admPaintCmdr()">SAVE &amp; RECONNECT</button><span id="cx-note" style="font-size:11px;color:#6e90b0;align-self:center"></span></div>
+            <div style="display:flex;gap:8px;margin-top:8px;align-items:center"><button class="adm-b" style="border-color:#18d4f8;color:#18d4f8" onclick="admCmdrSave({transport:document.getElementById('cx-transport').value,repo:document.getElementById('cx-repo').value.trim(),branch:document.getElementById('cx-branch').value.trim()||'main',path:document.getElementById('cx-path').value.trim()||'data/bus.json',token:document.getElementById('cx-token').value.trim(),poll:parseInt(document.getElementById('cx-poll').value,10)||5});admPaintCmdr()">SAVE &amp; RECONNECT</button><span id="cx-note" style="font-size:11px;color:#6e90b0"></span></div>
           </div>
           <div class="cm-box"><h4>LINK EVENTS</h4><div class="cm-log" id="cx-log"></div></div>
-        </div>
-        <div>
-          <div class="cm-box" style="padding:14px"><h4>LIVE PREVIEW <span><button class="adm-b" onclick="admCmdrReload()">RELOAD</button></span></h4>
-            <div class="cm-phone"><iframe id="cx-frame" title="ie-SRS CMDR preview" loading="lazy"></iframe></div>
-            <div style="font-size:11px;color:#6e90b0;margin-top:10px;text-align:center">Same app, same bus. What happens here also happens on a real phone linked to this site.</div>
-          </div>
         </div>
       </div>
     </div>
@@ -12617,6 +12614,7 @@ window.SRABus=(function(){
   function ls(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
   function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
   var cfg=Object.assign({},DEF,ls(CFG_KEY,{}));
+  if(typeof cfg.path==='string')cfg.path=cfg.path.replace(/\s+/g,'').toLowerCase()||DEF.path;if(typeof cfg.repo==='string')cfg.repo=cfg.repo.replace(/\s+/g,'')||DEF.repo;if(typeof cfg.branch==='string')cfg.branch=cfg.branch.replace(/\s+/g,'')||DEF.branch;
   var subs=[], statusSubs=[], seen=ls(SEEN_KEY,{}), adapter=null;
   var st={transport:cfg.transport, connected:false, lastSync:0, error:'', pending:0, read:'', write:''};
   function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
@@ -12706,7 +12704,7 @@ window.SRABus=(function(){
   function build(){return cfg.transport==='github'?GitHub():cfg.transport==='off'?Off():Broadcast();}
   var api={
     cfg:function(){return Object.assign({},cfg);},
-    configure:function(o){Object.assign(cfg,o||{});lsSet(CFG_KEY,cfg);if(adapter){adapter.stop();adapter=build();setStatus({transport:cfg.transport,connected:false,error:'',pending:0});adapter.start();}return api;},
+    configure:function(o){o=Object.assign({},o||{});['repo','branch','path'].forEach(function(k){if(typeof o[k]==='string')o[k]=o[k].replace(/\s+/g,'').replace(/^\/+|\/+$/g,'');});if(o.path)o.path=o.path.toLowerCase();if(o.repo)o.repo=o.repo.replace(/^https?:\/\/github\.com\//,'').replace(/\.git$/,'');if(typeof o.token==='string')o.token=o.token.trim();Object.assign(cfg,o);lsSet(CFG_KEY,cfg);if(adapter){adapter.stop();adapter=build();setStatus({transport:cfg.transport,connected:false,error:'',pending:0});adapter.start();}return api;},
     start:function(){if(!adapter){adapter=build();setStatus({transport:cfg.transport});adapter.start();}return api;},
     stop:function(){if(adapter){adapter.stop();adapter=null;}setStatus({connected:false});},
     publish:function(type,payload,extra){
@@ -12877,6 +12875,7 @@ window.SRABus=(function(){
   /* ── inbound ── */
   bus.subscribe(function(env,replay){
     var p=env.payload||{};
+    if(env.from==='cmdr'&&env.site){var pr=peers[env.site]||(peers[env.site]={});if(!replay||!pr.ts||env.ts>pr.ts){pr.ts=Math.max(pr.ts||0,env.ts);}if(p.commander)pr.name=p.commander;if(p.by&&!pr.name)pr.name=p.by;if(p.app)pr.app=p.app;pr.last=env.type;}
     if(env.type==='ACK'){
       var log=C.listWO(); var hit=log.filter(function(w){return w.code===p.code;})[0];
       if(hit&&!hit.ack){hit.ack={by:p.by,ts:env.ts,via:p.via||'mobile'};try{localStorage.setItem('adm_wo_log',JSON.stringify(log));}catch(e){}}
@@ -12893,7 +12892,6 @@ window.SRABus=(function(){
       toast('CMDR message: '+String(p.text||'').slice(0,60),'ok');ev('MSG ← '+(p.by||'CMDR'));
       if(typeof admPaintMsgs==='function'&&$('overlay-adm-msg')&&$('overlay-adm-msg').classList.contains('visible'))try{admPaintMsgs();}catch(e){}
     }else if(env.type==='HELLO'){
-      peers[env.site||'?']={name:p.commander,ts:env.ts,app:p.app};
       if(replay)return;
       C.audit('CMDR_HELLO',p.siteName||env.site||'',(p.commander||'')+' · '+(p.app||''));
       toast('CMDR linked: '+(p.commander||'commander')+' @ '+(p.siteName||env.site),'ok');ev('HELLO ← '+(p.commander||'')+' @ '+env.site);
@@ -12921,7 +12919,7 @@ window.SRABus=(function(){
   window.admCmdrOpen=function(){window.open('cmdr/index.html','ie-sra-cmdr','width=430,height=900');};
   bus.onStatus(function(st){var gh=st.transport==='github';chip.className=st.connected?(st.pending?'warn':'on'):(gh&&st.read==='ok'?'warn':'');$('cl-txt').textContent='CMDR LINK · '+(st.transport==='off'?'OFF':st.connected?(gh?'GITHUB':'LIVE'):gh&&st.read==='ok'?'READ ONLY · WRITE '+((String(st.error).match(/\d{3}/)||['ERR'])[0]):(st.error?'ERR':'—'));chip.title=st.error||'';});
   bus.start();
-  bus.replay(function(env){if(env.type==='HELLO'&&env.from==='cmdr')peers[env.site||'?']={name:env.payload&&env.payload.commander,ts:env.ts};});
+  bus.replay(function(env){if(env.from==='cmdr'&&env.site){var pr=peers[env.site]||(peers[env.site]={});pr.ts=Math.max(pr.ts||0,env.ts);var q=env.payload||{};if(q.commander)pr.name=q.commander;if(q.by&&!pr.name)pr.name=q.by;if(q.app)pr.app=q.app;}});
   setTimeout(function(){bus.publish('HELLO',{node:'admin',app:'ie-SRS ADMIN'});},600);
   /* periodic health push to every site that has said hello (ADM-04 sync) */
   setInterval(function(){Object.keys(peers).forEach(function(site){if(C.SITE[site]&&peers[site].ts>Date.now()-864e5)sendStatus(site);});},60000);
@@ -12939,11 +12937,11 @@ window.SRABus=(function(){
   function ago(ts){var m=Math.round((Date.now()-ts)/60000);return m<1?'just now':m<60?m+' min ago':Math.round(m/60)+' hr ago';}
   function mini(l,v,c,s){return '<div class="adm-mini"><div class="l">'+l+'</div><div class="v" style="color:'+(c||'#cce0f2')+'">'+v+'</div>'+(s?'<div class="l" style="margin-top:2px;text-transform:none;letter-spacing:0">'+s+'</div>':'')+'</div>';}
   function cmdrUrl(){return new URL('cmdr/',location.href).href;}
-  var frameLoaded=false;
   window.admCmdrGh=function(){var gh=$('cx-transport').value==='github';document.querySelectorAll('#overlay-adm-cmdr .cx-gh').forEach(function(e){e.style.display=gh?'':'none';});
-    $('cx-note').textContent=gh?'Both ADMIN and the phone need the same token.':$('cx-transport').value==='off'?'Bus disabled.':'Works between tabs of this browser and the preview at right.';};
-  window.admCmdrReload=function(){$('cx-frame').src=cmdrUrl()+'?t='+Date.now();frameLoaded=true;};
+    $('cx-note').textContent=gh?'Both ADMIN and the phone need the same token.':$('cx-transport').value==='off'?'Bus disabled.':'Works between tabs of this browser (e.g. Open in new window).';};
   function unacked(){return C.listWO().filter(function(w){return !w.ack&&(w.site&&C.SITE[w.site]);}).slice(0,12);}
+  function acked(){return C.listWO().filter(function(w){return w.ack;}).slice(0,8);}
+  function fmtMs(ms){return ms==null?'—':ms<1000?ms+' ms':ms<60000?(ms/1000).toFixed(1)+' s':Math.round(ms/60000)+' min';}
   window.admPaintCmdr=function(){
     var sel=$('cx-site'); if(sel&&!sel.options.length){C.SITES.forEach(function(s){var o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);});sel.value='nb-sd';}
     var c=bus.cfg(), st=bus.status(), peers=(window.CMDR_LINK&&CMDR_LINK.peers())||{}, ks=Object.keys(peers), un=unacked();
@@ -12952,12 +12950,14 @@ window.SRABus=(function(){
     $('cx-strip').innerHTML=mini('Link',lk,st.connected?'#4db88a':st.read==='ok'?'#d4a05a':'#e05555',st.error||st.transport)+mini('Linked commanders',ks.length,'#18d4f8')+mini('Awaiting ack',un.length,un.length?'#e05555':'#4db88a')+mini('Envelopes logged',cs.total,'#29d3c8','ADM-09')+mini('Avg ack RTT',cs.rtt==null?'—':cs.rtt<1000?cs.rtt+' ms':(cs.rtt/1000).toFixed(1)+' s','#c3aaf8');
     $('cx-url').textContent=cmdrUrl();
     $('cx-peer-n').textContent=ks.length?ks.length+' linked':'';
-    $('cx-peers').innerHTML=ks.length?ks.map(function(k){var p=peers[k],s=C.SITE[k];return '<div class="cm-peer"><div><b>'+esc(p.name||'Commander')+'</b><div class="s">'+esc(s?s.name:k)+' · '+esc(p.app||'')+'</div></div><div class="s">'+ago(p.ts)+'</div></div>';}).join(''):'<div class="adm-empty" style="padding:14px">No phone has linked yet. Open the app (preview at right, or the URL above on an iPhone) — it says hello automatically.</div>';
+    $('cx-peers').innerHTML=ks.length?ks.map(function(k){var p=peers[k],s=C.SITE[k];return '<div class="cm-peer"><div><b>'+esc(p.name||'Commander')+'</b><div class="s">'+esc(s?s.name:k)+' · '+esc(p.app||'')+' · hello '+ago(p.ts)+'</div></div><div class="act"><button onclick="admCmdrTest(\''+esc(k)+'\')">TEST ALERT</button><button onclick="CMDR_LINK.sendStatus(\''+esc(k)+'\');hubToast(\'STATUS → CMDR\',\'ok\',2000)">PUSH HEALTH</button></div></div>';}).join(''):'<div class="adm-empty" style="padding:14px">No phone has linked yet. Open the app (preview at right, or the URL above on an iPhone) — it says hello automatically.</div>';
     $('cx-unacked-n').textContent=un.length?un.length+' open':'';
     $('cx-unacked').innerHTML=un.length?un.map(function(w){return '<div class="cm-peer"><div><b style="color:'+(w.test?'#18d4f8':'#e05555')+'">'+esc(w.code)+'</b> <span class="s">'+esc(w.siteName||w.site)+'</span><div class="s">'+esc(String(w.msg||'').slice(0,90))+'</div></div><div class="s">'+ago(w.ts)+'</div></div>';}).join(''):'<div class="adm-empty" style="padding:14px">Every SONAR alert sent to mobile has been acknowledged.</div>';
     if(document.activeElement!==$('cx-token')){$('cx-transport').value=c.transport;$('cx-repo').value=c.repo;$('cx-branch').value=c.branch;$('cx-path').value=c.path;$('cx-token').value=c.token;$('cx-poll').value=c.poll;admCmdrGh();}
     $('cx-log').innerHTML=(window.CMDR_LINK?CMDR_LINK.events():[]).map(esc).join('<br>')||'—';
-    if(!frameLoaded)admCmdrReload();
+    var ak=acked();$('cx-acked-n').textContent=ak.length?ak.length+' recent':'';
+    $('cx-acked').innerHTML=ak.length?ak.map(function(w){return '<div class="cm-peer"><div><b style="color:#4db88a">'+esc(w.code)+'</b> <span class="s">'+esc(w.siteName||w.site)+'</span><div class="s">ack by '+esc(w.ack.by||'')+' · '+esc(w.ack.via||'')+' · RTT '+fmtMs(w.ack.ts-w.ts)+'</div></div><div class="s">'+ago(w.ack.ts)+'</div></div>';}).join(''):'<div class="adm-empty" style="padding:14px">No acknowledgments yet.</div>';
+    var gh=st.transport==='github';$('cx-state').textContent=gh?('read '+(st.read==='ok'?'✓':st.read==='error'?'✗':'…')+' · write '+(st.write==='ok'?'✓':st.write==='error'?'✗':'—')+(st.error?' · '+st.error:'')):(st.connected?'connected':'');$('cx-state').style.color=st.connected?'#4db88a':'#d4a05a';
     paintCard();
   };
   function paintCard(){var st=bus.status(),peers=(window.CMDR_LINK&&CMDR_LINK.peers())||{},un=unacked().length;
@@ -13012,6 +13012,42 @@ window.SRABus=(function(){
   refresh();setInterval(refresh,15000);
   try{window.SRABus&&SRABus.subscribe(function(){setTimeout(refresh,50);});}catch(e){}
   window.ADM_TILES={refresh:refresh};
+})();
+
+</script>
+<script>
+/* ══ LIVE PRESENCE — ADM-02 users online = real sessions only (this System Admin + CMDR mobile devices) ══ */
+(function(){
+  var C=window.ADMIN_CORE; if(!C)return;
+  var $=function(id){return document.getElementById(id);};
+  var ONLINE_MS=15*60*1000;
+  function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function ago(ts){var m=Math.round((Date.now()-ts)/60000);return m<1?'just now':m<60?m+' min ago':Math.round(m/60)+' hr ago';}
+  function me(){return window._inedApiEmail||'sysadmin@navy.mil';}
+  function peers(){var p=(window.CMDR_LINK&&CMDR_LINK.peers())||{};return Object.keys(p).map(function(k){var s=C.SITE[k];return {site:k,siteName:s?s.name:k,name:p[k].name||'Base Commander',app:p[k].app||'ie-SRS CMDR',ts:p[k].ts||0,online:(Date.now()-(p[k].ts||0))<ONLINE_MS};}).sort(function(a,b){return b.ts-a.ts;});}
+  window.admLivePresence=function(){var ps=peers();return {admins:1,mobile:ps.filter(function(x){return x.online;}).length,peers:ps,total:1+ps.filter(function(x){return x.online;}).length};};
+  window.admPaintPresence=function(){
+    var q=($('am-uq')&&$('am-uq').value||'').toLowerCase();
+    var lp=admLivePresence(); var st=window.SRABus?SRABus.status():{};
+    var list=lp.peers.filter(function(x){return !q||(x.name+' '+x.siteName+' '+x.site).toLowerCase().indexOf(q)>=0;});
+    if($('am-online-n'))$('am-online-n').textContent=lp.total;
+    if($('am-online-badge'))$('am-online-badge').textContent=lp.total+' ONLINE · LIVE';
+    var html='<div class="adm-usr" onclick="admSetChannel(\'admins\')"><span class="adm-dot" style="background:#18d4f8"></span><div style="min-width:0"><div>'+esc(me())+'</div><small>SYSTEM ADMIN · web · you</small></div></div>';
+    html+=list.map(function(x){var c=x.online?'#4db88a':'#3a5570';return '<div class="adm-usr" onclick="admSetChannel(\'site:'+esc(x.site)+'\')" style="'+(x.online?'':'opacity:.55')+'"><span class="adm-dot" style="background:'+c+'"></span><div style="min-width:0"><div>'+esc(x.name)+'</div><small>CMDR MOBILE · '+esc(x.siteName)+' · '+(x.online?'online':'last seen '+ago(x.ts))+'</small></div></div>';}).join('');
+    if(!list.length)html+='<div class="adm-empty" style="padding:12px;text-align:left">No CMDR mobile device linked'+(st.transport==='github'?' via GitHub':'')+'. Phones appear here when they say hello (ADM-10).</div>';
+    if($('am-users'))$('am-users').innerHTML=html;
+  };
+  /* strip: Users online = live sessions */
+  var _strip=window.admPaintStrip;
+  window.admPaintStrip=function(){
+    _strip.apply(this,arguments);
+    try{var el=$('adm-strip');if(!el)return;var lp=admLivePresence();
+      el.querySelectorAll('.adm-kpi').forEach(function(k){var l=k.querySelector('.adm-kpi-l');if(l&&/users online/i.test(l.textContent)){k.querySelector('.adm-kpi-v').textContent=lp.total;k.querySelector('.adm-kpi-v').style.color=lp.mobile?'#4db88a':'#18d4f8';k.querySelector('.adm-kpi-s').textContent='1 admin (web) · '+lp.mobile+' CMDR mobile';}});
+    }catch(e){}
+  };
+  function refresh(){try{if($('overlay-adm-msg')&&$('overlay-adm-msg').classList.contains('visible'))admPaintPresence();admPaintStrip();}catch(e){}}
+  try{window.SRABus&&SRABus.subscribe(function(){setTimeout(refresh,60);});}catch(e){}
+  setInterval(refresh,60000); setTimeout(refresh,900);
 })();
 
 </script>
