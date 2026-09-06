@@ -15,7 +15,7 @@ assert bus.count("'__NODE__'") == 1
 # ── CMDR app ──
 cmdr = (ROOT / 'cmdr' / 'src.html').read_text()
 assert cmdr.count('<script>/*BUS*/</script>') == 1
-cmdr = cmdr.replace('thompsonryane-collab/ie-SRA','@@REPO@@').replace('ie-SRA','ie-SRS').replace('@@REPO@@','thompsonryane-collab/ie-SRA')
+cmdr = cmdr.replace('ie-SRA','ie-SRS')
 cmdr = cmdr.replace('<script>/*BUS*/</script>', '<script>\n' + bus.replace("'__NODE__'", "'cmdr'") + '\n</script>')
 (OUT / 'cmdr' / 'index.html').write_text(cmdr)
 
@@ -54,7 +54,7 @@ adm = adm.replace('</div><!-- #card-grid -->', card + '\n</div><!-- #card-grid -
 inject = ('\n<!-- CMDR LINK -->\n' + overlay + '\n<script>\n' + bus.replace("'__NODE__'", "'admin'") + '\n</script>\n<script>\n' + comms + '\n</script>\n<script>\n' + link + '\n</script>\n<script>\n' + cmdrjs + '\n</script>\n<script>\n' + tiles + '\n</script>\n')
 adm = adm.replace('</body>', inject + '</body>')
 # ── Brand rename: ie-SRA → ie-SRS (Simulation, Reconnaissance, SONAR) ──
-KEEP_REPO = 'thompsonryane-collab/ie-SRA'          # GitHub repo path is NOT renamed
+KEEP_REPO = 'thompsonryane-collab/ie-SRS'          # repo was renamed to ie-SRS
 adm = adm.replace(KEEP_REPO, '@@REPO@@')
 BRAND = [
   ('<span class="overlay-logo-sr">SR</span><span class="overlay-logo-a">A</span>', '<span class="overlay-logo-sr">SR</span><span class="overlay-logo-a">S</span>', None),

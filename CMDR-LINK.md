@@ -5,7 +5,7 @@
 ## Layout (one repo)
 ```
 ie-SRS-ADMIN.html      hub, patched: bus + CMDR LINK chip (bottom-right)
-cmdr/index.html        commander mobile app → https://thompsonryane-collab.github.io/ie-SRA/cmdr/
+cmdr/index.html        commander mobile app → https://thompsonryane-collab.github.io/ie-SRS/cmdr/
 data/bus.json          message file for the GitHub transport (seeded empty)
 build_cmdr_link.py     rebuilds both from cmdr/src.html + cmdr/bus.js + cmdr/admin_link.js + ORIGINAL admin
 test_cmdr_link.py      Playwright: tier 1 (BroadcastChannel) + tier 2 (mocked GitHub Contents API)
@@ -54,10 +54,13 @@ The ADMIN card grid defaults to **5-column icon tiles** (square, icon only; no h
 **SONAR — Shore Outage Notification, Analysis & Response** replaces "AI Wargame" on the ADM-08 card, the builder overlay chrome and page title, and in the embedded AI analyst's system prompt. Element ids (`card-adm-wargame`, `frame-builder`, `overlay-builder`), audit action `WARGAME_SCENARIO`, and the hub↔builder message types are unchanged, so nothing else needed re-wiring. The rename is applied by `build_cmdr_link.py` (see `RENAMES`), so it survives rebuilds from a fresh ADMIN source.
 
 ## Brand rename: ie-SRA → ie-SRS
-The product is now **ie-SRS — SONAR, Reconnaissance, Simulation**. Renamed in the ADMIN splash logo, top bar, page title, ARIA system prompt, every overlay logo, the CMDR app, and the docs. The admin file is now `ie-SRS-ADMIN.html` and the root `index.html` redirects there. The GitHub **repo path stays `ie-SRA`** (renaming the repo would change every URL and the GitHub transport path); internal ids such as `SRABus`, the `ie-sra-bus` channel, and `sra_bus_*` storage keys are unchanged on purpose.
+The product is now **ie-SRS — SONAR, Reconnaissance, Simulation**. Renamed in the ADMIN splash logo, top bar, page title, ARIA system prompt, every overlay logo, the CMDR app, and the docs. The admin file is now `ie-SRS-ADMIN.html` and the root `index.html` redirects there. The GitHub repo has since been renamed to `ie-SRS`; the transport default repo is `thompsonryane-collab/ie-SRS`.
 
 ## Terminology: "warning order" → "SONAR alert"
 All user-facing prose now says **SONAR alert(s)** (KPI strip, ADM-03 "SONAR Alert Routing", ADM-07 strategy deck, ADM-08 builder, ARIA prompts, CMDR app). Applied in `build_cmdr_link.py` (`TERM`), 153 replacements in ADMIN. Unchanged on purpose: audit action names (`WARNING_ORDER_*`, `TEST_WARNING_ORDER`), the bus envelope type `WARNORD`, the ADM-09 type filter/pills (protocol names), JS identifiers (`warningOrders`, `addWarningOrder`), and `WO-`/`WARN-` code prefixes.
 
 ## Core hub: ie-SRS.html
 `ie-SRA.html` is now built to `ie-SRS.html` by the same script (place the source at `src/ie-SRA.html`): brand → ie-SRS / SONAR | Reconnaissance | Simulation, "warning order" → "SONAR alert", and the same **TILES / CARDS** toggle (default TILES, remembered under the shared `adm_tiles` key so both hubs follow one setting). Five tiles, one row.
+
+## Link status: read vs write
+The GitHub transport now tracks read and write separately. A token that can read the public repo but not write shows a steady **amber** "Write 403" pill (phone) / `CMDR LINK · READ ONLY · WRITE 403` chip (ADMIN) instead of flapping red/green each poll, and the Link tab explains the likely cause (401 token invalid/expired · 403 resource owner / Contents permission · 404 repo/branch/path). Queued messages are kept and flush automatically once a good token is saved. Test `tier2b` covers it.

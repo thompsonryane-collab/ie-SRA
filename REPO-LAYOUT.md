@@ -22,6 +22,6 @@ ie-SRA/                       (repo root = GitHub Pages root)
 2. **Upload** the contents of this zip. When using GitHub's "Add file → Upload files", drag the **folders** (`cmdr`, `data`, `cmdr-src`) in, not just the files inside them — GitHub keeps folder structure only when you drop a folder.
    Alternative that can't go wrong: `git clone`, copy the zip contents over the working tree, `git add -A`, commit, push.
 3. Wait ~1 min, then check:
-   - `https://thompsonryane-collab.github.io/ie-SRA/` → redirects to ADMIN
-   - `https://thompsonryane-collab.github.io/ie-SRA/ie-SRS-ADMIN.html` → admin, CMDR LINK chip bottom-right
-   - `https://thompsonryane-collab.github.io/ie-SRA/cmdr/` → mobile app
+   - `https://thompsonryane-collab.github.io/ie-SRS/` → redirects to ADMIN
+   - `https://thompsonryane-collab.github.io/ie-SRS/ie-SRS-ADMIN.html` → admin, CMDR LINK chip bottom-right
+   - `https://thompsonryane-collab.github.io/ie-SRS/cmdr/` → mobile app

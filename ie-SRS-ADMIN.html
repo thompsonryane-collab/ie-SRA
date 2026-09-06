@@ -12613,12 +12613,12 @@ window.SRABus=(function(){
   var NODE='admin';
   var CFG_KEY='sra_bus_cfg_'+NODE, LOG_KEY='sra_bus_log', SEEN_KEY='sra_bus_seen_'+NODE;
   var CH_NAME='ie-sra-bus';
-  var DEF={transport:'broadcast', node:NODE, site:'nb-sd', repo:'thompsonryane-collab/ie-SRA', branch:'main', path:'data/bus.json', token:'', poll:5};
+  var DEF={transport:'broadcast', node:NODE, site:'nb-sd', repo:'thompsonryane-collab/ie-SRS', branch:'main', path:'data/bus.json', token:'', poll:5};
   function ls(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
   function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
   var cfg=Object.assign({},DEF,ls(CFG_KEY,{}));
   var subs=[], statusSubs=[], seen=ls(SEEN_KEY,{}), adapter=null;
-  var st={transport:cfg.transport, connected:false, lastSync:0, error:'', pending:0};
+  var st={transport:cfg.transport, connected:false, lastSync:0, error:'', pending:0, read:'', write:''};
   function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
   function setStatus(p){Object.assign(st,p);statusSubs.forEach(function(f){try{f(st);}catch(e){}});}
   function remember(id){seen[id]=Date.now();var ks=Object.keys(seen);if(ks.length>600){ks.sort(function(a,b){return seen[a]-seen[b];}).slice(0,200).forEach(function(k){delete seen[k];});}lsSet(SEEN_KEY,seen);}
@@ -12662,7 +12662,7 @@ window.SRABus=(function(){
     function read(){
       return fetch(url(),{headers:hdr(),cache:'no-store'}).then(function(r){
         if(r.status===404)return {sha:null,doc:{v:1,messages:[]}};
-        if(!r.ok)throw new Error('GitHub read '+r.status);
+        if(!r.ok){var er=new Error('read '+r.status);er.status=r.status;er.op='read';throw er;}
         return r.json().then(function(j){var doc;try{doc=JSON.parse(b64dec(j.content));}catch(e){doc={v:1,messages:[]};}return {sha:j.sha,doc:doc};});
       });
     }
@@ -12670,12 +12670,13 @@ window.SRABus=(function(){
       var body={message:'bus: '+cfg.node+' '+new Date().toISOString(),content:b64enc(JSON.stringify(doc)),branch:cfg.branch};
       if(curSha)body.sha=curSha;
       return fetch('https://api.github.com/repos/'+cfg.repo+'/contents/'+cfg.path,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},hdr()),body:JSON.stringify(body)})
-        .then(function(r){if(r.status===409||r.status===422)return {conflict:true};if(!r.ok)throw new Error('GitHub write '+r.status);return r.json().then(function(j){return {sha:j.content&&j.content.sha};});});
+        .then(function(r){if(r.status===409||r.status===422)return {conflict:true};if(!r.ok){var er=new Error('write '+r.status);er.status=r.status;er.op='write';throw er;}return r.json().then(function(j){return {sha:j.content&&j.content.sha};});});
     }
+    function describe(e){var m=String(e&&e.message||e);var c=e&&e.status;if(c===401)return m+' — token invalid or expired';if(c===403)return m+' — token cannot write this repo: check Resource owner = thompsonryane-collab and Contents = Read and write';if(c===404)return m+' — repo/branch/file path not found';if(!c&&/fetch/i.test(m))return 'network — no route to api.github.com';return m;}
     function poll(){
       if(busy)return;busy=true;
-      read().then(function(res){sha=res.sha;(res.doc.messages||[]).forEach(function(m){_recv(m);});setStatus({connected:true,error:'',lastSync:Date.now()});})
-        .catch(function(e){setStatus({connected:false,error:String(e.message||e)});})
+      read().then(function(res){sha=res.sha;(res.doc.messages||[]).forEach(function(m){_recv(m);});setStatus({read:'ok',connected:st.write!=='error',error:st.write==='error'?st.error:'',lastSync:Date.now()});})
+        .catch(function(e){setStatus({read:'error',connected:false,error:'GitHub read '+describe(e)});})
         .then(function(){busy=false;flush();});
     }
     function flush(){
@@ -12689,12 +12690,12 @@ window.SRABus=(function(){
           return write(doc,res.sha);
         }).then(function(w){
           if(w.conflict){if(++attempt<4)return setTimeout(tryWrite,300*attempt);throw new Error('GitHub write conflict');}
-          sha=w.sha;setStatus({connected:true,error:'',lastSync:Date.now(),pending:queue.length});busy=false;if(queue.length)flush();
-        }).catch(function(e){setStatus({connected:false,error:String(e.message||e),pending:queue.length});busy=false;queue=batch.concat(queue);});
+          sha=w.sha;setStatus({write:'ok',connected:true,error:'',lastSync:Date.now(),pending:queue.length});busy=false;if(queue.length)flush();
+        }).catch(function(e){setStatus({write:'error',connected:false,error:describe(e),pending:queue.length+batch.length});busy=false;queue=batch.concat(queue);});
       })();
     }
     return {
-      start:function(){if(!cfg.token)setStatus({connected:false,error:'No GitHub token'});poll();timer=setInterval(poll,Math.max(3,cfg.poll|0)*1000);},
+      start:function(){setStatus({read:'',write:'',error:cfg.token?'':'No GitHub token'});poll();timer=setInterval(poll,Math.max(3,cfg.poll|0)*1000);},
       stop:function(){clearInterval(timer);timer=null;},
       send:function(env){appendLog(env);queue.push(env);setStatus({pending:queue.length});flush();return Promise.resolve(true);}
     };
@@ -12918,7 +12919,7 @@ window.SRABus=(function(){
     return rec.code;
   };
   window.admCmdrOpen=function(){window.open('cmdr/index.html','ie-sra-cmdr','width=430,height=900');};
-  bus.onStatus(function(st){chip.className=st.connected?(st.pending?'warn':'on'):'';$('cl-txt').textContent='CMDR LINK · '+(st.transport==='off'?'OFF':st.connected?(st.transport==='github'?'GITHUB':'LIVE'):(st.error?'ERR':'—'));if(st.error)chip.title=st.error;});
+  bus.onStatus(function(st){var gh=st.transport==='github';chip.className=st.connected?(st.pending?'warn':'on'):(gh&&st.read==='ok'?'warn':'');$('cl-txt').textContent='CMDR LINK · '+(st.transport==='off'?'OFF':st.connected?(gh?'GITHUB':'LIVE'):gh&&st.read==='ok'?'READ ONLY · WRITE '+((String(st.error).match(/\d{3}/)||['ERR'])[0]):(st.error?'ERR':'—'));chip.title=st.error||'';});
   bus.start();
   bus.replay(function(env){if(env.type==='HELLO'&&env.from==='cmdr')peers[env.site||'?']={name:env.payload&&env.payload.commander,ts:env.ts};});
   setTimeout(function(){bus.publish('HELLO',{node:'admin',app:'ie-SRS ADMIN'});},600);
@@ -12947,7 +12948,8 @@ window.SRABus=(function(){
     var sel=$('cx-site'); if(sel&&!sel.options.length){C.SITES.forEach(function(s){var o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);});sel.value='nb-sd';}
     var c=bus.cfg(), st=bus.status(), peers=(window.CMDR_LINK&&CMDR_LINK.peers())||{}, ks=Object.keys(peers), un=unacked();
     var cs=window.ADM_COMMS?ADM_COMMS.stats():{total:0,rtt:null};
-    $('cx-strip').innerHTML=mini('Link',st.transport==='off'?'OFF':st.connected?(st.transport==='github'?'GITHUB':'LIVE'):'—',st.connected?'#4db88a':'#e05555',st.error||st.transport)+mini('Linked commanders',ks.length,'#18d4f8')+mini('Awaiting ack',un.length,un.length?'#e05555':'#4db88a')+mini('Envelopes logged',cs.total,'#29d3c8','ADM-09')+mini('Avg ack RTT',cs.rtt==null?'—':cs.rtt<1000?cs.rtt+' ms':(cs.rtt/1000).toFixed(1)+' s','#c3aaf8');
+    var gh=st.transport==='github';var lk=st.transport==='off'?'OFF':st.connected?(gh?'GITHUB':'LIVE'):gh&&st.read==='ok'?'READ OK · WRITE FAILED':gh&&st.read==='error'?'READ FAILED':'—';
+    $('cx-strip').innerHTML=mini('Link',lk,st.connected?'#4db88a':st.read==='ok'?'#d4a05a':'#e05555',st.error||st.transport)+mini('Linked commanders',ks.length,'#18d4f8')+mini('Awaiting ack',un.length,un.length?'#e05555':'#4db88a')+mini('Envelopes logged',cs.total,'#29d3c8','ADM-09')+mini('Avg ack RTT',cs.rtt==null?'—':cs.rtt<1000?cs.rtt+' ms':(cs.rtt/1000).toFixed(1)+' s','#c3aaf8');
     $('cx-url').textContent=cmdrUrl();
     $('cx-peer-n').textContent=ks.length?ks.length+' linked':'';
     $('cx-peers').innerHTML=ks.length?ks.map(function(k){var p=peers[k],s=C.SITE[k];return '<div class="cm-peer"><div><b>'+esc(p.name||'Commander')+'</b><div class="s">'+esc(s?s.name:k)+' · '+esc(p.app||'')+'</div></div><div class="s">'+ago(p.ts)+'</div></div>';}).join(''):'<div class="adm-empty" style="padding:14px">No phone has linked yet. Open the app (preview at right, or the URL above on an iPhone) — it says hello automatically.</div>';

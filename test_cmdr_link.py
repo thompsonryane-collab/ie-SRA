@@ -177,10 +177,32 @@ def tier2(b):
     assert not ce, 'cmdr console errors: ' + '\n'.join(ce[:5])
     actx.close(); cctx.close(); print(f'tier2 github (mocked, {store["puts"]} PUTs incl. 1 retried conflict, {store["gets"]} GETs): PASS')
 
+def tier2b(b):
+    """Write-forbidden token: reads OK, writes 403 → stable 'read only' state, no green/red flapping."""
+    def handler(route, request):
+        if request.method == 'GET':
+            body = {'sha': 'sha0', 'content': base64.b64encode(json.dumps({'v':1,'messages':[]}).encode()).decode()}
+            return route.fulfill(status=200, content_type='application/json', body=json.dumps(body))
+        return route.fulfill(status=403, content_type='application/json', body='{"message":"Resource not accessible by personal access token"}')
+    ctx = b.new_context(viewport={'width': 393, 'height': 852}); ctx.route('https://api.github.com/**', handler)
+    p = ctx.new_page(); e = errs_of(p)
+    p.add_init_script("localStorage.setItem('sra_bus_cfg_cmdr',JSON.stringify({transport:'github',token:'t',poll:3,node:'cmdr',site:'nb-sd'}));")
+    p.goto(BASE + '/cmdr/index.html', wait_until='domcontentloaded'); p.wait_for_timeout(1500)
+    seen = set()
+    for _ in range(12):
+        seen.add(p.evaluate("document.getElementById('linkpill').className")); p.wait_for_timeout(500)
+    assert 'link on' not in seen and 'link warn' in seen, seen
+    st = p.evaluate("window.SRABus.status()")
+    assert st['read']=='ok' and st['write']=='error' and '403' in st['error'] and 'Resource owner' in st['error'], st
+    assert p.evaluate("document.getElementById('linktxt').textContent")=='Write 403'
+    p.evaluate("go('link')"); p.wait_for_timeout(200); p.screenshot(path='qa_cmdr_403.png')
+    assert not e, e[:3]
+    ctx.close(); print('tier2b github write-403: PASS (stable amber, hint shown)')
+
 if __name__ == '__main__':
     srv = serve()
     with sync_playwright() as p:
         b = p.chromium.launch()
-        tier1(b); tier2(b)
+        tier1(b); tier2(b); tier2b(b)
         b.close()
     srv.shutdown(); print('ALL PASS')
