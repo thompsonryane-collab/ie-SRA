@@ -12875,7 +12875,8 @@ window.SRABus=(function(){
   /* ── inbound ── */
   bus.subscribe(function(env,replay){
     var p=env.payload||{};
-    if(env.from==='cmdr'&&env.site){var pr=peers[env.site]||(peers[env.site]={});if(!replay||!pr.ts||env.ts>pr.ts){pr.ts=Math.max(pr.ts||0,env.ts);}if(p.commander)pr.name=p.commander;if(p.by&&!pr.name)pr.name=p.by;if(p.app)pr.app=p.app;pr.last=env.type;}
+    var psite=env.site&&env.site!=='*'?env.site:(p.site||null);
+    if(env.from==='cmdr'&&psite){var pr=peers[psite]||(peers[psite]={});if(!replay||!pr.ts||env.ts>pr.ts){pr.ts=Math.max(pr.ts||0,env.ts);}if(p.commander)pr.name=p.commander;if(p.by&&!pr.name)pr.name=p.by;if(p.app)pr.app=p.app;pr.last=env.type;}
     if(env.type==='ACK'){
       var log=C.listWO(); var hit=log.filter(function(w){return w.code===p.code;})[0];
       if(hit&&!hit.ack){hit.ack={by:p.by,ts:env.ts,via:p.via||'mobile'};try{localStorage.setItem('adm_wo_log',JSON.stringify(log));}catch(e){}}
@@ -12886,7 +12887,7 @@ window.SRABus=(function(){
         if(typeof admPaintStrip==='function')try{admPaintStrip();}catch(e){}}
     }else if(env.type==='MSG'){
       if(replay)return;
-      var ch=p.ch||('site:'+(env.site||'nb-sd'));
+      var ch=p.ch==='all'?'all':(p.ch&&p.ch.indexOf('site:')===0?p.ch:('site:'+(env.site||'nb-sd')));
       C.sendMsg(ch,p.text,'CMDR '+(p.by||'Base Commander')+' (mobile)');
       C.audit('CMDR_MSG',ch,String(p.text||'').slice(0,80));
       toast('CMDR message: '+String(p.text||'').slice(0,60),'ok');ev('MSG ← '+(p.by||'CMDR'));
@@ -12919,7 +12920,7 @@ window.SRABus=(function(){
   window.admCmdrOpen=function(){window.open('cmdr/index.html','ie-sra-cmdr','width=430,height=900');};
   bus.onStatus(function(st){var gh=st.transport==='github';chip.className=st.connected?(st.pending?'warn':'on'):(gh&&st.read==='ok'?'warn':'');$('cl-txt').textContent='CMDR LINK · '+(st.transport==='off'?'OFF':st.connected?(gh?'GITHUB':'LIVE'):gh&&st.read==='ok'?'READ ONLY · WRITE '+((String(st.error).match(/\d{3}/)||['ERR'])[0]):(st.error?'ERR':'—'));chip.title=st.error||'';});
   bus.start();
-  bus.replay(function(env){if(env.from==='cmdr'&&env.site){var pr=peers[env.site]||(peers[env.site]={});pr.ts=Math.max(pr.ts||0,env.ts);var q=env.payload||{};if(q.commander)pr.name=q.commander;if(q.by&&!pr.name)pr.name=q.by;if(q.app)pr.app=q.app;}});
+  bus.replay(function(env){var q0=env.payload||{};var ps=env.site&&env.site!=='*'?env.site:(q0.site||null);if(env.from==='cmdr'&&ps){var pr=peers[ps]||(peers[ps]={});pr.ts=Math.max(pr.ts||0,env.ts);var q=env.payload||{};if(q.commander)pr.name=q.commander;if(q.by&&!pr.name)pr.name=q.by;if(q.app)pr.app=q.app;}});
   setTimeout(function(){bus.publish('HELLO',{node:'admin',app:'ie-SRS ADMIN'});},600);
   /* periodic health push to every site that has said hello (ADM-04 sync) */
   setInterval(function(){Object.keys(peers).forEach(function(site){if(C.SITE[site]&&peers[site].ts>Date.now()-864e5)sendStatus(site);});},60000);

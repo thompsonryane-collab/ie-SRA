@@ -67,3 +67,9 @@ The GitHub transport now tracks read and write separately. A token that can read
 
 ## ADM-02 live presence
 "Users online" now means real sessions only: the System Admin on web (this session) plus every CMDR mobile device heard from in the last 15 min (HELLO, ACK, MSG or heartbeat — phones send a HELLO heartbeat every 10 min while open and on resume). Stale devices show greyed with "last seen". Clicking a commander opens that site's channel. The KPI strip's Users online reads "1 admin (web) · N CMDR mobile". Synthetic FM/Backup presence is no longer shown in ADM-02 (site records are untouched elsewhere).
+
+## Channel-aware replies (ADM-02 #all-hands)
+Every message now carries its channel end to end. An ADMIN #all-hands broadcast arrives on the phone tagged **#all-hands**, the compose bar's channel pill flips to #all-hands, and the commander's reply is published on `ch:'all'` so ADMIN files it in **#all-hands** — not the site channel. A site message from ADMIN flips the pill back to `@<SITE>`; the pill can also be tapped to switch manually. Bubbles show their channel tag.
+
+## Phone defaults
+A fresh install of `cmdr/` starts on **GitHub repo · thompsonryane-collab/ie-SRS · main · data/bus.json · site nb-sd** with an empty token; it opens the Link tab and focuses the token field, so the commander only pastes the token and taps Save. ADMIN still defaults to same-browser.

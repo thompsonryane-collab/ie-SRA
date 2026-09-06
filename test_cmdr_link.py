@@ -39,6 +39,7 @@ def tier1(b):
     assert admin.evaluate('!!window.ADMIN_CORE && !!window.SRABus && !!window.CMDR_LINK'), 'admin link not initialised'
     assert admin.evaluate("document.getElementById('cl-chip')!==null")
     cmdr = ctx.new_page(); cmdr.set_viewport_size({'width': 393, 'height': 852}); ce = errs_of(cmdr)
+    cmdr.add_init_script("localStorage.setItem('sra_bus_cfg_cmdr',JSON.stringify({transport:'broadcast',node:'cmdr',site:'nb-sd'}));")
     cmdr.goto(BASE + '/cmdr/index.html', wait_until='domcontentloaded'); cmdr.wait_for_timeout(1200)
     assert cmdr.evaluate('!!window.CMDR && window.SRABus.status().connected'), 'cmdr not connected'
 
@@ -70,6 +71,20 @@ def tier1(b):
     admin.evaluate("window.ADMIN_CORE.sendMsg('site:nb-sd','Copy CO. Utility crew on site, ETR 30 min.','sysadmin')")
     wait_for(lambda: cmdr.evaluate("window.CMDR.state().msgs.some(m=>/ETR 30/.test(m.text)&&!m.mine)"), msg='cmdr got MSG')
     cmdr.screenshot(path='qa_cmdr_msgs.png')
+
+    # all-hands round trip: admin broadcast → phone reply lands in #all-hands, not site channel
+    admin.evaluate("window.ADMIN_CORE.sendMsg('all','ADMIN NOTICE: comms check, all commanders acknowledge.','sysadmin')")
+    wait_for(lambda: cmdr.evaluate("window.CMDR.state().msgs.some(m=>/comms check/.test(m.text)&&m.ch==='all')"), msg='phone got all-hands')
+    assert cmdr.evaluate("window.CMDR.state().replyCh")=='all'
+    cmdr.evaluate("go('msgs');document.getElementById('mtext').value='NBSD acknowledges comms check.';sendMsg();")
+    wait_for(lambda: admin.evaluate("window.ADMIN_CORE.listMsgs().some(m=>/NBSD acknowledges/.test(m.text)&&m.ch==='all')"), msg='reply in all-hands')
+    assert not admin.evaluate("window.ADMIN_CORE.listMsgs().some(m=>/NBSD acknowledges/.test(m.text)&&m.ch!=='all')")
+    # then a site message from admin flips the phone back to the site channel
+    admin.evaluate("window.ADMIN_CORE.sendMsg('site:nb-sd','Site-only: crew ETA 20.','sysadmin')")
+    wait_for(lambda: cmdr.evaluate("window.CMDR.state().replyCh==='site:nb-sd'"), msg='reply channel back to site')
+    cmdr.evaluate("document.getElementById('mtext').value='Copy site.';sendMsg();")
+    wait_for(lambda: admin.evaluate("window.ADMIN_CORE.listMsgs().some(m=>/Copy site/.test(m.text)&&m.ch==='site:nb-sd')"), msg='site reply routed')
+    cmdr.screenshot(path='qa_cmdr_allhands.png')
 
     # ADM-08 / routing path: any C.logWO publishes
     admin.evaluate("window.ADMIN_CORE.logWO({ts:Date.now(),site:'nb-sd',siteName:'NB San Diego',code:'WO-LIVE-1',test:false,kind:'LIVE',msg:'Pier 8 feeder loss — shore power to DDG berth down.',channels:'Base Commander: mobile'})")
@@ -189,6 +204,10 @@ def tier2(b):
 
 def tier_norm(b):
     ctx = b.new_context(); p = ctx.new_page(); p.goto(BASE + '/cmdr/index.html', wait_until='domcontentloaded'); p.wait_for_timeout(800)
+    d = p.evaluate("window.SRABus.cfg()")
+    assert d['transport']=='github' and d['repo']=='thompsonryane-collab/ie-SRS' and d['branch']=='main' and d['path']=='data/bus.json' and d['token']=='' and d['site']=='nb-sd', d
+    assert p.evaluate("document.getElementById('p-link').classList.contains('on')") and p.evaluate("document.getElementById('f-transport').value")=='github'
+    print('fresh-install defaults: github / ie-SRS / main / data/bus.json, token empty, Link tab opened')
     c = p.evaluate("window.SRABus.configure({transport:'off',repo:' Thompsonryane-collab/ie-SRS ',branch:'main ',path:'data/bus. Json',token:' ghp_x '}).cfg()")
     assert c['repo']=='Thompsonryane-collab/ie-SRS' and c['branch']=='main' and c['path']=='data/bus.json' and c['token']=='ghp_x', c
     ctx.close(); print('config normalization: PASS')
