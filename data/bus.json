@@ -1,5 +1,1 @@
-{
-  "v": 1,
-  "updated": 0,
-  "messages": []
-}
+{"v":1,"updated":1788659143330,"messages":[{"id":"mtp59w86doz3au","type":"HELLO","ts":1788658812006,"from":"cmdr","to":"*","site":"nb-sd","payload":{"node":"cmdr","commander":"CAPT R. Thompson","siteName":"Naval Base San Diego","app":"ie-SRA CMDR v0.4"}}]}
