@@ -1,8 +1,10 @@
+# ie-SRS — Intelligent Energy: SONAR, Reconnaissance, Simulation
+
 # CMDR link — ADMIN ↔ mobile bus
 
 ## Layout (one repo)
 ```
-ie-SRA-ADMIN.html      hub, patched: bus + CMDR LINK chip (bottom-right)
+ie-SRS-ADMIN.html      hub, patched: bus + CMDR LINK chip (bottom-right)
 cmdr/index.html        commander mobile app → https://thompsonryane-collab.github.io/ie-SRA/cmdr/
 data/bus.json          message file for the GitHub transport (seeded empty)
 build_cmdr_link.py     rebuilds both from cmdr/src.html + cmdr/bus.js + cmdr/admin_link.js + ORIGINAL admin
@@ -29,7 +31,7 @@ test_cmdr_link.py      Playwright: tier 1 (BroadcastChannel) + tier 2 (mocked Gi
 
 ## Test
 ```
-python3 build_cmdr_link.py src/ie-SRA-ADMIN.html
+python3 build_cmdr_link.py src/ie-SRS-ADMIN.html
 python3 test_cmdr_link.py
 ```
 
@@ -41,3 +43,21 @@ Ledger of every envelope both directions: sent/received time, direction, type, s
 
 ## Health tab (CMDR) ↔ ADM-04 Instance Health
 The Map tab is replaced by **Health**. STATUS envelopes now carry the full ADM-04 site record: health state (HEALTHY / DEGRADED / OFFLINE / OUTAGE via `ADMIN_CORE.health`), primary + secondary instance (status, version, last sync, uptime, CPU), FM + Backup users (status, device enrollment, last seen), open WO count (seeded + live unacked), and the enterprise roll-up (online/degraded/offline of 140, open WOs across 70 sites). ADMIN pushes a snapshot on HELLO and every 60 s to every site that has linked in the last 24 h; the phone's Refresh button re-requests. The Health tab badge shows `!` whenever the site is not HEALTHY.
+
+## ADM-10 CMDR Mobile (hub card, green)
+The front door for the phone app. Toolbar: site picker, **Test WARNORD → CMDR**, **Push health snapshot**, open in new window, jump to Comms Log. KPI strip: link state, linked commanders, awaiting ack, envelopes logged, avg ack RTT. Panels: phone URL with copy (add-to-home-screen hint), linked commanders (from HELLO), warning orders awaiting acknowledgment, transport settings (moved here from the chip), link events, and a **live preview** of `cmdr/` in an iPhone frame that rides the same bus — what you do in the preview happens on a real phone linked to the site. The bottom-right chip now just shows link state and opens ADM-10.
+
+## Hub tile layout
+The ADMIN card grid defaults to **5-column icon tiles** (square, icon only; no hover tooltip; aria-label carries the name). Live count badges: ADM-01 pending accounts, ADM-02 commander messages, ADM-03 open WOs, ADM-04 degraded+offline instances, ADM-10 unacked mobile WOs. A **TILES / CARDS** toggle sits next to FULL in the top bar and is remembered (`adm_tiles`). Responsive: 4 columns under 1000 px, 3 under 720 px.
+
+## ADM-08 renamed: SONAR
+**SONAR — Shore Outage Notification, Analysis & Response** replaces "AI Wargame" on the ADM-08 card, the builder overlay chrome and page title, and in the embedded AI analyst's system prompt. Element ids (`card-adm-wargame`, `frame-builder`, `overlay-builder`), audit action `WARGAME_SCENARIO`, and the hub↔builder message types are unchanged, so nothing else needed re-wiring. The rename is applied by `build_cmdr_link.py` (see `RENAMES`), so it survives rebuilds from a fresh ADMIN source.
+
+## Brand rename: ie-SRA → ie-SRS
+The product is now **ie-SRS — SONAR, Reconnaissance, Simulation**. Renamed in the ADMIN splash logo, top bar, page title, ARIA system prompt, every overlay logo, the CMDR app, and the docs. The admin file is now `ie-SRS-ADMIN.html` and the root `index.html` redirects there. The GitHub **repo path stays `ie-SRA`** (renaming the repo would change every URL and the GitHub transport path); internal ids such as `SRABus`, the `ie-sra-bus` channel, and `sra_bus_*` storage keys are unchanged on purpose.
+
+## Terminology: "warning order" → "SONAR alert"
+All user-facing prose now says **SONAR alert(s)** (KPI strip, ADM-03 "SONAR Alert Routing", ADM-07 strategy deck, ADM-08 builder, ARIA prompts, CMDR app). Applied in `build_cmdr_link.py` (`TERM`), 153 replacements in ADMIN. Unchanged on purpose: audit action names (`WARNING_ORDER_*`, `TEST_WARNING_ORDER`), the bus envelope type `WARNORD`, the ADM-09 type filter/pills (protocol names), JS identifiers (`warningOrders`, `addWarningOrder`), and `WO-`/`WARN-` code prefixes.
+
+## Core hub: ie-SRS.html
+`ie-SRA.html` is now built to `ie-SRS.html` by the same script (place the source at `src/ie-SRA.html`): brand → ie-SRS / SONAR | Reconnaissance | Simulation, "warning order" → "SONAR alert", and the same **TILES / CARDS** toggle (default TILES, remembered under the shared `adm_tiles` key so both hubs follow one setting). Five tiles, one row.

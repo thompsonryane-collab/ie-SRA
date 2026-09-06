@@ -35,7 +35,7 @@ def tier1(b):
     ctx.route('**/unpkg.com/**', lambda r: r.abort())
     ctx.route('**/cdnjs.cloudflare.com/**', lambda r: r.abort())
     admin = ctx.new_page(); ae = errs_of(admin)
-    admin.goto(BASE + '/ie-SRA-ADMIN.html', wait_until='domcontentloaded'); admin.wait_for_timeout(2500)
+    admin.goto(BASE + '/ie-SRS-ADMIN.html', wait_until='domcontentloaded'); admin.wait_for_timeout(2500)
     assert admin.evaluate('!!window.ADMIN_CORE && !!window.SRABus && !!window.CMDR_LINK'), 'admin link not initialised'
     assert admin.evaluate("document.getElementById('cl-chip')!==null")
     cmdr = ctx.new_page(); cmdr.set_viewport_size({'width': 393, 'height': 852}); ce = errs_of(cmdr)
@@ -50,7 +50,7 @@ def tier1(b):
     assert 'CMDR_HELLO' in audit, audit[:5]
 
     # WARNORD: admin test dispatch -> cmdr card
-    admin.evaluate("document.getElementById('cl-test').click()")
+    admin.evaluate("admCmdrTest('nb-sd')")
     wait_for(lambda: cmdr.evaluate("Object.keys(window.CMDR.state().warnords).length>0"), msg='cmdr got WARNORD')
     code = cmdr.evaluate("Object.keys(window.CMDR.state().warnords)[0]")
     assert code.startswith('TEST-'), code
@@ -89,6 +89,18 @@ def tier1(b):
     assert cmdr.evaluate("document.querySelectorAll('#h-inst .irow').length")==2 and cmdr.evaluate("document.querySelectorAll('#h-users .irow').length")==2
     assert cmdr.evaluate("document.querySelector('#h-hero .st').textContent.trim()")==adm_h
     cmdr.screenshot(path='qa_cmdr_health.png')
+    # ADM-10 CMDR Mobile overlay
+    admin.evaluate("enterHub()"); admin.wait_for_timeout(1200)
+    admin.evaluate("document.getElementById('cl-chip').click()"); admin.wait_for_timeout(800)
+    assert admin.evaluate("document.getElementById('overlay-adm-cmdr').classList.contains('visible')"), 'chip did not open ADM-10'
+    assert admin.evaluate("document.querySelectorAll('#cx-peers .cm-peer').length")>=1
+    assert admin.evaluate("document.querySelectorAll('#cx-unacked .cm-peer').length")>=1
+    assert admin.evaluate("document.getElementById('cx-url').textContent").endswith('/cmdr/')
+    wait_for(lambda: admin.evaluate("(()=>{try{return !!document.getElementById('cx-frame').contentWindow.CMDR}catch(e){return false}})()"), timeout=10, msg='preview iframe booted')
+    wait_for(lambda: admin.evaluate("Object.keys(window.CMDR_LINK.peers()).length>=1"), msg='preview said hello')
+    admin.evaluate("document.getElementById('card-cmdr-peers')"); assert admin.evaluate("document.getElementById('card-cmdr-unacked').textContent")!='0 unacked'
+    admin.screenshot(path='qa_admin_cmdr.png')
+    admin.evaluate("closeApp('overlay-adm-cmdr')")
     # ADM-09 comms ledger
     st = admin.evaluate("window.ADM_COMMS.stats()")
     assert st['wo'] >= 2 and st['acked'] >= 1 and st['rtt'] is not None and st['unacked'] >= 1, st
@@ -147,11 +159,11 @@ def tier2(b):
         p = ctx.new_page(); e = errs_of(p)
         p.add_init_script("localStorage.setItem('sra_bus_cfg_admin',JSON.stringify({transport:'github',token:'t',poll:3,node:'admin',site:'*'}));localStorage.setItem('sra_bus_cfg_cmdr',JSON.stringify({transport:'github',token:'t',poll:3,node:'cmdr',site:'nb-sd'}));")
         p.goto(url, wait_until='domcontentloaded'); return ctx, p, e
-    actx, admin, ae = mk(BASE + '/ie-SRA-ADMIN.html', 1400, 900); admin.wait_for_timeout(2500)
+    actx, admin, ae = mk(BASE + '/ie-SRS-ADMIN.html', 1400, 900); admin.wait_for_timeout(2500)
     cctx, cmdr, ce = mk(BASE + '/cmdr/index.html', 393, 852); cmdr.wait_for_timeout(1000)
     assert admin.evaluate("window.SRABus.status().transport")=='github'
     wait_for(lambda: cmdr.evaluate("!!window.CMDR.state().status"), timeout=15, msg='cmdr STATUS via github')
-    admin.evaluate("document.getElementById('cl-test').click()")
+    admin.evaluate("admCmdrTest('nb-sd')")
     wait_for(lambda: cmdr.evaluate("Object.keys(window.CMDR.state().warnords).length>0"), timeout=15, msg='cmdr WARNORD via github')
     code = cmdr.evaluate("Object.keys(window.CMDR.state().warnords)[0]")
     cmdr.evaluate(f"ack('{code}')")

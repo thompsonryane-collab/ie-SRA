@@ -2,9 +2,9 @@
 
 ```
 ie-SRA/                       (repo root = GitHub Pages root)
-├── index.html                redirect → ie-SRA-ADMIN.html   ← replaces the mobile app that landed here
-├── ie-SRA-ADMIN.html         admin hub (patched)
-├── ie-SRA.html               core hub (unchanged, already in repo)
+├── index.html                redirect → ie-SRS-ADMIN.html   ← replaces the mobile app that landed here
+├── ie-SRS-ADMIN.html         admin hub (patched)
+├── ie-SRA.html               core hub (if present; unchanged)
 ├── favicon.ico, favicon-16x16.png, CLAUDE.md, README.md   (unchanged)
 ├── CMDR-LINK.md
 ├── cmdr/
@@ -23,5 +23,5 @@ ie-SRA/                       (repo root = GitHub Pages root)
    Alternative that can't go wrong: `git clone`, copy the zip contents over the working tree, `git add -A`, commit, push.
 3. Wait ~1 min, then check:
    - `https://thompsonryane-collab.github.io/ie-SRA/` → redirects to ADMIN
-   - `https://thompsonryane-collab.github.io/ie-SRA/ie-SRA-ADMIN.html` → admin, CMDR LINK chip bottom-right
+   - `https://thompsonryane-collab.github.io/ie-SRA/ie-SRS-ADMIN.html` → admin, CMDR LINK chip bottom-right
    - `https://thompsonryane-collab.github.io/ie-SRA/cmdr/` → mobile app
